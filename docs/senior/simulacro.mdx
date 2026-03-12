@@ -1,0 +1,599 @@
+---
+id: simulacro
+title: 🧪 Simulacro de Entrevista — Senior
+sidebar_position: 101
+---
+
+import Quiz from '@site/src/components/Quiz';
+
+# 🧪 Simulacro de Entrevista — Senior
+
+Simula una entrevista técnica real. **30 preguntas**, temas mezclados, sin mirar las respuestas hasta contestar. Tiempo estimado: 60 minutos.
+
+:::tip Cómo usarlo
+Responde cada pregunta como lo harías en una entrevista real: piensa en voz alta y justifica tu elección antes de hacer clic.
+:::
+
+---
+
+## Arquitectura de sistemas
+
+<Quiz
+  question="¿Cuál es el principal trade-off al migrar un monolito hacia microservicios?"
+  options={[
+    "Los microservicios siempre son más baratos de operar que un monolito",
+    "Los microservicios eliminan todos los problemas de escalado del monolito sin introducir nuevos",
+    "Un monolito bien estructurado nunca puede escalar horizontalmente",
+    "Ganas independencia de despliegue y escalado granular, pero introduces complejidad operacional: red, consistencia eventual, trazabilidad distribuida y mayor overhead operativo"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Los microservicios aumentan el coste operativo: más contenedores, más pipelines de CI/CD, más infraestructura de observabilidad y equipos para cada servicio.",
+    "Incorrecto. Los microservicios introducen nuevos problemas: consistencia eventual, latencia de red entre servicios, fallos parciales y debug distribuido.",
+    "Incorrecto. Un monolito puede escalar horizontalmente ejecutando múltiples instancias detrás de un load balancer.",
+    "Correcto. La regla habitual: empieza con un monolito bien modularizado. Migra a microservicios cuando el tamaño del equipo, la frecuencia de despliegue independiente o los requisitos de escalado lo justifiquen. La complejidad distribuida tiene un coste real que debe amortizarse."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="Según el teorema CAP, ¿qué debe sacrificar un sistema distribuido durante una partición de red?"
+  options={[
+    "Puede mantener Consistencia, Disponibilidad y tolerancia a Particiones simultáneamente con hardware suficiente",
+    "CAP solo aplica a bases de datos NoSQL; los sistemas SQL no están sujetos a él",
+    "Durante una partición de red debe elegir entre mantener Consistencia o mantener Disponibilidad",
+    "Debe sacrificar la tolerancia a particiones, ya que esta es la propiedad opcional"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El teorema CAP (Brewer, 2000) demuestra matemáticamente que es imposible garantizar las tres propiedades simultáneamente en presencia de partición de red.",
+    "Incorrecto. CAP aplica a cualquier sistema distribuido que almacena estado, independientemente de si usa SQL o NoSQL.",
+    "Correcto. Durante una partición, los nodos no pueden comunicarse. Si priorizas Consistencia (CP): rechazas escrituras hasta que la partición se resuelva (ej. HBase, ZooKeeper). Si priorizas Disponibilidad (AP): aceptas lecturas/escrituras con posible inconsistencia temporal (ej. CouchDB, Cassandra).",
+    "Incorrecto. En sistemas distribuidos reales, las particiones de red ocurren y no son opcionales. P es la restricción que no puedes eliminar; la elección real es entre C y A."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué problema resuelve CQRS y cuándo introduce complejidad innecesaria?"
+  options={[
+    "CQRS garantiza consistencia fuerte en todos los casos; se debe usar siempre",
+    "CQRS reemplaza completamente a Event Sourcing y no pueden coexistir",
+    "CQRS permite separar y optimizar independientemente los modelos de lectura y escritura; introduce complejidad innecesaria en aplicaciones CRUD simples",
+    "CQRS solo es aplicable en sistemas con bases de datos NoSQL"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. CQRS suele ir acompañado de consistencia eventual, no fuerte. No es un patrón universal obligatorio.",
+    "Incorrecto. CQRS y Event Sourcing son patrones complementarios que frecuentemente se usan juntos; ninguno reemplaza al otro.",
+    "Correcto. CQRS separa el modelo de escritura (commands, validaciones, dominio rico) del de lectura (queries, projections desnormalizadas). Beneficia sistemas con carga asimétrica (muchas más lecturas que escrituras) o con modelos de lectura complejos. En CRUD simple, añade capas sin beneficio real.",
+    "Incorrecto. CQRS es un patrón arquitectónico agnóstico a la base de datos; funciona con SQL Server, PostgreSQL, MongoDB, etc."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué es Event Sourcing y cuál es su principal trade-off respecto al almacenamiento tradicional?"
+  options={[
+    "Es un patrón donde se usa un bus de mensajes para comunicar microservicios; su trade-off es la latencia adicional",
+    "Es un sistema de logging que captura errores en producción; su trade-off es el coste de almacenamiento",
+    "Es un patrón donde el estado se deriva de una secuencia de eventos inmutables; su trade-off es que las lecturas del estado actual requieren reproducir todos los eventos",
+    "Es una técnica de replicación de base de datos; su trade-off es la consistencia eventual entre réplicas"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Los buses de mensajes son infraestructura de comunicación, no Event Sourcing. Aunque Event Sourcing puede usarse con buses, son conceptos distintos.",
+    "Incorrecto. Los sistemas de logging no permiten reconstruir el estado de la aplicación; Event Sourcing sí.",
+    "Correcto. En Event Sourcing, en vez de guardar `saldo = 500` guardas los eventos: `DepositoRealizado(200)`, `RetiroRealizado(100)`. El saldo actual se calcula aplicando todos los eventos. Beneficios: auditoría perfecta, viaje en el tiempo, reconstrucción de projections. Trade-off: queries de estado actual complejas (se mitiga con snapshots).",
+    "Incorrecto. La replicación de base de datos es un mecanismo de disponibilidad, no un patrón de modelado del dominio."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿En qué escenario NO es apropiado aplicar CQRS con Event Sourcing?"
+  options={[
+    "En sistemas financieros que requieren auditoría completa de todas las transacciones",
+    "En dominios con reglas de negocio complejas y múltiples agregados que interactúan",
+    "En una aplicación de gestión de inventario simple donde el equipo tiene 2 desarrolladores y tiempo limitado",
+    "En sistemas que necesitan reconstruir el estado del dominio a cualquier punto en el tiempo"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Los sistemas financieros son el caso de uso ideal: Event Sourcing proporciona auditoría perfecta e inmutable de cada operación.",
+    "Incorrecto. Los dominios complejos se benefician de CQRS+ES: el modelo de escritura maneja las invariantes del dominio; el de lectura provee proyecciones optimizadas.",
+    "Correcto. CQRS+ES añade infraestructura significativa: event store, projectors, snapshots, eventual consistency. Un equipo pequeño con un CRUD de inventario pagaría ese coste sin obtener beneficio. El principio YAGNI (You Ain't Gonna Need It) aplica aquí.",
+    "Incorrecto. La capacidad de reproducir el estado a cualquier punto en el tiempo es precisamente uno de los beneficios de Event Sourcing."
+  ]}
+/>
+
+---
+
+## DDD y Clean Architecture
+
+<Quiz
+  question="¿Qué es un Aggregate Root en DDD y cuál es su responsabilidad principal?"
+  options={[
+    "Es la tabla principal de una base de datos relacional desde la que se hacen JOINs",
+    "Es un servicio de dominio que coordina múltiples aggregates en una transacción",
+    "Es el repositorio raíz que centraliza el acceso a todas las entidades del dominio",
+    "Es la entidad que actúa como único punto de entrada para modificar un aggregate, garantizando sus invariantes de negocio"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. El Aggregate Root es un concepto del modelo de dominio, no de base de datos.",
+    "Incorrecto. Coordinar múltiples aggregates es responsabilidad de los Application Services o Sagas; el Aggregate Root maneja su propio aggregate.",
+    "Incorrecto. Los repositorios son infraestructura; el Aggregate Root es una entidad del dominio.",
+    "Correcto. Un `Pedido` como Aggregate Root controla sus `LineaDePedido`. Nadie modifica las líneas directamente; todo pasa por `pedido.AgregarLinea(...)` o `pedido.EliminarLinea(...)`. Así el aggregate puede validar invariantes: total máximo, stock disponible, estado del pedido."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál es la diferencia entre un Domain Event y un Integration Event?"
+  options={[
+    "Son el mismo concepto; el nombre cambia según el framework usado",
+    "Los Integration Events son síncronos; los Domain Events se procesan de forma asíncrona",
+    "Un Domain Event comunica algo ocurrido dentro del bounded context actual; un Integration Event comunica ese hecho a otros bounded contexts",
+    "Los Domain Events se publican a un bus externo como RabbitMQ; los Integration Events son solo in-process"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Son abstracciones con propósitos distintos aunque puedan tener nombres similares.",
+    "Incorrecto. Ambos tipos pueden procesarse síncronamente o asíncronamente dependiendo del diseño.",
+    "Correcto. `PedidoConfirmado` es un Domain Event dentro del bounded context de Pedidos. Para notificar al contexto de Inventario o Facturación, se traduce a un Integration Event (`PedidoConfirmadoIntegrationEvent`) que viaja por el bus de mensajes. Esta separación evita acoplamiento entre contextos.",
+    "Incorrecto. Es al revés: los Domain Events suelen ser in-process (manejados dentro de la misma transacción o via MediatR); los Integration Events viajan por el bus externo."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué define un Bounded Context en DDD?"
+  options={[
+    "El límite físico de un servidor o contenedor de Docker",
+    "El conjunto de entidades que pertenecen a un mismo aggregate",
+    "El límite semántico donde un modelo de dominio específico es coherente y tiene su propio lenguaje ubicuo",
+    "La capa de infraestructura que rodea e implementa el dominio"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Los Bounded Contexts son conceptuales y de diseño; no se definen por infraestructura física.",
+    "Incorrecto. Un aggregate es una unidad de consistencia dentro de un bounded context; no lo define.",
+    "Correcto. En el contexto de Ventas, `Cliente` tiene `historialCompras` y `limiteCredito`. En el contexto de Soporte, `Cliente` tiene `ticketsAbiertos` y `nivelPrioridad`. Son el mismo término pero con semánticas distintas. Cada bounded context tiene su modelo, su lenguaje ubicuo y sus propias reglas.",
+    "Incorrecto. La infraestructura implementa los contratos del dominio; no define los límites semánticos."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="En Clean Architecture, ¿por qué la capa de dominio no debe tener dependencias en EF Core o cualquier ORM?"
+  options={[
+    "Porque EF Core es demasiado lento para ejecutarse en la capa de dominio",
+    "Porque el dominio no necesita acceder a datos por definición",
+    "Para poder cambiar el mecanismo de persistencia sin modificar la lógica de negocio; la regla de dependencia apunta hacia adentro",
+    "Porque EF Core no soporta los patrones de DDD como Value Objects y Entities"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. La razón no es de rendimiento; es de diseño y mantenibilidad.",
+    "Incorrecto. El dominio trabaja con entidades y agregados que sí necesitan datos; los repositorios los proveen mediante interfaces definidas en el dominio.",
+    "Correcto. La Regla de Dependencia de Clean Architecture establece que las dependencias deben apuntar hacia adentro: Infraestructura → Aplicación → Dominio. Si el dominio depende de EF Core, cambiar a Dapper o a una base de datos en memoria para tests requeriría modificar el dominio. Con interfaces de repositorio en el dominio, la implementación de EF Core queda en Infraestructura.",
+    "Incorrecto. EF Core sí soporta Value Objects (Owned Entities), aunque con algunas limitaciones. La razón real es arquitectónica, no de capacidades del ORM."
+  ]}
+/>
+
+---
+
+## Sistemas distribuidos / Microservicios
+
+<Quiz
+  question="¿Qué problema resuelve el patrón Saga en microservicios?"
+  options={[
+    "Garantiza consistencia fuerte entre microservicios usando transacciones distribuidas 2PC",
+    "Sincroniza automáticamente los esquemas de base de datos entre servicios",
+    "Gestiona transacciones de larga duración entre servicios manteniendo consistencia eventual mediante pasos compensatorios",
+    "Implementa load balancing inteligente entre instancias de un mismo servicio"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Las transacciones 2PC (Two-Phase Commit) en microservicios son el antipatrón que Saga viene a reemplazar: 2PC requiere coordinación sincrónica, crea acoplamiento fuerte y tiene problemas de disponibilidad.",
+    "Incorrecto. Los esquemas de base de datos son responsabilidad de cada servicio (Database per Service); Saga no los sincroniza.",
+    "Correcto. Ejemplo: reservar vuelo → reservar hotel → cobrar tarjeta. Si el cobro falla, la Saga ejecuta compensaciones: cancelar hotel → cancelar vuelo. Hay dos variantes: Choreography (servicios se comunican por eventos) y Orchestration (un orquestador central dirige los pasos).",
+    "Incorrecto. El load balancing es responsabilidad de la infraestructura (Kubernetes, Nginx), no del patrón Saga."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿En qué estado pasa a estar un circuit breaker cuando supera el umbral de fallos y qué efecto tiene?"
+  options={[
+    "Pasa a estado 'closed' y deja de enviar todas las requests",
+    "Pasa a estado 'open' y rechaza las requests inmediatamente sin llamar al servicio fallido, permitiendo su recuperación",
+    "Pasa a estado 'half-open' y empieza a reintentar todas las requests con backoff exponencial",
+    "El circuit breaker no tiene estados; simplemente reintenta la operación tres veces"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. 'Closed' es el estado normal (circuito cerrado = corriente fluye = requests pasan).",
+    "Correcto. Los tres estados: Closed (normal), Open (fallo detectado, rechaza requests con un error inmediato sin llamar al servicio), Half-Open (prueba con algunas requests para ver si el servicio se recuperó). Librerías como Polly implementan este patrón en .NET.",
+    "Incorrecto. 'Half-open' es el estado de prueba que ocurre después de un tiempo de espera en 'open', no al superar el umbral.",
+    "Incorrecto. El circuit breaker tiene tres estados bien definidos: closed, open y half-open."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué garantiza el patrón Outbox en microservicios y qué problema específico resuelve?"
+  options={[
+    "Garantiza que los mensajes se procesen en el orden en que fueron enviados",
+    "Garantiza que si la transacción de base de datos se confirma, el evento se publicará al bus de mensajes aunque el proceso falle entre ambas operaciones",
+    "Es una cola de mensajes fallidos (dead letter queue) para reintentar errores",
+    "Garantiza que solo una instancia del servicio procese cada mensaje (exactly-once delivery)"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. El ordenamiento de mensajes es una propiedad del bus (Kafka con particiones, por ejemplo); el Outbox no garantiza orden.",
+    "Correcto. Sin Outbox, existe una ventana de fallo entre `db.SaveChanges()` y `bus.Publish(event)`: si el proceso muere ahí, el dato se guarda pero el evento nunca se publica. Outbox escribe el evento en una tabla de la misma base de datos en la misma transacción. Un proceso separado lee esa tabla y publica los eventos, garantizando atomicidad.",
+    "Incorrecto. La dead letter queue es un concepto de los buses de mensajes para mensajes que no pueden procesarse; el Outbox opera en el lado del productor.",
+    "Incorrecto. Exactly-once delivery es una garantía del consumer (mediante idempotencia); el Outbox garantiza at-least-once desde el productor."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué es idempotencia en el procesamiento de mensajes y por qué es crítica en sistemas distribuidos?"
+  options={[
+    "Es la capacidad de procesar mensajes en paralelo sin condiciones de carrera",
+    "Es la garantía de que los mensajes llegan en el mismo orden en que se enviaron",
+    "Es la propiedad de que procesar el mismo mensaje múltiples veces produce el mismo resultado que procesarlo una sola vez",
+    "Es la capacidad de un servicio de recuperarse automáticamente tras un fallo sin intervención humana"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El procesamiento paralelo sin condiciones de carrera es sobre concurrencia, no idempotencia.",
+    "Incorrecto. El orden de mensajes es una propiedad del sistema de mensajería, no de la idempotencia.",
+    "Correcto. En sistemas distribuidos, los mensajes pueden entregarse más de una vez (at-least-once delivery). Si procesar `CobrarTarjeta(100)` dos veces cobra 200, hay un bug grave. Con idempotencia, la segunda ejecución detecta que ya se procesó (por un `idempotencyKey` en base de datos) y retorna el mismo resultado sin efecto secundario.",
+    "Incorrecto. La auto-recuperación es resiliencia; la idempotencia es sobre el efecto de operaciones repetidas."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál es la diferencia fundamental entre comunicación síncrona y asíncrona entre microservicios?"
+  options={[
+    "La comunicación síncrona (REST) es siempre más rápida que la asíncrona (mensajes)",
+    "La comunicación asíncrona no garantiza la entrega de mensajes en ningún caso",
+    "gRPC solo puede usarse para comunicación asíncrona; REST solo para síncrona",
+    "En la síncrona el emisor espera la respuesta acoplándose temporalmente; en la asíncrona el emisor continúa sin esperar, mejorando el desacoplamiento y la resiliencia"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. La velocidad depende de la latencia y el throughput requerido. Para alta carga con picos, la asíncrona puede ser más eficiente al absorber ráfagas.",
+    "Incorrecto. Los brokers modernos (Kafka, RabbitMQ) con persistencia garantizan at-least-once delivery e incluso exactly-once en algunos casos.",
+    "Incorrecto. gRPC soporta tanto comunicación síncrona (unary) como asíncrona (streaming). REST también puede usarse con webhooks o polling para patrones asíncronos.",
+    "Correcto. Con REST síncrono: si el servicio B tarda, el A espera (acoplamiento temporal); si B falla, A falla. Con mensajería asíncrona: A publica un evento y continúa; B lo procesa cuando puede. Mejora la resiliencia y permite absorber picos de carga con backpressure."
+  ]}
+/>
+
+---
+
+## Performance y concurrencia
+
+<Quiz
+  question="¿Cuál es la diferencia entre una operación CPU-bound y una I/O-bound, y cómo afecta al diseño con async/await?"
+  options={[
+    "Las operaciones I/O-bound siempre son más lentas; las CPU-bound pueden ser rápidas o lentas",
+    "`async/await` solo mejora el rendimiento en operaciones CPU-bound; para I/O es irrelevante",
+    "Una operación CPU-bound usa el procesador intensivamente; una I/O-bound espera recursos externos. `async/await` libera el hilo durante la espera I/O; para CPU-bound se necesita `Task.Run`",
+    "No hay diferencia práctica; ambos tipos se benefician igual de `async/await`"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. La diferencia no es de velocidad sino de dónde se gasta el tiempo: en CPU o esperando E/S.",
+    "Incorrecto. Es al revés: `async/await` nativo beneficia directamente las operaciones I/O-bound. Para CPU-bound, `async/await` solo no ayuda; hay que paralelizar con `Task.Run` o `Parallel`.",
+    "Correcto. I/O-bound (llamada a BD, HTTP, disco): el hilo se libera durante la espera con `await`, permitiendo servir otras requests. CPU-bound (cálculos matemáticos, compresión): el hilo está ocupado; `async/await` solo no lo libera. Se necesita `await Task.Run(() => CalculoCostoso())` para mover el trabajo a un thread pool thread.",
+    "Incorrecto. La diferencia es fundamental para entender cuándo usar qué herramienta de concurrencia."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué puede causar un deadlock en una aplicación ASP.NET Framework al usar async/await incorrectamente?"
+  options={[
+    "Usar demasiados `await` seguidos en el mismo método async",
+    "Llamar `.Result` o `.Wait()` en una Task cuyo código necesita reanudar en el SynchronizationContext original, que ya está bloqueado esperando la Task",
+    "Usar `ConfigureAwait(true)` en métodos async de una librería",
+    "Tener más de 10 tareas async ejecutándose simultáneamente"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Múltiples `await` en un método son el patrón correcto; no causan deadlock.",
+    "Correcto. Escenario clásico en ASP.NET Framework: el request thread llama `.Result` en una Task (bloquea el thread). La Task necesita reanudar en el SynchronizationContext (que tiene un solo thread). Deadlock: el thread está bloqueado esperando la Task; la Task no puede reanudar porque el thread está bloqueado. Solución: `await` en toda la cadena, o `ConfigureAwait(false)` en la librería.",
+    "Incorrecto. `ConfigureAwait(true)` es el valor por defecto y no causa deadlock en aplicaciones normales. El problema surge en librerías que no usan `ConfigureAwait(false)`.",
+    "Incorrecto. El número de tareas concurrentes no causa deadlock por sí solo."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué es `SemaphoreSlim` y cuándo es la herramienta correcta frente a `lock`?"
+  options={[
+    "Es un mutex exclusivo del sistema operativo para sincronización entre procesos",
+    "Es equivalente a `lock` pero con sintaxis más moderna; siempre uno reemplaza al otro",
+    "Es una clase para gestionar el pool de conexiones de SQL Server",
+    "Es un primitivo de sincronización que limita el número de accesos concurrentes a un recurso y soporta operaciones async, a diferencia de `lock` que bloquea el hilo"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. `SemaphoreSlim` es in-process. Para sincronización entre procesos existe `Semaphore` (sin Slim) que usa recursos del sistema operativo.",
+    "Incorrecto. `lock` es exclusivo (un solo acceso a la vez); `SemaphoreSlim` puede configurarse para permitir N accesos concurrentes.",
+    "Incorrecto. El pool de conexiones es gestionado por el ADO.NET driver o el conector de BD.",
+    "Correcto. `lock` bloquea el thread, lo que es un problema en código async (bloquear un thread del pool es costoso). `SemaphoreSlim` con `await semaphore.WaitAsync()` libera el thread mientras espera. Ejemplo: limitar a 5 llamadas concurrentes a una API externa."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué estrategia previene el problema del 'thundering herd' cuando expira una entrada de caché popular?"
+  options={[
+    "Aumentar el TTL de todas las entradas de caché al máximo posible",
+    "Eliminar la caché y consultar siempre la base de datos directamente",
+    "Usar un lock/mutex para que solo un proceso regenere la caché mientras los demás esperan con el valor stale, o aplicar probabilistic early expiration",
+    "El problema no existe si se usa Redis en lugar de caché en memoria"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. TTL indefinido crea datos obsoletos permanentes; no resuelve el thundering herd, lo pospone.",
+    "Incorrecto. Eliminar la caché elimina el problema de invalidación pero destruye el beneficio de rendimiento.",
+    "Correcto. Thundering herd: miles de requests llegan simultáneamente cuando expira la caché, todas van a la BD a la vez y la saturan. Solución 1: Lock con valor stale (una request regenera; las otras esperan o usan el valor viejo). Solución 2: Probabilistic early expiration (algunas requests regeneran antes de que expire para evitar el pico). Solución 3: Background refresh antes del TTL.",
+    "Incorrecto. El thundering herd ocurre independientemente del motor de caché; el problema es el patrón de acceso, no la tecnología."
+  ]}
+/>
+
+---
+
+## Seguridad
+
+<Quiz
+  question="¿Qué es BOLA (Broken Object Level Authorization) y cómo se mitiga?"
+  options={[
+    "Es un ataque de inyección SQL a través de parámetros de URL; se mitiga con prepared statements",
+    "Es un fallo donde el JWT tiene una firma inválida; se mitiga verificando la firma en cada request",
+    "Es un ataque DDoS a nivel de API; se mitiga con rate limiting",
+    "Es una vulnerabilidad donde un usuario accede o modifica objetos de otros usuarios cambiando el ID en la request; se mitiga verificando autorización a nivel de objeto en cada operación"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. La inyección SQL es una vulnerabilidad diferente (A03 en OWASP Top 10).",
+    "Incorrecto. La validación de firma JWT protege la autenticación, no la autorización a nivel de objeto.",
+    "Incorrecto. El rate limiting protege contra abuso y DDoS, no contra acceso a objetos de otros usuarios.",
+    "Correcto. BOLA es el #1 en OWASP API Security Top 10. Ejemplo: `GET /api/facturas/12345` retorna la factura de otro usuario si el servidor no verifica que `facturaId` pertenece al usuario autenticado. Mitigación: siempre filtrar por `WHERE id = @id AND userId = @currentUserId`."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Dónde es más seguro almacenar un JWT de refresh en una SPA y por qué?"
+  options={[
+    "En `localStorage` porque persiste entre sesiones y es fácil de acceder",
+    "En el estado de Redux o Zustand para acceso rápido desde cualquier componente",
+    "En `sessionStorage` porque se borra automáticamente al cerrar la pestaña",
+    "En una cookie `HttpOnly` y `Secure` porque el JavaScript del cliente no puede leerla, reduciendo la superficie de ataque de XSS"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. `localStorage` es accesible desde JavaScript: cualquier script XSS puede robar el token con `localStorage.getItem('token')`.",
+    "Incorrecto. El estado de Redux está en memoria JavaScript, igual de vulnerable a XSS que localStorage.",
+    "Incorrecto. `sessionStorage` también es accesible desde JavaScript; solo limita la duración, no el vector de ataque XSS.",
+    "Correcto. `HttpOnly` impide que JavaScript acceda a la cookie (el XSS no puede robarla). `Secure` asegura que solo se envíe por HTTPS. Para mitigar CSRF (el otro vector de ataque de las cookies), se combina con `SameSite=Strict` o tokens CSRF."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué es un ataque CSRF y cuál es la mitigación más efectiva en APIs modernas?"
+  options={[
+    "Es un ataque donde se inyecta código malicioso en HTML; la mitigación es Content Security Policy",
+    "Es un ataque de fuerza bruta contra contraseñas; la mitigación es rate limiting con bloqueo de cuentas",
+    "Es un ataque de man-in-the-middle en la red; la mitigación es HTTPS obligatorio",
+    "Es un ataque donde un sitio malicioso hace que el navegador ejecute requests a otra aplicación usando las cookies del usuario; la mitigación es `SameSite=Strict` en cookies y/o tokens CSRF"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Inyección de código en HTML es XSS (Cross-Site Scripting); CSP mitiga XSS, no CSRF.",
+    "Incorrecto. El rate limiting mitiga fuerza bruta y DDoS, no CSRF.",
+    "Incorrecto. HTTPS mitiga man-in-the-middle; no protege contra CSRF que explota la confianza del servidor en el navegador del usuario.",
+    "Correcto. CSRF funciona porque el navegador envía cookies automáticamente a cualquier request al dominio destino. Con `SameSite=Strict` las cookies no se envían en requests cross-origin. Para APIs que usan JWT en headers (Authorization: Bearer), CSRF no aplica porque los headers no se envían automáticamente por el navegador."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué protege el rate limiting y cómo se implementa de forma distribuida?"
+  options={[
+    "Protege la integridad de datos en transacciones concurrentes; se implementa con locks en SQL",
+    "Protege contra ataques XSS limitando el tamaño de los inputs; se implementa con validación de modelos",
+    "Protege contra abuso, scraping y ataques DDoS limitando requests por cliente en un período; en entornos distribuidos requiere Redis como contador compartido entre instancias",
+    "Protege contra inyección SQL limitando el número de queries simultáneas; se implementa con connection pooling"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Los locks en SQL protegen la consistencia transaccional, no el abuso de API.",
+    "Incorrecto. La validación de inputs protege contra XSS e inyecciones; el rate limiting es sobre frecuencia de requests.",
+    "Correcto. Rate limiting en una sola instancia es trivial (contador en memoria). En un cluster de N instancias, cada una tiene su propio contador: un cliente puede hacer 10x el límite haciendo una request a cada instancia. Con Redis como contador centralizado (`INCR key EX 60`), el límite se aplica correctamente sin importar qué instancia responde.",
+    "Incorrecto. El connection pooling gestiona conexiones a base de datos; no está relacionado con el abuso de API."
+  ]}
+/>
+
+---
+
+## Observabilidad y DevOps
+
+<Quiz
+  question="¿Qué diferencia hay entre logs, métricas y trazas distribuidas en el contexto de observabilidad?"
+  options={[
+    "Son tres formatos distintos del mismo tipo de dato; se puede usar cualquiera según preferencia",
+    "Los logs son más detallados; las métricas son menos importantes; las trazas son opcionales",
+    "Las trazas solo se usan en microservicios; los logs son suficientes para monolitos",
+    "Los logs registran eventos discretos; las métricas son valores numéricos agregados en el tiempo; las trazas siguen el flujo de una request a través de múltiples servicios"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Los tres pilares tienen propósitos distintos y se complementan; no son intercambiables.",
+    "Incorrecto. Los tres tienen igual importancia en sistemas de producción; ninguno es opcional en sistemas críticos.",
+    "Incorrecto. Las trazas distribuidas son más importantes en microservicios, pero los monolitos también se benefician de trazas para entender flujos de ejecución complejos.",
+    "Correcto. Logs (Serilog/ELK): 'Error al procesar el pedido 123 a las 14:23'. Métricas (Prometheus/Grafana): 'requests por segundo, latencia P99, CPU usage'. Trazas (OpenTelemetry/Jaeger): la request llegó al API Gateway a t=0ms, llegó al servicio de Pedidos a t=5ms, llamó a BD a t=8ms y tardó 12ms. Cada pilar responde preguntas distintas."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál es la diferencia entre un liveness probe y un readiness probe en Kubernetes?"
+  options={[
+    "Son equivalentes; Kubernetes los usa alternando entre uno y otro",
+    "El readiness probe solo se ejecuta una vez al iniciar el pod; el liveness probe se ejecuta continuamente",
+    "El liveness probe verifica conectividad de red; el readiness probe verifica que el disco tenga espacio suficiente",
+    "El liveness probe determina si el contenedor sigue vivo (fallo = reiniciar); el readiness probe determina si está listo para recibir tráfico (fallo = retirar del load balancer)"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Son probes con propósitos y efectos distintos que operan simultáneamente.",
+    "Incorrecto. Ambos probes se ejecutan periódicamente durante toda la vida del pod.",
+    "Incorrecto. Los probes verifican el estado de la aplicación, no recursos del sistema operativo directamente.",
+    "Correcto. Liveness: `/health/live` verifica que la app no está en deadlock o estado corrupto irrecuperable. Si falla, K8s mata y reinicia el contenedor. Readiness: `/health/ready` verifica que la app puede atender tráfico (BD conectada, caché caliente). Si falla, K8s retira el pod del Service sin reiniciarlo, esperando a que se recupere."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué es un SLO (Service Level Objective) y cómo se relaciona con el error budget?"
+  options={[
+    "Es un contrato legal vinculante entre el proveedor de nube y el cliente sobre disponibilidad garantizada",
+    "Es el tiempo máximo de respuesta garantizado para el percentil 99 de todas las requests",
+    "Es un objetivo interno y medible de fiabilidad del servicio; el error budget es la cantidad de tiempo que el sistema puede fallar dentro del SLO antes de que se priorice la fiabilidad sobre las features",
+    "Es la capacidad máxima de requests por segundo configurada en el load balancer"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Un SLA (Service Level Agreement) es el contrato legal externo. Un SLO es el objetivo interno que suele ser más estricto que el SLA.",
+    "Incorrecto. El SLO puede medir latencia, disponibilidad, tasa de errores u otras métricas; no está limitado a latencia.",
+    "Correcto. Si el SLO es 99.9% de disponibilidad mensual, el error budget es ~43 minutos de caída permitida. Si el equipo gasta ese presupuesto, las reglas del framework SRE dicen: detener deployments de features y priorizar fiabilidad hasta reponer el budget.",
+    "Incorrecto. La capacidad de requests es una configuración de infraestructura, no un objetivo de nivel de servicio."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué ventaja aporta el structured logging (logging estructurado) sobre el logging de texto plano?"
+  options={[
+    "Genera archivos de log considerablemente más pequeños en disco",
+    "Es más legible para humanos directamente en la terminal",
+    "No requiere configuración adicional; funciona con cualquier logger por defecto",
+    "Permite buscar, filtrar y correlacionar logs por campos específicos en herramientas como Elasticsearch, Splunk o Datadog"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. El logging estructurado en JSON suele generar más bytes por entrada, no menos.",
+    "Incorrecto. El JSON estructurado es menos legible para humanos directamente en terminal; se gana en parseabilidad por máquinas.",
+    "Incorrecto. El logging estructurado requiere configuración (Serilog, OpenTelemetry) y un destino que lo soporte.",
+    "Correcto. Con texto plano, buscar todos los logs del pedido 12345 requiere grep con regex frágiles. Con structured logging en JSON: `{ orderId: 12345, userId: 99, level: 'Error' }`, puedes filtrar exactamente por `orderId = 12345` en Kibana o Splunk, correlacionar con trazas y crear alertas sobre campos específicos."
+  ]}
+/>
+
+---
+
+## Liderazgo técnico
+
+<Quiz
+  question="¿Qué es un ADR (Architecture Decision Record) y cuándo debe crearse uno?"
+  options={[
+    "Es un reporte automático generado por herramientas de análisis de código con deuda técnica",
+    "Es un ticket de JIRA obligatorio para cualquier cambio en el código",
+    "Es un diagrama de arquitectura que se actualiza automáticamente con cada PR",
+    "Es un documento que registra una decisión arquitectónica significativa, su contexto, opciones evaluadas y consecuencias; se crea cuando la decisión es difícil de revertir o afecta a múltiples equipos"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Los ADRs los escriben los ingenieros manualmente; no son generados automáticamente.",
+    "Incorrecto. No todos los cambios requieren ADR; solo las decisiones arquitectónicas con impacto significativo.",
+    "Incorrecto. Los diagramas de arquitectura son artefactos distintos; los ADRs son documentos de razonamiento y contexto.",
+    "Correcto. Un buen ADR tiene secciones: Contexto (por qué hay que decidir), Decisión (qué elegimos), Estado (propuesto/aceptado/obsoleto), Consecuencias (pros, contras, riesgos). Ejemplo: elegir entre RabbitMQ y Kafka para el sistema de mensajería. Los ADRs explican el 'por qué' que el código no puede expresar."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cómo debe gestionarse la deuda técnica de forma efectiva en un equipo de producto?"
+  options={[
+    "Nunca debe crearse deuda técnica; toda tarea debe implementarse perfectamente desde el inicio",
+    "La deuda técnica solo debe atenderse cuando causa incidentes en producción",
+    "Solo el arquitecto principal puede decidir cuándo y cómo pagar la deuda técnica",
+    "Documentarla explícitamente, hacerla visible al negocio en términos de coste, priorizarla junto con features y asignar tiempo regular (ej. 20% del sprint) para reducirla gradualmente"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. La deuda técnica deliberada y consciente (ej. simplificar para lanzar más rápido y pagar después) es una herramienta válida de gestión de producto.",
+    "Incorrecto. Esperar a incidentes convierte deuda técnica en deuda de emergencia, con mayor coste y estrés.",
+    "Incorrecto. La deuda técnica afecta a todo el equipo; debe gestionarse colectivamente con visibilidad del negocio.",
+    "Correcto. La deuda técnica no documentada es invisible al negocio y se acumula hasta hacerse inmanejable. Hacerla visible (backlog con impacto estimado en velocidad) permite a la dirección tomar decisiones informadas. El tiempo regular de refactoring previene que la deuda compounds a interés compuesto."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál es el criterio principal para tomar la decisión 'build vs buy' en un componente de software?"
+  options={[
+    "Siempre es mejor comprar o usar open source para ahorrar tiempo de desarrollo",
+    "Siempre es mejor construir para tener control total sobre el código y evitar dependencias externas",
+    "La decisión depende únicamente del presupuesto disponible en el trimestre",
+    "Construir si el componente es diferenciador de negocio o tiene requisitos únicos; comprar/adoptar si es infraestructura genérica con soluciones maduras disponibles"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Comprar siempre ignora los casos donde las soluciones disponibles no encajan en los requisitos únicos del negocio o donde construir da ventaja competitiva.",
+    "Incorrecto. Construir todo crea dependencias de mantenimiento masivas y distrae al equipo de lo que realmente diferencia al producto.",
+    "Incorrecto. El presupuesto es un factor, pero no el principal. Un componente diferenciador puede justificar inversión aunque sea caro.",
+    "Correcto. ¿Tu empresa compite en authentication o en el dominio de negocio? Compra Auth0. ¿Compite en observabilidad? Compra Datadog. ¿Compite en recomendaciones personalizadas? Construye el algoritmo. La regla: buy commodity, build differentiator."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué hace que un proceso de code review sea efectivo y aporte valor real al equipo?"
+  options={[
+    "Aprobar todos los PRs rápidamente para no bloquear la velocidad del equipo",
+    "Revisar solo los PRs grandes e ignorar los cambios pequeños por ser de bajo riesgo",
+    "Solo el desarrollador más senior del equipo debe hacer code reviews para garantizar calidad",
+    "Focalizarse en corrección, diseño y transferencia de conocimiento; dejar comentarios constructivos con alternativas concretas y contexto, no solo señalar problemas"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Aprobar sin revisar solo da apariencia de proceso; no detecta bugs, antipatrones ni deuda técnica.",
+    "Incorrecto. Los cambios pequeños pueden tener alto impacto (configuraciones, dependencias, cambios de API pública). Además, los PRs pequeños son más fáciles de revisar bien.",
+    "Incorrecto. Los code reviews son una herramienta de aprendizaje distribuido; todos deben participar. Limitarlos a un solo revisor crea cuellos de botella y concentra el conocimiento en una persona.",
+    "Correcto. Un buen code review no es una auditoría; es una conversación técnica. En vez de 'esto está mal', escribe 'Considera usar X porque Y; aquí hay un ejemplo'. Las revisiones deben comentar el código, no la persona. El objetivo es mejorar el código y distribuir el conocimiento del sistema."
+  ]}
+/>

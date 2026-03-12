@@ -1,0 +1,918 @@
+---
+id: preguntas
+title: 🎯 Banco de Preguntas — Senior
+sidebar_position: 99
+---
+
+import Quiz from '@site/src/components/Quiz';
+
+# 🎯 Banco de Preguntas — Senior
+
+Preguntas de opción múltiple para evaluar conocimientos de nivel Senior en .NET, arquitectura distribuida, cloud y liderazgo técnico. Cubre trade-offs reales, patrones de diseño y decisiones de arquitectura que se discuten en entrevistas senior.
+
+:::tip Cómo usar este banco
+Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones detallan **por qué** la respuesta correcta es correcta y por qué las demás están mal.
+:::
+
+---
+
+## Arquitectura
+
+<Quiz
+  question="¿Cuándo es recomendable empezar con un monolito modular en lugar de microservicios?"
+  options={[
+    "Solo cuando el equipo tiene menos de 5 personas",
+    "Cuando el dominio no está completamente definido, el equipo es pequeño y la velocidad de iteración es prioritaria",
+    "Cuando el sistema requiere alta disponibilidad y escalabilidad desde el primer día",
+    "Cuando el proyecto usa tecnologías heterogéneas (Python, Java, .NET) por dominio"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "El tamaño del equipo es uno de los factores, no el único. Incluso equipos medianos pueden beneficiarse de un monolito modular cuando el dominio es incierto.",
+    "Correcto. Con dominio incierto y equipo pequeño, un monolito modular permite iterar rápido sin el overhead operacional de microservicios. La regla: empieza con módulos bien delimitados sin dependencias cruzadas y extrae servicios cuando tengas razones concretas: SLAs distintos, escala diferenciada, o equipos que necesitan deploys independientes (Ley de Conway).",
+    "Alta disponibilidad se logra con múltiples instancias del monolito detrás de un load balancer. No requiere microservicios para conseguirla.",
+    "El uso de tecnologías heterogéneas es una razón para considerar microservicios, no para monolito. Esta opción justificaría la dirección contraria."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué problema principal resuelve CQRS y cuál es su trade-off más significativo?"
+  options={[
+    "Elimina la necesidad de base de datos relacional al combinarse con Event Sourcing",
+    "Separa el modelo de escritura del de lectura para optimizarlos independientemente, a costa de mayor complejidad y eventual consistency",
+    "Resuelve la autenticación distribuida entre microservicios mediante tokens compartidos",
+    "Garantiza consistencia fuerte entre servicios sin necesidad de transacciones distribuidas"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "CQRS no elimina bases de datos relacionales ni requiere Event Sourcing. Son patrones complementarios pero totalmente independientes.",
+    "Correcto. El Write Side usa un modelo normalizado enfocado en invariantes de negocio. El Read Side usa proyecciones desnormalizadas optimizadas para las consultas específicas. El trade-off: sincronización entre ambos lados introduce eventual consistency y requiere más infraestructura (dos modelos, posiblemente dos bases de datos).",
+    "CQRS no tiene relación con autenticación ni distribución de tokens JWT. Es un patrón de segregación de responsabilidades de lectura y escritura.",
+    "CQRS introduce eventual consistency entre el modelo de escritura y el de lectura. No garantiza consistencia fuerte; en realidad hace lo contrario."
+  ]}
+/>
+
+<Quiz
+  question="En el teorema CAP, durante una partición de red en un sistema distribuido, ¿qué determina si debes elegir CP o AP?"
+  options={[
+    "Siempre CP, porque la consistencia es fundamental en cualquier sistema serio",
+    "Siempre AP, porque un sistema no disponible es inútil para los usuarios",
+    "El dominio del negocio: sistemas financieros y de salud prefieren CP; redes sociales y catálogos prefieren AP",
+    "La tecnología de base de datos: SQL siempre CP, NoSQL siempre AP"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "No siempre CP. En muchos dominios como catálogos de productos o timelines sociales, devolver un dato levemente desactualizado es aceptable y preferible a una interrupción del servicio.",
+    "No siempre AP. En transacciones bancarias o registros médicos, devolver o aceptar datos inconsistentes puede tener consecuencias graves. Una indisponibilidad breve es preferible a un dato incorrecto.",
+    "Correcto. CP (Consistency + Partition tolerance) es adecuado cuando la inconsistencia tiene consecuencias graves: sistemas bancarios, de salud, o de inventario con stock real. AP (Availability + Partition tolerance) es preferido cuando la eventual consistency es aceptable: feeds sociales, catálogos, carritos de compra. La elección es de negocio, no técnica.",
+    "Falso. MySQL puede configurarse como AP con replicación eventual. MongoDB puede operar en modo CP con write concern majority. La tecnología no determina la elección CAP; la configuración y el dominio sí."
+  ]}
+/>
+
+<Quiz
+  question="¿En qué escenario tiene valor real implementar Event Sourcing?"
+  options={[
+    "En cualquier aplicación CRUD para tener historial automático de cambios",
+    "Solo cuando se usa junto con CQRS y Kafka en arquitecturas de microservicios",
+    "Cuando el dominio requiere auditoría completa, reproducir el estado en cualquier punto del tiempo o derivar múltiples proyecciones del mismo flujo de eventos",
+    "Cuando la base de datos no soporta transacciones ACID y necesitas consistencia eventual"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Event Sourcing en CRUDs simples agrega complejidad sin beneficio real. Para historial básico, una tabla de auditoría con columnas CreatedAt y UpdatedAt es suficiente y mucho más simple.",
+    "Event Sourcing puede usarse sin CQRS ni Kafka. Son patrones complementarios pero independientes. No son prerrequisitos entre sí.",
+    "Correcto. Event Sourcing brilla en dominios como finanzas (cada transacción es un evento inmutable), sistemas de salud (historial de acciones médicas), cadena de suministro o sistemas legales. Permite reproducir el estado exacto en cualquier momento pasado, auditar cada cambio con plena trazabilidad, y derivar nuevas proyecciones reprocesando el historial de eventos.",
+    "Event Sourcing no resuelve la falta de soporte ACID. Si la base de datos no soporta transacciones, el problema se resuelve cambiando de motor de base de datos, no añadiendo Event Sourcing."
+  ]}
+/>
+
+---
+
+## Clean Architecture y DDD
+
+<Quiz
+  question="¿Cuál es el propósito principal de un Aggregate Root en Domain-Driven Design?"
+  options={[
+    "Que todos los objetos del dominio sean inmutables y no expongan setters públicos",
+    "Ser el único punto de entrada al cluster de entidades del aggregate, garantizando que las invariantes de negocio siempre se respeten",
+    "Que cada aggregate tenga exactamente una tabla correspondiente en la base de datos",
+    "Evitar el uso de repositorios externos al encapsular el acceso a datos internamente"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "La inmutabilidad es característica de los Value Objects, no del Aggregate Root. Las entidades del aggregate pueden mutar su estado, pero solo a través del Aggregate Root.",
+    "Correcto. El Aggregate Root es el guardián de las reglas de negocio. Por ejemplo, un Pedido como Aggregate Root expone métodos como AgregarItem() o Confirmar() que verifican invariantes antes de mutar el estado interno. El exterior nunca accede directamente a PedidoItem, solo a Pedido. Esto garantiza que el aggregate siempre esté en un estado consistente. Un aggregate equivale a una transacción de base de datos.",
+    "Un aggregate puede persistirse en múltiples tablas (Pedido y PedidoItems). La regla es que se carga y guarda completo como unidad, no que tenga una sola tabla.",
+    "El Aggregate Root no evita el uso de repositorios. El patrón Repository sigue usándose, pero opera sobre el Aggregate Root como unidad completa, nunca sobre entidades internas directamente."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia clave entre un Domain Event y un Integration Event?"
+  options={[
+    "Son lo mismo; solo difieren en el nombre según el contexto arquitectónico que los usa",
+    "Los Domain Events viajan por HTTP; los Integration Events viajan por message brokers",
+    "Los Domain Events son internos al bounded context y se procesan en la misma transacción o inmediatamente; los Integration Events cruzan límites de servicios de forma asíncrona",
+    "Los Domain Events solo existen en Event Sourcing; los Integration Events son exclusivos de CQRS"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "No son lo mismo. Tienen propósitos, alcances y ciclos de vida completamente distintos. Confundirlos lleva a diseños incorrectos.",
+    "Los Domain Events no viajan por HTTP; se despachan en memoria dentro del mismo proceso, normalmente con MediatR o un dispatcher propio. Los Integration Events sí usan brokers, pero esa no es la única diferencia importante.",
+    "Correcto. Un Domain Event como PedidoConfirmadoEvent señala algo significativo que ocurrió en el dominio y se procesa dentro del mismo bounded context, en la misma transacción de base de datos o justo después. Un Integration Event como PedidoConfirmadoIntegrationEvent notifica a otros servicios (NotificacionesService, FacturacionService) de forma asíncrona mediante Service Bus o RabbitMQ.",
+    "Los Domain Events existen en cualquier diseño DDD, con o sin Event Sourcing. Los Integration Events son independientes de CQRS y aparecen siempre que servicios necesitan comunicarse."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia fundamental entre un Value Object y una Entity en DDD?"
+  options={[
+    "Un Value Object es inmutable; una Entity puede cambiar su estado. Esta es la única diferencia relevante",
+    "Las Entities se identifican por sus atributos (igualdad estructural); los Value Objects tienen identidad única que persiste",
+    "Los Value Objects se identifican por sus atributos (igualdad estructural) y son inmutables; las Entities tienen identidad propia que persiste a lo largo de los cambios de estado",
+    "Los Value Objects solo pueden ser tipos primitivos como string o int encapsulados en una clase"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "La inmutabilidad es una consecuencia del diseño, no la única diferencia. La distinción conceptual más importante es la identidad: los Value Objects no tienen identidad propia independiente de sus atributos.",
+    "Esto está invertido. Las Entities tienen identidad única (un ID que persiste). Los Value Objects se comparan por igualdad de sus atributos, no por identidad.",
+    "Correcto. Dinero(100, USD) es igual a otro Dinero(100, USD) aunque sean instancias distintas, porque se comparan por valor estructural. Una Persona con Id=42 sigue siendo la misma Persona aunque cambie su nombre o dirección. Los Value Objects como Dinero, Direccion o Email encapsulan conceptos del dominio sin necesidad de identidad persistente.",
+    "Falso. Un Value Object puede ser una clase compleja como Direccion con calle, ciudad, código postal y país, o RangoDeFechas con inicio y fin, incluyendo lógica de negocio como validaciones y operaciones."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué define los límites de un Bounded Context en DDD?"
+  options={[
+    "Los límites físicos de los microservicios desplegados en producción",
+    "El lenguaje ubicuo compartido y el modelo de dominio coherente que lo expresa, generalmente alineado con fronteras organizacionales",
+    "La base de datos que utiliza cada servicio como almacenamiento principal",
+    "Los repositorios Git donde reside el código fuente de cada módulo"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Los microservicios son una forma de implementar bounded contexts, pero no los definen. Se puede tener un bounded context como módulo dentro de un monolito sin necesidad de despliegue separado.",
+    "Correcto. Un Bounded Context es el ámbito dentro del cual un modelo de dominio específico y su lenguaje ubicuo tienen significado coherente. El término Pedido en el contexto de Ventas tiene atributos distintos al Pedido en Logística. Los límites suelen coincidir con equipos independientes (Ley de Conway) y capacidades de negocio diferenciadas.",
+    "La base de datos es un detalle de implementación. Dos bounded contexts pueden compartir una base de datos física (aunque no es ideal) o un bounded context puede usar múltiples bases de datos.",
+    "Los repositorios Git son una consecuencia organizacional, no la definición del bounded context. Este se define por el dominio y el lenguaje, no por la infraestructura de código."
+  ]}
+/>
+
+---
+
+## Microservicios Distribuidos
+
+<Quiz
+  question="¿Por qué se prefiere Saga sobre 2PC (Two-Phase Commit) para transacciones distribuidas entre microservicios?"
+  options={[
+    "Porque Saga garantiza consistencia fuerte igual que 2PC pero sin coordinador central",
+    "Porque 2PC es técnicamente imposible de implementar en microservicios modernos",
+    "Porque 2PC requiere que todos los servicios estén disponibles simultáneamente y bloquea recursos durante la transacción; Saga acepta eventual consistency con compensating transactions",
+    "Porque Saga es más fácil de implementar y no requiere diseñar operaciones de rollback"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Saga no garantiza consistencia fuerte. Acepta eventual consistency mediante compensating transactions. Es un enfoque diferente, no un equivalente de 2PC.",
+    "2PC es técnicamente posible pero tiene serios problemas de disponibilidad y acoplamiento. No es imposible; es poco práctico en sistemas distribuidos de alta disponibilidad.",
+    "Correcto. 2PC requiere que un coordinador central bloquee recursos en todos los participantes hasta que la transacción se complete. Si un servicio está caído o lento, toda la transacción queda bloqueada. Saga divide la transacción en pasos locales independientes; si un paso falla, ejecuta compensating transactions para deshacer los anteriores. Se implementa por coreografía (cada servicio reacciona a eventos) u orquestación (un coordinador dirige el flujo).",
+    "Saga es más compleja que 2PC en muchos aspectos. Las compensating transactions requieren diseño cuidadoso y los estados intermedios visibles deben ser tolerados por las reglas del negocio."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué problema resuelve el patrón Circuit Breaker y cómo pasa del estado Open al estado Half-Open?"
+  options={[
+    "Resuelve la autenticación entre servicios; pasa a Half-Open cuando expira el token de servicio",
+    "Previene que fallos en cascada agoten los recursos del servicio llamante; pasa a Half-Open tras un timeout configurable para probar si el servicio remoto se recuperó",
+    "Balancea la carga entre instancias; pasa a Half-Open cuando detecta que una instancia tiene menos carga",
+    "Encripta las llamadas entre servicios; pasa a Half-Open cuando se renueva el certificado TLS"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "El Circuit Breaker no maneja autenticación. Eso es responsabilidad de mTLS, tokens de servicio o el API Gateway.",
+    "Correcto. Sin Circuit Breaker, si ServicioA llama a ServicioB que está caído, los threads de A se bloquean esperando timeouts, agotando el pool y propagando el fallo en cascada. El Circuit Breaker tiene tres estados: Closed (todo OK, las llamadas pasan), Open (fallo detectado, rechaza requests inmediatamente sin llamar al servicio remoto), y Half-Open (tras un timeout configurable, deja pasar una request de prueba: si tiene éxito vuelve a Closed; si falla vuelve a Open). En .NET, Polly es la librería estándar.",
+    "El balanceo de carga es responsabilidad de un Load Balancer o service mesh. El Circuit Breaker no distribuye tráfico entre instancias.",
+    "El Circuit Breaker no gestiona encriptación. TLS es una responsabilidad de la capa de transporte, independiente de los patrones de resiliencia."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué garantía de entrega ofrece el Outbox Pattern y qué problema concreto resuelve?"
+  options={[
+    "Exactly-once delivery; resuelve la duplicación de mensajes en brokers distribuidos",
+    "At-least-once delivery; resuelve el problema de que guardar en base de datos y publicar un evento son dos operaciones que pueden quedar inconsistentes si la app falla entre ambas",
+    "At-most-once delivery; resuelve la alta latencia de publicación en brokers bajo carga",
+    "Exactly-once delivery; resuelve la falta de soporte transaccional en bases de datos NoSQL"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Exactly-once delivery es extremadamente difícil de garantizar en sistemas distribuidos. El Outbox garantiza at-least-once, lo que requiere que los consumidores sean idempotentes para manejar duplicados.",
+    "Correcto. El problema: guardar el pedido en base de datos y publicar el evento PedidoCreado son dos operaciones separadas. Si la app cae entre ambas, el evento nunca se publica y el sistema queda inconsistente. La solución: guardar el evento en una tabla Outbox dentro de la misma transacción de base de datos que los datos de negocio. Un worker independiente lee el Outbox y publica al broker. Si la publicación falla, reintenta (at-least-once). Los consumidores deben ser idempotentes.",
+    "At-most-once delivery implica que los mensajes pueden perderse. El Outbox hace exactamente lo contrario: garantiza que el mensaje eventualmente se entregue al broker.",
+    "El Outbox es independiente del tipo de base de datos. No resuelve la falta de transacciones ACID; de hecho, depende de ellas para funcionar correctamente."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo conviene usar BFF (Backend for Frontend) en lugar de un API Gateway genérico?"
+  options={[
+    "Siempre, porque BFF es estrictamente superior a un API Gateway en cualquier escenario",
+    "Cuando diferentes clientes (móvil, web, TV) tienen necesidades de datos tan distintas que un API genérico requiere múltiples llamadas o devuelve campos innecesarios en exceso",
+    "Solo cuando el frontend está desarrollado en React; para Angular o Vue se usa API Gateway",
+    "Cuando el API Gateway no soporta rate limiting o autenticación de forma nativa"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "BFF no es siempre superior. Para APIs simples o cuando los clientes tienen necesidades similares, un API Gateway genérico es suficiente y mucho más simple de mantener.",
+    "Correcto. Un BFF es un servicio backend dedicado a un tipo de cliente específico. La app móvil necesita datos comprimidos y respuestas con pocos campos; la app web necesita más detalle. En lugar de que el API genérico intente satisfacer a todos (resultando en over-fetching o under-fetching), cada cliente tiene su BFF que agrega, transforma y adapta los datos de los microservicios de backend. Netflix, Spotify y SoundCloud popularizaron este patrón.",
+    "BFF es agnóstico al framework frontend. La decisión de usarlo se basa en las necesidades de datos del cliente, no en la tecnología de UI.",
+    "El rate limiting y la autenticación son capacidades estándar de cualquier API Gateway moderno como Azure APIM, Kong o AWS API Gateway. No son razones para adoptar BFF."
+  ]}
+/>
+
+---
+
+## Concurrencia .NET
+
+<Quiz
+  question="¿Por qué NO deberías usar Task.Run para envolver operaciones I/O-bound como llamadas a base de datos o HTTP?"
+  options={[
+    "Porque Task.Run no soporta async/await internamente y bloquearía el hilo del caller",
+    "Porque Task.Run toma un thread del ThreadPool para esperar bloqueado, desperdiciando recursos que podrían atender otras requests; await directo libera el thread mientras espera",
+    "Porque Task.Run solo funciona con operaciones CPU-bound en versiones modernas de .NET",
+    "Porque Task.Run no maneja correctamente los CancellationToken en operaciones de red"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Task.Run sí soporta async/await internamente. El problema no es de compatibilidad sino de eficiencia en el uso del ThreadPool.",
+    "Correcto. Para I/O-bound, await _db.FindAsync(id) libera el thread del ThreadPool mientras espera la respuesta de la base de datos, permitiéndole atender otras requests. Task.Run(() => _db.Find(id)) toma un thread del pool para que simplemente espere bloqueado. Bajo alta concurrencia, esto agota el ThreadPool. Task.Run es la herramienta correcta para CPU-bound como comprimir una imagen o calcular un hash criptográfico pesado.",
+    "Task.Run funciona en todas las versiones modernas de .NET y no está limitado a CPU-bound. El problema es de eficiencia del ThreadPool, no de compatibilidad.",
+    "CancellationToken funciona correctamente con Task.Run. El problema es el desperdicio de threads del pool, no el manejo de cancelación."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo usar SemaphoreSlim en lugar de lock para sincronización en .NET?"
+  options={[
+    "SemaphoreSlim es siempre preferible; lock es obsoleto en .NET moderno y genera warnings",
+    "Cuando necesitas limitar el acceso concurrente a N threads simultáneos, o cuando el código en la sección crítica contiene operaciones async con await",
+    "Solo cuando trabajas con múltiples procesos del sistema operativo que comparten memoria",
+    "Cuando necesitas un lock distribuido entre múltiples instancias de la aplicación en distintos servidores"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "lock sigue siendo válido y es la opción más simple para secciones críticas síncronas de un solo recurso. No está obsoleto y no genera warnings.",
+    "Correcto. lock tiene dos limitaciones importantes: no puedes usar await dentro de un bloque lock porque puede causar deadlocks con el contexto de sincronización, y lock es binario (solo 1 thread a la vez). SemaphoreSlim resuelve ambos: permite await con WaitAsync() y puede configurarse para N accesos concurrentes. Ejemplo de uso: SemaphoreSlim(3) para limitar a 3 llamadas simultáneas a una API externa y evitar throttling.",
+    "Para sincronización entre múltiples procesos del sistema operativo se usa Semaphore (sin Slim) o Mutex. SemaphoreSlim está optimizado para sincronización dentro de un solo proceso.",
+    "Para locks distribuidos entre instancias de la aplicación en distintos servidores se usa Redis con SETNX, Azure Blob Leases u otras soluciones distribuidas. SemaphoreSlim es exclusivamente local al proceso."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es el caso de uso principal de IAsyncEnumerable en .NET?"
+  options={[
+    "Reemplazar todas las listas y arrays existentes para mejorar el rendimiento de forma automática",
+    "Permitir consumir secuencias de datos de forma asíncrona elemento por elemento, útil cuando los datos llegan progresivamente desde una base de datos, archivo grande o API paginada",
+    "Paralelizar el procesamiento de colecciones distribuidas en múltiples threads del CPU",
+    "Reemplazar Task de List genérico para reducir el uso de memoria en todas las situaciones posibles"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "IAsyncEnumerable no reemplaza listas en general. Solo tiene sentido cuando los datos llegan de forma asíncrona y progresiva, no todos de golpe.",
+    "Correcto. Con IAsyncEnumerable, el productor emite cada elemento tan pronto como está disponible y el consumidor lo procesa con await foreach. Leer millones de filas de base de datos con EF Core usando AsAsyncEnumerable() evita cargar todo en memoria. También es ideal para streaming de resultados de modelos de lenguaje, lectura de archivos grandes línea por línea, o Server-Sent Events donde los resultados llegan progresivamente.",
+    "La paralelización de colecciones en múltiples threads es responsabilidad de Parallel.ForEach o PLINQ con AsParallel(). IAsyncEnumerable es para streaming asíncrono, no para paralelismo CPU.",
+    "No siempre reduce memoria. Si el consumidor es más lento que el productor, los elementos se acumulan de todas formas. El beneficio es el procesamiento progresivo sin esperar que toda la secuencia esté lista en memoria."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál de las siguientes situaciones puede causar un deadlock en código async .NET?"
+  options={[
+    "Usar await en múltiples operaciones I/O en secuencia dentro de un método async Task",
+    "Llamar a .Result o .Wait() sobre un Task en un contexto de sincronización (ASP.NET clásico o UI thread), mientras el Task necesita capturar ese mismo contexto para continuar",
+    "Crear demasiados Tasks concurrentes con Task.WhenAll sin límite de paralelismo",
+    "Usar CancellationToken en operaciones de larga duración sin timeout configurado"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Usar await en secuencia es el uso correcto de async/await. No causa deadlocks; simplemente ejecuta las operaciones una tras otra de forma asíncrona sin bloquear.",
+    "Correcto. El deadlock clásico: el thread llama a task.Result (bloqueante), bloqueando el contexto de sincronización. El continuation del Task necesita ese mismo contexto para continuar, pero está ocupado. Resultado: deadlock circular. Soluciones: (1) usar await siempre, propagándolo hacia arriba en toda la cadena de llamadas; (2) usar ConfigureAwait(false) en librerías para no capturar el contexto de sincronización; (3) usar Task.Run para ejecutar en el ThreadPool sin contexto.",
+    "Task.WhenAll con muchos tasks puede saturar el ThreadPool o causar throttling, pero no produce un deadlock en el sentido estricto de espera circular entre dos partes.",
+    "CancellationToken es una práctica recomendada y no causa deadlocks. Al contrario, ayuda a evitar que threads queden bloqueados indefinidamente esperando operaciones que nunca terminan."
+  ]}
+/>
+
+---
+
+## Performance
+
+<Quiz
+  question="¿Cómo afecta la diferencia entre operaciones CPU-bound e I/O-bound al diseño de endpoints en una API .NET?"
+  options={[
+    "No afecta el diseño; async/await resuelve ambos casos exactamente de la misma manera",
+    "Las operaciones CPU-bound deben usar await directo; las I/O-bound deben envolverse en Task.Run",
+    "Las operaciones I/O-bound se benefician de async/await puro liberando el thread mientras espera; las CPU-bound deben offloadearse con Task.Run para no bloquear el thread de la request",
+    "Solo las operaciones de más de 100 ms deben ser async; las más cortas pueden ser síncronas sin problema"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "El tipo de operación sí importa. async/await solo libera el thread para I/O-bound porque espera una respuesta externa. Para CPU-bound, el thread sigue ejecutando aunque uses await.",
+    "Esto está invertido. Para I/O-bound (base de datos, HTTP, disco) se usa await directo sobre la operación asíncrona del driver. Para CPU-bound (compresión, encriptación pesada, procesamiento de imágenes) se usa Task.Run para offloadear a un thread del ThreadPool.",
+    "Correcto. await _db.FindAsync() libera el thread del servidor mientras la base de datos responde, pudiendo atender otras requests concurrentes. Task.Run(() => ComprimirImagen(bytes)) ejecuta el trabajo CPU intensivo en un thread del pool sin bloquear el thread de la request HTTP. En APIs de alto throughput, esta distinción es fundamental para la escalabilidad bajo carga concurrente.",
+    "La duración no determina si una operación debe ser async. Una operación de 5 ms que bloquea el thread sigue siendo un problema bajo alta concurrencia con miles de requests simultáneas."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo usar Redis distribuido en lugar de IMemoryCache en una API .NET desplegada en múltiples instancias?"
+  options={[
+    "Siempre; Redis es más rápido que IMemoryCache porque usa un servidor RAM dedicado",
+    "Cuando múltiples instancias de la app deben compartir el mismo caché, o cuando el caché debe sobrevivir reinicios de la aplicación",
+    "Solo cuando la cantidad de datos en caché supera 1 GB de tamaño total",
+    "Cuando necesitas invalidar el caché manualmente desde código de la aplicación"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Falso. IMemoryCache accede a la RAM local del proceso, lo cual es más rápido que Redis porque evita la latencia de red y la serialización. Redis agrega overhead. Se elige Redis por consistencia entre instancias, no por velocidad pura.",
+    "Correcto. Con IMemoryCache, cada instancia tiene su propia copia del caché. Si actualizas datos en la instancia A, las instancias B y C siguen sirviendo datos obsoletos hasta que su caché expire. Redis actúa como caché centralizado compartido por todas las instancias, garantizando que todas vean los mismos datos. También persiste entre reinicios si está configurado con persistencia.",
+    "El tamaño no es el criterio principal. IMemoryCache puede manejar grandes volúmenes si la RAM del servidor lo permite. El criterio clave es si múltiples instancias necesitan compartir el estado del caché.",
+    "IMemoryCache también permite invalidación manual con CancellationTokenSource y MemoryCacheEntryOptions. La invalidación programática no es razón exclusiva para usar Redis."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia de rendimiento entre Select con proyección vs Include en EF Core?"
+  options={[
+    "Include siempre es más eficiente porque EF Core optimiza automáticamente los JOINs generados",
+    "Select con proyección genera SQL con solo las columnas necesarias; Include trae la entidad completa causando over-fetching cuando solo necesitas campos específicos",
+    "No hay diferencia de rendimiento observable; ambos generan SQL equivalente en el motor",
+    "Select con proyección solo funciona con tipos anónimos; Include es necesario para proyectar a DTOs tipados"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Include hace un JOIN y trae la entidad completa relacionada con todas sus columnas. Para entidades con muchos campos o con datos binarios como imágenes almacenadas, esto es muy ineficiente cuando solo necesitas el nombre.",
+    "Correcto. Include genera SELECT con todos los campos de la entidad relacionada. Select con proyección genera SELECT solo con las columnas que especificas en el lambda. Menos datos viajan por la red, menos memoria se usa en la app, y el índice cubre mejor la consulta. Especialmente crítico en queries que devuelven muchas filas o entidades con campos binarios grandes como fotos o documentos.",
+    "Hay diferencia significativa, especialmente a escala. Include siempre trae las columnas completas de la entidad relacionada mientras que Select proyecta exactamente lo necesario.",
+    "Select con proyección funciona perfectamente con DTOs tipados concretos. EF Core puede proyectar a cualquier tipo POCO, no solo a tipos anónimos generados por el compilador."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué es el problema del thundering herd y cómo se mitiga en una API con caché?"
+  options={[
+    "Cuando demasiados usuarios acceden a la API simultáneamente, sobrecargando el load balancer de entrada",
+    "Cuando una entrada de caché expira y múltiples requests concurrentes llegan al mismo tiempo, todas penetrando al backend antes de que el primero haya repoblado el caché",
+    "Cuando el garbage collector de .NET pausa todos los threads simultáneamente bajo carga alta",
+    "Cuando múltiples microservicios llaman al mismo endpoint en cascada, creando un efecto de avalancha de llamadas"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "La sobrecarga general del load balancer se llama simplemente alta carga o ataque DDoS. El thundering herd es específico al patrón de expiración del caché.",
+    "Correcto. Escenario típico: 1000 requests por segundo llegan a la API. El caché de la consulta más popular expira. Las 1000 requests concurrentes ven cache miss y todas van a la base de datos simultáneamente, causando un pico de carga que puede derribarla. Mitigaciones: (1) Cache stampede lock: solo la primera request regenera el caché, las demás esperan o devuelven datos levemente obsoletos. (2) Probabilistic early expiration: empezar a regenerar el caché antes de que expire. (3) Staggered TTLs: no expirar múltiples keys relacionados al mismo tiempo exacto.",
+    "Las GC pauses son un problema de latencia diferente al thundering herd. Se mitigan con Server GC mode y reduciendo las allocations de objetos de corta vida.",
+    "Eso se llama fan-out o amplification problem en microservicios. El thundering herd es específico a la expiración simultánea de entradas de caché bajo carga concurrente."
+  ]}
+/>
+
+---
+
+## Seguridad
+
+<Quiz
+  question="¿Qué es BOLA/IDOR y por qué es la vulnerabilidad más común en APIs REST?"
+  options={[
+    "Un ataque de inyección SQL que explota parámetros de ruta mal sanitizados en endpoints REST",
+    "Broken Object Level Authorization: la API no verifica que el recurso solicitado pertenece al usuario autenticado, permitiendo acceder a datos de otros usuarios modificando un ID en la URL",
+    "Un tipo de ataque XSS que inyecta scripts maliciosos en respuestas JSON de la API",
+    "Un ataque de fuerza bruta contra el endpoint de autenticación que explota la falta de rate limiting"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "La inyección SQL es una vulnerabilidad diferente, clasificada como A03 en OWASP Top 10. BOLA es específica a la autorización a nivel de objeto individual.",
+    "Correcto. Ejemplo concreto: GET /api/pedidos/123. Si el usuario autenticado es dueño del pedido 124 pero no del 123, y la API no verifica esta relación, cualquier usuario autenticado puede ver pedidos ajenos cambiando el número en la URL. Es A01 en OWASP API Security Top 10. La solución es siempre verificar: if (pedido.UsuarioId != usuarioActualId) return Forbid(). Es tan común porque los desarrolladores verifican autenticación pero olvidan verificar autorización a nivel de registro.",
+    "XSS en APIs es un problema distinto que involucra inyección de scripts en respuestas. BOLA no requiere inyección de ningún tipo.",
+    "El brute force en login es un problema real pero diferente. BOLA no requiere fuerza bruta: cualquier usuario autenticado puede explotar la vulnerabilidad simplemente cambiando un ID en la URL."
+  ]}
+/>
+
+<Quiz
+  question="¿Dónde debe almacenarse un JWT access token en una SPA y por qué?"
+  options={[
+    "En localStorage, porque es la forma más simple y persiste cómodamente entre sesiones del navegador",
+    "En una cookie con atributo HttpOnly y SameSite=Strict para protegerlo completamente de XSS y CSRF",
+    "En memoria del módulo JavaScript como variable de módulo, con el refresh token en cookie HttpOnly",
+    "En sessionStorage, porque es más seguro que localStorage al borrarse automáticamente al cerrar la pestaña"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "localStorage es accesible desde cualquier script JavaScript de la página. Si hay una vulnerabilidad XSS, el atacante puede robar el token con una sola línea de código. No se recomienda para tokens de acceso.",
+    "Almacenar el access token en cookie HttpOnly protege de XSS pero introduce vulnerabilidad CSRF. Además, el access token en cookie se envía en cada request, incluyendo las no autenticadas, lo cual no es ideal. Esta estrategia es más adecuada para el refresh token.",
+    "Correcto. El access token (short-lived, 15 min) vive en memoria como variable de módulo JavaScript. No persiste al recargar la página, lo cual es deseable: al recargar, el interceptor de Axios hace refresh automático usando el refresh token. Este (long-lived, 30 días) va en cookie HttpOnly + Secure + SameSite=Strict, haciéndolo inaccesible para XSS y protegido de CSRF. Esta combinación es el patrón recomendado por la IETF OAuth 2.0 para SPAs.",
+    "sessionStorage también es accesible desde JavaScript igual que localStorage. No aporta protección adicional contra XSS ya que scripts maliciosos pueden leerla igualmente."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia entre Fixed Window y Token Bucket como algoritmos de rate limiting?"
+  options={[
+    "Fixed Window es más preciso; Token Bucket es una aproximación útil solo para alto throughput",
+    "Fixed Window permite bursts al inicio de cada ventana temporal; Token Bucket suaviza el tráfico permitiendo bursts controlados con reposición gradual de tokens",
+    "Son equivalentes en comportamiento; solo difieren en la nomenclatura según el proveedor cloud",
+    "Token Bucket solo funciona para rate limiting por IP; Fixed Window funciona para rate limiting por usuario"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "No es una cuestión de precisión vs aproximación. Ambos son algoritmos bien definidos con comportamientos distintos, especialmente visibles bajo tráfico en ráfagas.",
+    "Correcto. Fixed Window: 100 requests por minuto. Un cliente puede enviar 100 al segundo 59 del minuto actual y 100 al segundo 0 del siguiente: 200 requests en 2 segundos, lo que puede dañar el backend. Token Bucket: hay un bucket de N tokens. Cada request consume un token. Los tokens se reponen gradualmente a una tasa R por segundo. Se pueden acumular tokens para bursts controlados pero el rate promedio nunca supera R. Sliding Window es una tercera alternativa que divide la ventana en segmentos para suavizar bursts.",
+    "Son algoritmos con comportamientos diferentes, especialmente evidentes bajo tráfico en ráfagas. La diferencia tiene implicaciones reales en la protección del backend.",
+    "Ambos algoritmos pueden aplicarse a cualquier dimensión de partición: por IP, por usuario autenticado, por API key o por endpoint. La dimensión es completamente independiente del algoritmo elegido."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué protege HSTS (HTTP Strict Transport Security) y cómo funciona?"
+  options={[
+    "Encripta el contenido de las cookies de sesión con AES-256 en el servidor",
+    "Indica al navegador que solo debe conectarse al dominio vía HTTPS, incluso si el usuario escribe http://, previniendo ataques de downgrade y SSL stripping",
+    "Protege contra ataques CSRF verificando el origen y el referer de cada request entrante",
+    "Habilita Certificate Pinning automático para evitar ataques man-in-the-middle con certificados falsos"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "HSTS no encripta cookies directamente. Para proteger cookies se usan los atributos Secure y HttpOnly en la definición de la cookie. Son mecanismos separados.",
+    "Correcto. HSTS se envía como header: Strict-Transport-Security: max-age=31536000; includeSubDomains; preload. El navegador recuerda que este dominio solo acepta HTTPS durante el tiempo indicado. Si el usuario escribe http://ejemplo.com, el navegador lo redirige a HTTPS localmente sin hacer ninguna request HTTP al servidor. Esto previene SSL Stripping, un ataque MITM que degrada HTTPS a HTTP interceptando la primera request. El preload permite incluir el dominio en la lista precargada de navegadores, protegiéndolo desde la primera visita.",
+    "La protección CSRF se implementa con el atributo SameSite en cookies, tokens CSRF anti-forgery o verificación del header Origin. HSTS no tiene relación con CSRF.",
+    "HSTS no implementa Certificate Pinning. El pinning es una técnica separada actualmente desaconsejada en la web debido al riesgo de bloquear el sitio permanentemente si el certificado cambia."
+  ]}
+/>
+
+---
+
+## Cloud y DevOps
+
+<Quiz
+  question="¿Cuál es la diferencia principal entre Blue/Green deployment y Canary deployment?"
+  options={[
+    "Blue/Green es exclusivo para contenedores Docker; Canary es para despliegues en máquinas virtuales",
+    "Blue/Green mantiene dos entornos completos y conmuta todo el tráfico de golpe; Canary dirige un porcentaje pequeño del tráfico a la nueva versión y lo aumenta gradualmente",
+    "Son estrategias idénticas; Blue/Green es el nombre que usa AWS y Canary es el nombre de Azure",
+    "Blue/Green requiere downtime de varios minutos; Canary no tiene downtime pero es más lento de ejecutar"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Ambas estrategias son agnósticas a la infraestructura. Funcionan con contenedores, máquinas virtuales, Kubernetes, PaaS o cualquier combinación.",
+    "Correcto. Blue/Green: tienes el entorno Blue (producción actual) y el Green (nueva versión desplegada y probada). Cuando Green está listo, el load balancer redirige todo el tráfico de Blue a Green de forma instantánea. El rollback es inmediato volviendo a Blue. El costo: mantener dos entornos completos simultáneamente. Canary: despliegas la nueva versión a un 1-5% de usuarios reales, monitorizas métricas de error y latencia, y aumentas el porcentaje gradualmente. Detectas problemas con impacto limitado antes de afectar a todos los usuarios.",
+    "Son estrategias distintas con trade-offs diferentes. Los nombres son estándar en la industria y no dependen del proveedor cloud.",
+    "Blue/Green no requiere downtime. La conmutación del load balancer es instantánea. El problema de Blue/Green no es el downtime sino el costo de infraestructura de mantener dos entornos completos."
+  ]}
+/>
+
+<Quiz
+  question="¿Por qué se prefiere Managed Identity sobre connection strings para acceder a servicios Azure desde una aplicación?"
+  options={[
+    "Managed Identity es más rápido porque evita el overhead de la capa de autenticación de Azure AD",
+    "Porque elimina la necesidad de gestionar, rotar y almacenar secretos: la identidad de la app se autentica automáticamente con Azure AD sin ningún string de conexión en código o configuración",
+    "Porque los connection strings no funcionan en Azure App Service, solo en máquinas virtuales",
+    "Porque Managed Identity permite acceso a servicios on-premise que los connection strings no soportan"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Managed Identity no elimina la autenticación; la automatiza. El token de acceso se obtiene del endpoint de metadatos de la plataforma sin configuración manual, pero sí hay autenticación de por medio.",
+    "Correcto. El problema con connection strings: se almacenan en variables de entorno o Key Vault, pueden filtrarse accidentalmente, necesitan rotación periódica, y si un desarrollador los commitea al repositorio es un incidente de seguridad. Con Managed Identity, la app obtiene tokens automáticamente de Azure AD usando la identidad de la plataforma del recurso Azure. No hay secreto que gestionar ni rotar. Se usa DefaultAzureCredential en el SDK de Azure y funciona tanto en local con credenciales del desarrollador como en producción con Managed Identity.",
+    "Los connection strings funcionan perfectamente en Azure App Service. El problema es de seguridad operacional, no de compatibilidad técnica.",
+    "Para acceso a servicios on-premise se usan soluciones como Azure Arc, VPN o ExpressRoute. Managed Identity es específico para autenticarse contra servicios de Azure."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo usar Azure Service Bus en lugar de Azure Event Hub?"
+  options={[
+    "Service Bus para mensajes de más de 1 MB; Event Hub para mensajes pequeños y frecuentes",
+    "Service Bus para mensajería empresarial con garantías de entrega, sesiones y dead-letter queue; Event Hub para streaming de telemetría o eventos de alto volumen donde el orden y el reprocesamiento masivo son prioridad",
+    "Son equivalentes en funcionalidad; Service Bus es la versión heredada que Event Hub reemplaza",
+    "Event Hub para comunicación entre microservicios; Service Bus exclusivamente para notificaciones a usuarios finales"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "El tamaño del mensaje no es el criterio diferenciador principal. Ambos productos soportan mensajes de tamaños razonables con sus configuraciones respectivas.",
+    "Correcto. Service Bus es un message broker empresarial: garantiza at-least-once delivery, soporta transacciones, dead-letter queues para mensajes que no pudieron procesarse, y sesiones para procesamiento ordenado por cliente. Ideal para comandos entre microservicios y flujos de negocio críticos. Event Hub es un log de eventos distribuido de altísima escala: maneja millones de eventos por segundo, retiene eventos por días para reprocesamiento, y múltiples consumidores pueden leer el mismo stream en distintos momentos con offsets independientes. Ideal para telemetría de IoT, logs de aplicación y click streams.",
+    "Son productos distintos con casos de uso completamente diferentes. Event Hub no es una versión nueva de Service Bus ni lo reemplaza.",
+    "La dirección o destino del mensaje no es el criterio. El criterio es el patrón de mensajería: comandos con garantías de entrega vs streaming de alto volumen con retención y reprocesamiento."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué problema fundamental resuelve Infrastructure as Code (IaC) con herramientas como Terraform?"
+  options={[
+    "Automatiza el despliegue del código de la aplicación en los servidores de producción",
+    "Elimina la configuración manual de infraestructura (snowflake servers), haciendo la infraestructura reproducible, versionable y auditable en Git como cualquier otro código",
+    "Monitoriza la infraestructura en tiempo real y alerta automáticamente cuando hay problemas",
+    "Reemplaza los pipelines de CI/CD siendo una alternativa más poderosa al despliegue continuo"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "IaC gestiona la infraestructura (servidores, redes, bases de datos, colas, reglas de firewall), no el despliegue del código de la aplicación. El despliegue de código es responsabilidad de los pipelines de CI/CD.",
+    "Correcto. Sin IaC, la infraestructura se configura manualmente en la consola del proveedor cloud. El resultado son snowflake servers: entornos únicos e irrepetibles que nadie sabe exactamente cómo replicar. Con Terraform, describes la infraestructura deseada en archivos .tf versionados en Git, y terraform apply crea o actualiza la infraestructura para que coincida. Beneficios: entornos reproducibles (staging idéntico a producción), historial de cambios auditables, revisión de cambios con terraform plan antes de aplicar, y posibilidad de crear múltiples entornos a partir del mismo código.",
+    "El monitoreo es responsabilidad de herramientas como Azure Monitor, Datadog o Prometheus. Terraform crea y gestiona la infraestructura pero no la monitoriza en tiempo de ejecución.",
+    "Los pipelines de CI/CD como GitHub Actions o Azure DevOps y Terraform son herramientas complementarias: el pipeline puede ejecutar terraform apply como un paso del despliegue, pero tienen propósitos y ámbitos completamente distintos."
+  ]}
+/>
+
+---
+
+## Liderazgo Técnico
+
+<Quiz
+  question="¿Cómo priorizarías la deuda técnica en un backlog que compite con features de negocio?"
+  options={[
+    "La deuda técnica siempre tiene prioridad sobre las features porque si no se paga, el proyecto inevitablemente muere",
+    "La deuda técnica nunca es prioritaria; primero se entregan todas las features que pide el negocio",
+    "Priorizar la deuda que está ralentizando activamente el desarrollo o causando incidentes, y vincularla a features próximas para justificar el costo frente al negocio con ROI concreto",
+    "Asignar exactamente el 20% del tiempo de cada sprint a deuda técnica, independientemente del contexto del proyecto"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Si la deuda técnica siempre tiene prioridad, nunca se entrega valor de negocio. Los sponsors dejarán de financiar el proyecto o lo cancelarán.",
+    "Ignorar la deuda técnica indefinidamente lleva a velocidad de desarrollo cercana a cero, alta tasa de bugs en producción y dificultad para retener talento técnico.",
+    "Correcto. El enfoque pragmático por prioridad: (1) Deuda que causa incidentes en producción: siempre prioritaria. (2) Deuda en el camino crítico de las próximas features: abordarla antes o durante esas features. (3) Deuda con impacto medible pero no urgente: agregarla al backlog como tech story con estimación de ROI: si refactorizamos este módulo en 3 días, las próximas 5 features tardarán 1 día cada una en lugar de 1 semana. (4) Deuda cosmética o de preferencia: baja prioridad o nunca.",
+    "Una regla fija del 20% ignora el contexto real del proyecto. A veces necesitas 0%, a veces necesitas dedicar el 80% de un sprint a una refactorización crítica que desbloquea múltiples features."
+  ]}
+/>
+
+<Quiz
+  question="¿Para qué sirve un ADR (Architecture Decision Record) y cuándo crearlo?"
+  options={[
+    "Es un documento de requisitos funcionales que reemplaza las historias de usuario en proyectos técnicos",
+    "Es un registro formal de una decisión arquitectónica significativa: qué se decidió, por qué, qué alternativas se consideraron y qué trade-offs se aceptaron",
+    "Es un informe de deuda técnica generado automáticamente por herramientas de análisis estático de código",
+    "Es un artefacto del framework Scrum que documenta el diseño técnico detallado de cada sprint"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Los ADRs no reemplazan las historias de usuario. Se enfocan en decisiones arquitectónicas de alto nivel con consecuencias duraderas, no en requisitos funcionales del producto.",
+    "Correcto. Un ADR documenta: Contexto (por qué fue necesaria esta decisión), Decisión (qué se eligió), Alternativas consideradas con sus pros y contras, y Consecuencias aceptadas. Ejemplo: ADR-012 sobre usar Redis como caché distribuido, con alternativas Memcached y NCache evaluadas. En 6 meses, cuando alguien pregunta por qué usamos Redis, el ADR tiene la respuesta completa. Se guardan en el repositorio junto al código en un directorio docs/adr y evolucionan como código: pueden ser aceptados, deprecados o reemplazados.",
+    "Los ADRs son escritos por personas, no generados automáticamente. Son documentos narrativos y reflexivos que requieren juicio técnico y contexto de negocio.",
+    "Los ADRs no son específicos de Scrum ni están ligados a sprints. Documentan decisiones que pueden tomarse en cualquier momento del proyecto y tienen vigencia indefinida o hasta que se toma una nueva decisión que los reemplaza."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es el criterio más importante en una decisión Build vs Buy para un componente de software?"
+  options={[
+    "Siempre Buy para no distraer al equipo del desarrollo del core del negocio",
+    "Siempre Build para mantener control total y evitar dependencias externas en el sistema",
+    "Si el componente es parte del core diferencial del negocio, construir; si es infraestructura commoditizada, comprar o usar open source",
+    "El costo inicial: si la solución externa es más barata que construir, siempre comprar sin más análisis"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Siempre comprar lleva a vendor lock-in, costos ocultos de licencias a escala y pérdida de control en áreas que podrían convertirse en diferenciadores competitivos.",
+    "Siempre construir desperdicia recursos en resolver problemas genéricos que ya tienen soluciones probadas y maduras. Nadie debería construir su propio sistema de autenticación, su propio message broker o su propio CDN.",
+    "Correcto. La pregunta clave es: ¿esto nos da ventaja competitiva? Autenticación, facturación, monitoreo, CI/CD, email transaccional: son problemas resueltos; comprar o usar open source. El algoritmo de recomendaciones, el motor de pricing dinámico, la lógica de negocio central: son el diferenciador; construir y mantener control. También considerar: time to market (buy es más rápido), costo total de propiedad incluyendo integración y mantenimiento a largo plazo, y riesgo de que el vendor desaparezca.",
+    "El costo inicial es solo una parte del análisis. Los costos de integración, mantenimiento, licencias al escalar y vendor lock-in pueden hacer que una solución barata inicialmente resulte muy cara a largo plazo."
+  ]}
+/>
+
+<Quiz
+  question="Durante un code review, ¿qué deberías revisar con mayor prioridad?"
+  options={[
+    "El estilo de código y el formateo, ya que impactan directamente la legibilidad del equipo",
+    "Los nombres de variables y la longitud de los métodos como indicadores de calidad",
+    "La corrección lógica, seguridad, manejo de errores y casos borde antes que el estilo o los nombres",
+    "Los tests unitarios primero; si los tests pasan y tienen buena cobertura, el código está bien"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "El estilo y formateo deben ser automatizados con linters como EditorConfig, StyleCop o Prettier. Revisarlos manualmente consume tiempo valioso sin agregar valor real. Si el linter no lo detecta, no merece atención en el review.",
+    "Los nombres y la longitud de métodos son parte de la legibilidad y sí importan. Sin embargo, primero debes verificar que el código hace lo correcto y no tiene problemas de seguridad o manejo de errores.",
+    "Correcto. Orden de prioridad en un code review efectivo: (1) Corrección lógica: ¿hace lo que dice? ¿hay edge cases no manejados? (2) Seguridad: ¿hay BOLA, inputs sin validar, datos sensibles expuestos? (3) Manejo de errores: ¿qué pasa si falla? ¿se loguean correctamente? (4) Diseño: ¿viola SRP o tiene acoplamiento innecesario? (5) Performance: ¿hay N+1 queries o allocations innecesarias? (6) Tests: ¿cubren los casos relevantes? (7) Estilo: automatizado con herramientas.",
+    "Los tests que pasan no garantizan corrección. Los tests pueden estar validando el comportamiento incorrecto, pueden faltarles casos borde críticos, o pueden ser tests frágiles que pasan por las razones equivocadas."
+  ]}
+/>
+
+
+---
+
+## Observabilidad
+
+<Quiz
+  question="¿Cuál es la diferencia fundamental entre los tres pilares de la observabilidad: logs, métricas y trazas distribuidas?"
+  options={[
+    "Son sinónimos: todos registran eventos del sistema con diferente nivel de detalle",
+    "Los logs registran eventos discretos con contexto, las métricas agregan datos numéricos en el tiempo, y las trazas siguen el flujo de una request a través de múltiples servicios",
+    "Las métricas reemplazan a los logs en sistemas modernos porque consumen menos almacenamiento",
+    "Las trazas distribuidas solo son necesarias en sistemas con más de 10 microservicios"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "No son sinónimos. Cada pilar responde preguntas distintas: logs explican qué ocurrió, métricas muestran cómo está el sistema en el tiempo, y trazas muestran por qué una operación tardó o falló.",
+    "Correcto. Logs: eventos discretos como `[ERROR] PaymentService falló para orderId=42 con NullReferenceException`. Métricas: series temporales numéricas como `http_requests_total` o `p99_latency_ms` consumibles en Prometheus/Grafana. Trazas: el recorrido completo de una petición con spans por cada salto, implementadas con OpenTelemetry. Los tres son complementarios: las métricas alertan, los logs explican, las trazas localizan.",
+    "Las métricas no reemplazan a los logs. Las métricas muestran tendencias agregadas pero no permiten diagnosticar un error específico. Necesitas ambos: métricas para detectar y logs para investigar.",
+    "Las trazas distribuidas son valiosas incluso con dos o tres servicios. En cuanto hay llamadas entre servicios, sin trazas es imposible saber qué porción del tiempo total se gasta en cada hop."
+  ]}
+/>
+
+<Quiz
+  question="¿Por qué se recomienda logging estructurado en lugar de concatenar strings en los logs en sistemas de producción?"
+  options={[
+    "Porque el logging estructurado es más rápido en términos de CPU al evitar concatenación de strings",
+    "Porque el logging estructurado emite JSON con campos tipados como `userId`, `action`, `durationMs`, lo que permite búsquedas, filtros y alertas precisas en sistemas como Elasticsearch o Loki",
+    "Porque la concatenación de strings viola las reglas de StyleCop y los linters modernos",
+    "Porque el logging estructurado comprime mejor y reduce el costo de almacenamiento en cloud"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "La diferencia de CPU es marginal y no es la razón principal. El beneficio real es operacional: la capacidad de consultar y correlacionar logs en producción.",
+    "Correcto. Con concatenacion de strings el mensaje es opaco: para buscar todos los eventos de un usuario tienes que usar regex frágiles. Con Serilog usas `Log.Information` con message templates y campos nombrados como `userId` y `durationMs`, obteniendo JSON indexado. Puedes hacer consultas precisas en Kibana o crear alertas automáticas en Grafana Loki sobre campos específicos. En .NET, Serilog con sinks a Seq o Elasticsearch es el estándar.",
+    "StyleCop no prohíbe la concatenación de strings en logs. Es una decisión de arquitectura operacional, no de estilo de código.",
+    "El ahorro en almacenamiento no es el driver principal. De hecho, JSON estructurado puede ser más grande que texto plano. El beneficio es la capacidad de consulta y correlación, no la compresión."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia entre SLI, SLO y SLA en el contexto de Site Reliability Engineering?"
+  options={[
+    "Son tres formas de nombrar lo mismo: el acuerdo de nivel de servicio con el cliente",
+    "SLI es la métrica medida (ej: 99.2% de requests exitosas), SLO es el objetivo interno (ej: 99.5%), y SLA es el contrato externo con penalización económica si se incumple (ej: 99%)",
+    "SLO siempre debe ser igual al SLA para garantizar que el servicio cumple el contrato con el cliente",
+    "El SLI se define en el contrato con el cliente, el SLO es el objetivo del equipo de operaciones, y el SLA es solo relevante para equipos de ventas"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "No son equivalentes. Confundirlos lleva a comprometer SLAs sin margen de error interno, lo que resulta en incumplimientos de contrato frecuentes.",
+    "Correcto. Ejemplo concreto: SLI = disponibilidad medida = 99.2% en el último mes. SLO = objetivo interno = 99.5% de disponibilidad medida como porcentaje de requests con status 2xx en ventanas de 30 días. SLA = contrato con cliente = 99% de disponibilidad con crédito del 10% si se incumple. El SLO debe ser más estricto que el SLA para tener error budget: si el SLO es 99.5% y el SLA es 99%, tienes 0.5% de margen antes de romper el contrato. El error budget indica cuánto riesgo puedes asumir en deploys.",
+    "Si el SLO es igual al SLA no tienes error budget. Cualquier incidente, por pequeño que sea, te pone en riesgo de incumplir el contrato. El SLO debe ser más estricto que el SLA para tener margen operacional.",
+    "El SLI no se define en el contrato con el cliente; es una métrica interna medida por el equipo. El SLA sí involucra consecuencias legales o económicas y es relevante para todos los equipos, no solo ventas."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia entre liveness probe y readiness probe en Kubernetes?"
+  options={[
+    "Son equivalentes: Kubernetes usa cualquiera de las dos para decidir si reiniciar un pod",
+    "Liveness probe determina si el contenedor está vivo (si falla, Kubernetes lo reinicia). Readiness probe determina si el contenedor está listo para recibir tráfico (si falla, se elimina del load balancer sin reiniciarlo)",
+    "Readiness probe verifica la salud de las dependencias externas como la base de datos, mientras que liveness solo verifica el proceso principal",
+    "Liveness probe es obligatoria en producción y readiness probe es opcional para optimizar el despliegue"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "No son equivalentes. La acción que toma Kubernetes cuando fallan es completamente diferente: reinicio vs eliminación del endpoint de servicio.",
+    "Correcto. Liveness: si falla repetidamente, Kubernetes mata y reinicia el pod. Útil para detectar deadlocks o estados corruptos irrecuperables. Endpoint tipico `GET /health/live` retorna 200 si el proceso esta funcional. Readiness: si falla, el pod sigue corriendo pero Kubernetes lo elimina del Service endpoints, dejando de enviarle trafico. Ideal para warm-up al arrancar o cuando hay dependencias temporalmente no disponibles. El endpoint `/health/ready` verifica conexion a BD, cache, etc. En ASP.NET Core con `services.AddHealthChecks()` puedes mapear ambos en endpoints separados.",
+    "Readiness puede y suele verificar dependencias externas, pero eso no es lo que la define conceptualmente. La diferencia clave es la acción de Kubernetes: reinicio (liveness) vs exclusión del tráfico (readiness).",
+    "Ambas son recomendadas en producción por razones distintas. Sin liveness, un pod en deadlock nunca se reinicia. Sin readiness, el tráfico llega a pods que aún no están listos, generando errores durante los deploys."
+  ]}
+/>
+
+---
+
+## Arquitectura Event-Driven
+
+<Quiz
+  question="¿Cuándo elegirías Apache Kafka sobre RabbitMQ para un sistema de mensajería?"
+  options={[
+    "Siempre Kafka, ya que es más moderno y tiene mayor adopción en la industria",
+    "Kafka cuando necesitas retención y replay de eventos, alto throughput y múltiples consumidores independientes. RabbitMQ cuando necesitas routing flexible, colas con prioridad o mensajería punto a punto con confirmaciones por mensaje",
+    "RabbitMQ siempre para microservicios porque implementa el protocolo AMQP estándar que todos los lenguajes soportan",
+    "Kafka para mensajes pequeños (menos de 1 MB) y RabbitMQ para payloads grandes"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Kafka no es siempre la elección correcta. Para casos simples de work queues o routing complejo, RabbitMQ es más operacionalmente sencillo y tiene menor latencia en escenarios de bajo volumen.",
+    "Correcto. Kafka es un commit log distribuido: los mensajes se retienen días o semanas, múltiples consumer groups pueden leer el mismo topic de forma independiente, ideal para event sourcing y stream processing con Kafka Streams. Throughput: millones de mensajes por segundo. RabbitMQ es un message broker tradicional: routing flexible con exchanges (direct, topic, fanout, headers), acknowledgements por mensaje, dead letter queues nativas, TTL por mensaje. Ideal para task queues, RPC asíncrono o cuando necesitas que un mensaje sea procesado exactamente por un consumidor. En .NET: MassTransit abstrae ambos pero el modelo de programación difiere.",
+    "Kafka también tiene clientes para todos los lenguajes principales. El protocolo AMQP no es el criterio de selección correcto. La elección depende del modelo de consumo y los requisitos de retención.",
+    "El tamaño del payload no es el criterio de selección entre Kafka y RabbitMQ. Kafka puede manejar payloads grandes y RabbitMQ también. El criterio es el modelo de consumo y los requisitos de retención de mensajes."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué problema resuelve el Outbox Pattern y qué garantía proporciona?"
+  options={[
+    "Garantiza que los mensajes lleguen exactamente una vez al broker de mensajes usando transacciones XA distribuidas",
+    "Resuelve la dualidad de escritura entre la base de datos y el broker de mensajes: persiste el evento en la misma transacción de base de datos que los datos del dominio, y un proceso separado publica el evento al broker de forma asíncrona",
+    "Es un patrón para almacenar los mensajes fallidos en una tabla temporal y reintentarlos con backoff exponencial",
+    "Garantiza que el consumidor procesa el mensaje antes de que el productor confirme la operación de negocio"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Las transacciones XA distribuidas (two-phase commit) son el enfoque que el Outbox Pattern reemplaza precisamente por su complejidad operacional y problemas de disponibilidad. El Outbox no usa 2PC.",
+    "Correcto. El problema clásico: guardas el pedido en la BD y luego publicas `OrderCreated` al broker. Si la app cae entre los dos pasos, el evento se pierde y la BD y el broker quedan inconsistentes. Con Outbox: en la misma transacción SQL guardas el pedido en `orders` y el evento serializado en una tabla `outbox_events`. Un proceso separado (poller o CDC con Debezium) lee la tabla outbox y publica al broker, marcando el evento como publicado. Si el poller falla, reintenta: garantiza at-least-once entre BD y broker. En .NET, MassTransit tiene soporte nativo para Outbox con EF Core.",
+    "Lo que describes es una Dead Letter Queue o un mecanismo de retry. El Outbox Pattern no es para reintentos; es para garantizar que el evento se persiste atómicamente con los datos de dominio antes de publicar.",
+    "El Outbox es asíncrono por diseño. El consumidor procesa el evento después de que el productor confirma la transacción. El patrón no establece ninguna sincronización entre productor y consumidor."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia entre at-least-once y exactly-once delivery, y cuál es más común en la práctica?"
+  options={[
+    "Exactly-once es el estándar en todos los brokers modernos y es la garantía que Kafka ofrece por defecto",
+    "At-least-once garantiza que el mensaje se entrega al menos una vez (puede duplicarse), exactly-once garantiza exactamente una entrega. At-least-once es mucho más común porque exactly-once requiere coordinación costosa; la solución práctica es idempotencia en el consumidor",
+    "At-most-once y at-least-once son equivalentes en sistemas con acknowledgements automáticos",
+    "Exactly-once se logra fácilmente usando transacciones en el consumidor para confirmar el mensaje y actualizar la BD en un solo paso"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Kafka ofrece exactly-once semántics (EOS) desde la versión 0.11, pero no por defecto y con overhead de rendimiento. Requiere configurar `enable.idempotence=true` y `transactional.id`. La mayoría de implementaciones usan at-least-once.",
+    "Correcto. At-least-once: si el consumidor falla después de procesar pero antes de hacer ack, el broker reentrega el mensaje. El consumidor puede recibir duplicados. Solución: hacer el consumidor idempotente. Ejemplo: al procesar `OrderShipped`, antes de actualizar el estado verifica si ya está en estado enviado usando el `messageId` como clave de idempotencia en una tabla `processed_messages`. Exactly-once real requiere coordinación entre broker y consumidor (transacciones Kafka) con impacto en throughput de 20-30%. En la práctica: diseñar consumidores idempotentes y aceptar at-least-once es el trade-off correcto en el 90% de los casos.",
+    "At-most-once y at-least-once son opuestos. At-most-once: el mensaje puede perderse pero nunca se duplica (fire and forget). At-least-once: puede duplicarse pero nunca se pierde. No son equivalentes.",
+    "Las transacciones en el consumidor pueden ayudar a la idempotencia local, pero no garantizan exactly-once a nivel del broker. El broker puede reenviar el mensaje si no recibe el ack a tiempo, independientemente de lo que haga el consumidor con su transacción local."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuáles son los trade-offs entre Choreography y Orchestration en el patrón Saga para transacciones distribuidas?"
+  options={[
+    "Choreography es siempre superior porque elimina el punto único de fallo que representa el orquestador",
+    "Orchestration usa un orquestador central que dirige el flujo (más fácil de razonar y observar, pero acoplamiento central). Choreography usa eventos reactivos entre servicios (mayor autonomía, pero el flujo es difícil de razonar y depurar a medida que crece)",
+    "Choreography y Orchestration son equivalentes en complejidad; la elección depende únicamente del lenguaje de programación",
+    "Orchestration requiere mensajería asíncrona y Choreography puede implementarse con llamadas REST síncronas entre servicios"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Choreography tiene ventajas, pero a escala puede volverse un espagueti de eventos donde nadie sabe el flujo completo del negocio. El punto único de fallo del orquestador se mitiga con alta disponibilidad del orquestador (ej: Temporal, MassTransit Saga).",
+    "Correcto. Orchestration: un proceso central (Saga Orchestrator) envía comandos a cada servicio y reacciona a sus respuestas. Con Temporal o MassTransit StateMachine el flujo es código legible, observable con dashboards y fácil de depurar. El riesgo: el orquestador conoce a todos los servicios, creando acoplamiento. Choreography: cada servicio escucha eventos y emite los suyos. `OrderService` emite `OrderCreated`, `PaymentService` escucha y emite `PaymentProcessed`, `InventoryService` escucha ese. Ventaja: servicios completamente desacoplados. Desventaja: el flujo completo solo existe en la documentación, y cuando falla es difícil saber en qué paso está la transacción. Para flujos simples: Choreography. Para flujos complejos con compensaciones: Orchestration.",
+    "La complejidad no es equivalente. Choreography escala en complejidad de forma no lineal a medida que se agregan servicios y casos de error. Orchestration mantiene la complejidad más manejable en flujos complejos.",
+    "Ambos patrones típicamente usan mensajería asíncrona. Usar REST síncrono en una Saga Choreography crearía acoplamiento temporal y eliminaría los beneficios del patrón. La diferencia no está en el protocolo de transporte sino en quién coordina el flujo."
+  ]}
+/>
+
+---
+
+## Escalabilidad de Bases de Datos
+
+<Quiz
+  question="¿Cuál es la diferencia entre sharding horizontal y particionamiento vertical de una base de datos?"
+  options={[
+    "Sharding horizontal divide la tabla por columnas y el particionamiento vertical divide por filas",
+    "Sharding horizontal distribuye filas entre múltiples nodos usando una shard key (ej: `userId % N`). Particionamiento vertical divide tablas con muchas columnas en tablas más pequeñas separando columnas de acceso frecuente de las de acceso raro",
+    "Sharding y particionamiento vertical son sinónimos en la terminología de SQL Server y PostgreSQL",
+    "El particionamiento vertical solo aplica a bases de datos NoSQL orientadas a documentos como MongoDB"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Es al revés. Sharding horizontal distribuye filas (escala el volumen de datos), no columnas. El particionamiento vertical divide columnas, no filas.",
+    "Correcto. Sharding horizontal: tienes 100M usuarios y distribuyes: shard 0 tiene userId 0-24M, shard 1 tiene 25M-49M, etc. Escala el volumen de datos y las escrituras. El reto: queries cross-shard son costosas, y re-sharding cuando creces es complejo. Ejemplo en Azure: Cosmos DB y Azure SQL Elastic Pools lo implementan de forma gestionada. Particionamiento vertical: una tabla `users` con 50 columnas donde solo `id`, `email` y `name` se leen en cada request. Separas las columnas de perfil extendido a `user_profiles`. Reduce el tamaño de los rows activos en caché y mejora los full scans. Diferente a normalización: aquí partes por patrón de acceso, no por forma normal.",
+    "No son sinónimos. Son estrategias ortogonales que resuelven problemas distintos. SQL Server tiene tabla partitioning (horizontal por rango) que es distinto al sharding entre múltiples servidores.",
+    "El particionamiento vertical aplica a cualquier tipo de base de datos. En SQL es separar columnas en tablas relacionadas. En NoSQL de columnas como Cassandra o DynamoDB es seleccionar qué atributos van en la tabla principal vs tablas de proyección."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué es un covering index y cómo reduce el I/O en una consulta?"
+  options={[
+    "Un covering index es un índice que cubre todas las tablas del esquema para evitar full table scans",
+    "Un covering index incluye todas las columnas que necesita una query específica, permitiendo que el motor resuelva la query completamente desde el índice sin acceder a la tabla (heap o clustered index)",
+    "Un covering index es un índice compuesto con más de tres columnas que cubre múltiples condiciones WHERE",
+    "Los covering indexes solo son posibles en SQL Server mediante la cláusula INCLUDE; PostgreSQL no los soporta"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "No existe un índice que cubra todas las tablas. Un covering index es específico para una query o conjunto de queries con el mismo patrón de acceso.",
+    "Correcto. Sin covering index: SQL hace index seek en el índice de `email`, obtiene el row pointer, y luego hace key lookup en el clustered index para obtener `name` y `status`. Cada key lookup es una operación de I/O aleatoria. Con `CREATE INDEX IX_Users_Email_Inc ON Users(email) INCLUDE (name, status)`: la query `SELECT name, status FROM Users WHERE email = 'x@y.com'` se resuelve 100% desde el índice. Sin acceso al heap. El plan de ejecución muestra Index Seek sin Key Lookup. Para queries de alto volumen esto puede reducir el I/O un 80-90%. El trade-off: los índices con INCLUDE aumentan el tamaño del índice y ralentizan las escrituras.",
+    "Un índice compuesto con múltiples columnas en WHERE no es necesariamente covering. Un covering index lo define si incluye todas las columnas del SELECT, no la cantidad de columnas en la condición.",
+    "PostgreSQL soporta covering indexes desde la versión 11 con la sintaxis `CREATE INDEX ON users(email) INCLUDE (name, status)`. La sintaxis es idéntica a SQL Server. MySQL/InnoDB también los soporta implícitamente en cualquier índice secundario que incluya las columnas del SELECT."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo es correcto elegir una base de datos NoSQL sobre una relacional SQL para un sistema nuevo?"
+  options={[
+    "Siempre que el proyecto tenga alta carga, porque NoSQL escala mejor horizontalmente que cualquier base SQL",
+    "Cuando el esquema es genuinamente variable o no conocido de antemano, se requiere escala horizontal masiva sin joins complejos, o el modelo de datos se ajusta naturalmente a documentos, grafos o series temporales",
+    "Cuando el equipo no tiene experiencia con SQL, ya que NoSQL tiene una curva de aprendizaje más baja",
+    "Cuando el sistema necesita alta disponibilidad, ya que las bases SQL no soportan replicación multi-región"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "PostgreSQL con réplicas de lectura, Citus para sharding, o Aurora en AWS escalan horizontalmente de forma muy efectiva. La capacidad de escala ya no es razón suficiente para elegir NoSQL sobre SQL.",
+    "Correcto. Criterios reales para NoSQL: (1) Esquema dinámico: atributos de productos en un e-commerce donde cada categoría tiene propiedades distintas, ideal para MongoDB. (2) Throughput masivo de escritura con modelo simple: métricas de IoT con millones de inserciones por segundo, ideal para Cassandra o InfluxDB. (3) Modelo de grafo: redes sociales o detección de fraude, ideal para Neo4j. (4) Caché distribuida: Redis. Pero si tienes relaciones complejas, necesitas ACID transaccional entre entidades o queries analíticas ad-hoc, SQL sigue siendo la elección correcta. El error más caro: elegir NoSQL y descubrir que necesitas joins, acabar implementándolos en la capa de aplicación.",
+    "NoSQL tiene una curva de aprendizaje diferente, no necesariamente más baja. Modelar correctamente para Cassandra (partition key, clustering key, query-first design) es más difícil que SQL para la mayoría de desarrolladores.",
+    "SQL Server, PostgreSQL, MySQL y Oracle soportan replicación multi-región. Aurora Global Database y Azure SQL Geo-Replication son ejemplos de alta disponibilidad multi-región en bases relacionales. Este argumento es incorrecto."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué es la estrategia Expand/Contract (también llamada parallel change) para migraciones zero-downtime?"
+  options={[
+    "Es un patrón para expandir la capacidad del servidor antes de una migración y reducirla después para optimizar costos",
+    "Es una estrategia de migración en tres fases: Expand (añadir la nueva estructura sin eliminar la antigua), migrar datos y actualizar código gradualmente, y Contract (eliminar la estructura antigua una vez que ningún código la usa)",
+    "Es un patrón que expande las transacciones de base de datos para incluir validaciones de esquema automáticas antes de cada despliegue",
+    "Es equivalente a una migración con rollback: primero se expande el esquema y si falla se hace rollback contrayendo los cambios"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "No tiene que ver con capacidad del servidor. Es un patrón de ingeniería de esquemas de base de datos para despliegues sin tiempo de inactividad.",
+    "Correcto. Ejemplo: renombrar columna `user_name` a `username`. Fase 1 Expand: añadir columna `username` manteniendo `user_name`. Desplegar código que escribe en ambas columnas y lee de `username`. Fase 2 Migration: script que copia datos de `user_name` a `username` para los rows no migrados. Fase 3 Contract: una vez que 100% del código usa `username` y está desplegado, hacer `ALTER TABLE DROP COLUMN user_name`. Cada fase es un deploy independiente. El sistema funciona en todo momento. Sin Expand/Contract, un `ALTER TABLE RENAME COLUMN` en una tabla grande bloquea la tabla y el deploy requiere downtime. Herramientas como Flyway, Liquibase o EF Core Migrations soportan este patrón.",
+    "Expand/Contract no expande transacciones ni añade validaciones automáticas. Es un proceso de cambios de esquema en múltiples pasos coordinados con deploys del código.",
+    "No es equivalente a un rollback. En Expand/Contract nunca necesitas hacer rollback del esquema porque en todo momento tienes tanto la estructura antigua como la nueva disponibles. El rollback normal consistiría en simplemente no avanzar a la fase Contract."
+  ]}
+/>
+
+---
+
+## Concurrencia Avanzada
+
+<Quiz
+  question="¿Cuál es la diferencia entre `lock` (Monitor) y `SemaphoreSlim` en .NET y cuándo usar cada uno?"
+  options={[
+    "Son equivalentes: `SemaphoreSlim` es la versión moderna de `lock` con mejor rendimiento en todos los escenarios",
+    "`lock` es ideal para secciones críticas síncronas de corta duración con un único thread permitido. `SemaphoreSlim` permite controlar el número de accesos concurrentes y soporta `await` para no bloquear threads del thread pool",
+    "`lock` es thread-safe y `SemaphoreSlim` no lo es; por eso `lock` se usa en código de producción",
+    "`SemaphoreSlim` solo es necesario cuando hay más de 10 threads accediendo concurrentemente al mismo recurso"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "No son equivalentes. `lock` no soporta async/await y solo permite un thread a la vez. `SemaphoreSlim` soporta awaitable y permite N accesos concurrentes configurables.",
+    "Correcto. `lock(obj)` compila a `Monitor.Enter/Exit` y es sincrónico: el thread queda bloqueado esperando. Correcto para secciones críticas rápidas como actualizar un diccionario en memoria. Nunca uses `lock` con I/O adentro. `SemaphoreSlim(1,1)` es un mutex asíncrono: `await semaphore.WaitAsync()` libera el thread del pool mientras espera. Correcto cuando la sección crítica incluye `await` (llamadas a BD, HTTP). `SemaphoreSlim(N,N)` limita la concurrencia a N: ideal para throttling de llamadas a APIs externas con rate limiting. Ejemplo: `SemaphoreSlim throttle = new SemaphoreSlim(10, 10)` para no lanzar más de 10 requests HTTP simultáneos.",
+    "Ambos son thread-safe. `SemaphoreSlim` es ampliamente usado en código de producción. De hecho, para código async, `SemaphoreSlim` es la opción correcta ya que `lock` no funciona con `await`.",
+    "El número de threads no determina cuándo usar `SemaphoreSlim`. La razón principal es la necesidad de await dentro de la sección crítica o de controlar el nivel de concurrencia a un valor mayor que 1."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué es un deadlock y cómo se produce el escenario clásico en aplicaciones multithreaded?"
+  options={[
+    "Un deadlock ocurre cuando un thread entra en un bucle infinito consumiendo 100% de CPU sin liberar el control",
+    "Un deadlock ocurre cuando dos o más threads se esperan mutuamente para liberar recursos, generando un ciclo de espera del que ninguno puede salir. El escenario clásico: Thread A tiene el Lock 1 y espera el Lock 2; Thread B tiene el Lock 2 y espera el Lock 1",
+    "Un deadlock es equivalente a una race condition: ambos ocurren cuando múltiples threads acceden al mismo recurso sin sincronización",
+    "Los deadlocks solo ocurren en bases de datos; en código de aplicación .NET son imposibles gracias al garbage collector"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Lo que describes es un bucle infinito o CPU spin, no un deadlock. En un deadlock los threads están bloqueados esperando, no consumiendo CPU.",
+    "Correcto. El escenario clásico en C#: Thread A hace `lock(resourceA)` y luego intenta `lock(resourceB)`. Simultáneamente, Thread B hace `lock(resourceB)` y luego intenta `lock(resourceA)`. Ambos quedan bloqueados para siempre. Prevención: (1) Orden consistente de adquisición de locks: siempre adquirir en el mismo orden. (2) Lock timeout: `Monitor.TryEnter(obj, timeout)` con manejo del fallo. (3) Reducir el scope de los locks: no adquirir múltiples locks si puedes evitarlo. (4) Usar estructuras concurrentes lock-free: `ConcurrentDictionary`, `Interlocked`. En async también ocurre: `Task.Result` o `.Wait()` en un contexto que tiene `SynchronizationContext` puede causar deadlock clásico en ASP.NET Framework.",
+    "Un deadlock y una race condition son problemas distintos. Race condition: múltiples threads acceden sin sincronización y el resultado depende del orden de ejecución. Deadlock: los threads tienen sincronización pero crean un ciclo de espera. Tener sincronización previene race conditions pero puede introducir deadlocks.",
+    "Los deadlocks ocurren frecuentemente en código de aplicación .NET. El garbage collector no tiene ninguna relación con la gestión de locks. Un ejemplo muy común es llamar `.Result` o `.Wait()` en un Task dentro de un contexto con `SynchronizationContext`."
+  ]}
+/>
+
+<Quiz
+  question="¿Por qué `async void` es peligroso en C# y cuándo es aceptable usarlo?"
+  options={[
+    "`async void` es peligroso porque es más lento que `async Task` al no poder ser esperado por el scheduler",
+    "`async void` es peligroso porque las excepciones no pueden ser capturadas por el llamador y si ocurren crashean el proceso. Solo es aceptable en event handlers de UI (Button.Click) porque el framework los requiere con esa firma",
+    "`async void` genera memory leaks porque el runtime no puede rastrear cuándo el método termina para liberar recursos",
+    "`async void` es un antipatrón absoluto que no debe usarse nunca en código de producción bajo ninguna circunstancia"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "La velocidad no es el problema. `async void` y `async Task` tienen rendimiento comparable. El problema es el manejo de excepciones y la capacidad de composición.",
+    "Correcto. Con `async Task`, si el método lanza una excepción, esta queda almacenada en el Task y puede ser observada con `await`. Con `async void`, la excepción se propaga directamente al `SynchronizationContext` activo: en ASP.NET Core esto puede crashear el proceso o ser silenciada según la versión. Además, no puedes hacer `await asyncVoidMethod()` ni testearla fácilmente. El único caso aceptable: event handlers donde el framework requiere `void`: `button.Click += async (s, e) => await LoadDataAsync()`. En cualquier otro caso, usa `async Task`. Si necesitas fire-and-forget, usa `_ = Task.Run(() => MyMethodAsync())` con manejo explícito de excepciones, no `async void`.",
+    "Los memory leaks no son el problema principal de `async void`. El runtime sí puede rastrear cuándo termina el método; el problema es que el llamador no puede esperar su completado ni capturar sus excepciones.",
+    "Hay exactamente un caso aceptable: event handlers de UI y frameworks que requieren la firma `void`. Decir que nunca debe usarse es incorrecto, aunque en la práctica es correcto minimizarlo al máximo."
+  ]}
+/>
+
+---
+
+## System Design
+
+<Quiz
+  question="¿Cómo diseñarías un sistema de caché distribuida para reducir la carga en una base de datos con alto tráfico de lectura?"
+  options={[
+    "Poner Redis delante de todas las queries sin distinción y con TTL de 1 hora para maximizar el hit rate",
+    "Identificar los datos calientes con patrones de lectura, aplicar Cache-Aside con TTL apropiado por tipo de dato, manejar explícitamente cache invalidation y diseñar para cache miss storms con probabilistic early expiration o distributed locks",
+    "Usar caché solo para queries que tarden más de 500ms según los logs de slow queries",
+    "Replicar la base de datos en múltiples read replicas en lugar de usar caché, ya que las replicas siempre tienen datos frescos"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "TTL de 1 hora uniforme y cachear todo indiscriminadamente es un error de diseño. Datos que cambian frecuentemente quedan stale demasiado tiempo. Además, al reiniciar Redis o ante un cache flush, todas las keys expiran juntas generando un thundering herd que satura la BD.",
+    "Correcto. Patrón Cache-Aside: la app intenta `GET key` en Redis. Si miss, consulta BD, escribe en Redis con TTL y retorna. Si hit, retorna directamente. TTL diferenciado: datos de catálogo (raramente cambian) con TTL de 1 hora; datos de sesión con TTL de 15 minutos; datos en tiempo real sin caché. Cache invalidation: al actualizar un producto, el servicio hace `DEL product:42` o publica un evento que invalida la key. Thundering herd prevention: cuando muchos requests llegan simultáneamente a una key expirada, usar `SET NX` (lock) para que solo uno recargue la BD. En .NET con StackExchange.Redis: `IDistributedCache` con serialización eficiente usando `System.Text.Json` o MessagePack. Monitorear hit rate: debería ser mayor al 80-90% para justificar la complejidad.",
+    "Cachear solo queries lentas es una heurística incompleta. Una query rápida que se ejecuta un millón de veces por minuto también debe cachearse. El criterio debe ser frecuencia de acceso y estabilidad del dato, no solo latencia.",
+    "Las read replicas reducen la carga pero no eliminan el I/O de base de datos. Con caché, el 90% de las lecturas nunca llegan a la BD. Las replicas tienen latencia de replicación y son más costosas que Redis. Son complementarios, no alternativos."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es el principal trade-off del patrón CQRS (Command Query Responsibility Segregation) en un sistema distribuido?"
+  options={[
+    "El principal trade-off es que CQRS requiere duplicar todo el código de dominio para el modelo de lectura y el de escritura",
+    "El principal trade-off es la eventual consistency entre el Write Model y el Read Model: las proyecciones pueden estar temporalmente desactualizadas, lo que requiere que la UI y los consumidores estén diseñados para tolerarla",
+    "El principal trade-off es el rendimiento: CQRS siempre es más lento que un CRUD tradicional porque requiere dos round-trips a la base de datos",
+    "El principal trade-off es la seguridad: al separar comandos y queries es más difícil aplicar autorización consistente"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "No es necesario duplicar el código de dominio. El Write Model contiene la lógica de negocio y los invariantes. El Read Model son proyecciones optimizadas para lectura, que pueden ser simples DTOs sin lógica.",
+    "Correcto. El Write Side acepta el comando, valida invariantes y persiste el evento o el aggregate. El Read Side proyecta los eventos en vistas desnormalizadas optimizadas para cada query. Entre ambos lados hay un lag: si publicas un evento y la proyección tarda 50ms en actualizarse, una query inmediata puede devolver datos stale. Implicaciones de diseño: (1) Las queries deben ser tolerantes a datos ligeramente desactualizados. (2) El Write Side puede retornar el estado esperado optimísticamente. (3) La UI puede mostrar el cambio del usuario de forma optimista sin esperar la actualización del Read Model. Si el sistema requiere consistencia fuerte, CQRS añade complejidad sin beneficio. CQRS tiene sentido cuando los patrones de lectura y escritura son muy distintos en escala o forma.",
+    "CQRS no requiere dos round-trips. El Read Model es una proyección optimizada que puede ser una query única y eficiente. De hecho, el Read Side puede ser más rápido que CRUD porque las vistas están desnormalizadas para cada caso de uso.",
+    "La autorización en CQRS puede ser más clara, no más difícil: los comandos tienen autorización de escritura y las queries de lectura, con separación explícita. No es el trade-off principal del patrón."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué afirma el CAP Theorem y qué eligen los sistemas CP vs AP en la práctica?"
+  options={[
+    "CAP Theorem afirma que un sistema distribuido puede garantizar Consistency, Availability y Performance, pero solo dos de los tres simultáneamente",
+    "CAP Theorem afirma que durante una partición de red un sistema solo puede garantizar Consistency o Availability, no ambas. Los sistemas CP priorizan consistencia (ej: ZooKeeper, etcd). Los sistemas AP priorizan disponibilidad con eventual consistency (ej: Cassandra, DynamoDB en modo eventual)",
+    "CAP Theorem aplica solo a bases de datos NoSQL; los sistemas SQL tradicionales están exentos porque usan ACID",
+    "CAP Theorem fue refutado por el PACELC model y ya no es relevante para el diseño de sistemas modernos"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "La P en CAP es Partition tolerance (tolerancia a particiones de red), no Performance. Un sistema sin tolerancia a particiones no es un sistema distribuido real.",
+    "Correcto. Durante una partición de red (los nodos no pueden comunicarse), debes elegir: CP: rechazar escrituras o lecturas hasta que la partición se resuelva, garantizando que todos los nodos tienen el mismo dato. ZooKeeper y etcd son CP: se usan para coordinación distribuida donde la inconsistencia sería catastrófica (quién es el líder, qué configuración está activa). AP: continuar sirviendo requests aceptando que diferentes nodos puedan tener datos distintos temporalmente. Cassandra y DynamoDB en modo eventual son AP: una escritura se acepta aunque no todos los nodos la hayan recibido. La elección depende del dominio: sistemas bancarios y de pagos prefieren CP; redes sociales, catálogos y sistemas de recomendación toleran AP. El modelo PACELC extiende CAP considerando también la latencia cuando no hay partición, pero no lo invalida.",
+    "CAP Theorem aplica a todos los sistemas distribuidos, incluidos los relacionales distribuidos. Google Spanner, CockroachDB y Aurora Global son sistemas SQL que enfrentan los mismos trade-offs del CAP en escenarios multi-región.",
+    "PACELC es una extensión del CAP Theorem que añade consideraciones de latencia, no una refutación. CAP sigue siendo el framework conceptual fundamental para entender los trade-offs en sistemas distribuidos."
+  ]}
+/>

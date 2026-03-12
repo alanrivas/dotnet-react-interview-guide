@@ -1,0 +1,858 @@
+---
+id: preguntas
+title: 🎯 Banco de Preguntas — Junior
+sidebar_position: 99
+---
+
+import Quiz from '@site/src/components/Quiz';
+
+# 🎯 Banco de Preguntas — Junior
+
+Preguntas reales de entrevistas para posiciones Junior Full Stack .NET + React.
+
+:::tip Cómo usar este banco
+Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la entrevista real, pensar en voz alta muestra tu proceso de razonamiento.
+:::
+
+---
+
+## C# — Tipos y Memoria
+
+<Quiz
+  question="¿Dónde se almacena un value type (por ejemplo, un int) declarado como variable local en C#?"
+  options={[
+    "En el heap, igual que los objetos de clase",
+    "En el stack; si está dentro de un objeto, en el heap junto a ese objeto",
+    "En el registro del procesador únicamente",
+    "Depende del compilador y de la versión de .NET"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. El heap es para reference types (clases, arrays, strings). Los value types locales van al stack.",
+    "Correcto. Los value types como int, double, bool y struct se almacenan en el stack cuando son variables locales. Si forman parte de una clase (reference type), se almacenan en el heap junto al objeto.\n\n```csharp\nint a = 5;\nint b = a;  // copia del valor, no referencia\nb = 10;\nConsole.WriteLine(a); // 5, a no cambió\n\nvar persona = new Persona { Edad = 30 }; // Edad (int) vive en el heap porque está dentro de la clase\n```",
+    "Incorrecto. Los registros del procesador los usa el JIT internamente para optimizar, pero no es donde se 'almacenan' las variables desde la perspectiva del programador.",
+    "Incorrecto. El compilador y la versión de .NET no cambian esta regla fundamental: los value types locales van al stack."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué ocurre exactamente durante una operación de boxing en C#?"
+  options={[
+    "El value type se copia dentro de un envoltorio object en el heap y la variable apunta a esa copia",
+    "El value type se convierte en un string para poder ser tratado como object",
+    "Se crea un puntero al value type en el stack, sin mover la memoria",
+    "El compilador reemplaza el value type por su clase equivalente (int → Int32) en tiempo de compilación"
+  ]}
+  correctIndex={0}
+  explanations={[
+    "Correcto. Boxing copia el valor del stack al heap dentro de un objeto envoltorio. La variable de tipo object pasa a apuntar a ese objeto en el heap, lo que implica una nueva alocación y mayor presión sobre el Garbage Collector.\n\n```csharp\nint numero = 42;\nobject boxed = numero;    // boxing: nueva alocación en el heap\nint unboxed = (int)boxed; // unboxing: cast + copia al stack\n\n// Evitarlo en loops intensivos — usa List<T> en vez de ArrayList\nvar lista = new List<int>();  // sin boxing\n```",
+    "Incorrecto. Boxing no convierte a string. Convierte un value type a object copiando el valor al heap.",
+    "Incorrecto. No se crea un puntero al stack; eso violaría el modelo de memoria de .NET. El valor se copia al heap.",
+    "Incorrecto. Int32 e int son exactamente el mismo tipo (alias). El boxing ocurre en runtime, no en compilación."
+  ]}
+/>
+
+<Quiz
+  question="El Garbage Collector de .NET trabaja con generaciones. ¿Qué significa que un objeto esté en Gen 2?"
+  options={[
+    "Que fue creado hace exactamente 2 segundos",
+    "Que es un objeto de larga vida que sobrevivió recolecciones anteriores; se recolecta con poca frecuencia",
+    "Que tiene exactamente 2 referencias activas en el heap",
+    "Que ocupa más de 2 KB de memoria"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Las generaciones no tienen relación con el tiempo en segundos, sino con cuántas rondas de recolección ha sobrevivido el objeto.",
+    "Correcto. El GC clasifica objetos en tres generaciones según su longevidad:\n\n- **Gen 0**: objetos recién creados. Recolectado muy frecuentemente y rápido.\n- **Gen 1**: objetos que sobrevivieron una recolección de Gen 0. Buffer intermedio.\n- **Gen 2**: objetos de larga vida (singletons, cachés, statics). Recolectado raramente y es costoso.\n\nEsta estrategia es eficiente porque la mayoría de los objetos mueren jóvenes (hipótesis generacional).",
+    "Incorrecto. El número de referencias activas no determina la generación de un objeto.",
+    "Incorrecto. El tamaño del objeto no define su generación. Objetos grandes van al Large Object Heap (LOH) directamente, independientemente de su generación."
+  ]}
+/>
+
+<Quiz
+  question="Tienes un loop que concatena 10 000 strings. ¿Qué problema tiene usar el operador `+` y cuál es la solución?"
+  options={[
+    "No hay ningún problema, el compilador optimiza la concatenación automáticamente en todos los casos",
+    "Cada `+` crea un nuevo string en el heap porque string es inmutable; la solución es usar StringBuilder",
+    "El operador `+` para strings está deprecado; debes usar String.Concat() siempre",
+    "El problema es solo de legibilidad; en performance son equivalentes"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. El compilador solo optimiza concatenaciones de literales en tiempo de compilación. Una concatenación dentro de un loop con variables no se optimiza.",
+    "Correcto. Como string es inmutable, cada operación `+` crea un nuevo objeto string en el heap descartando el anterior, generando miles de alocaciones y mucha presión sobre el GC.\n\n```csharp\n// ❌ Costoso: 10 000 alocaciones en el heap\nstring resultado = \"\";\nfor (int i = 0; i < 10_000; i++)\n    resultado += $\"Item {i}\\n\";\n\n// ✅ Correcto: una sola alocación final\nvar sb = new StringBuilder();\nfor (int i = 0; i < 10_000; i++)\n    sb.AppendLine($\"Item {i}\");\nstring resultado = sb.ToString();\n```",
+    "Incorrecto. String.Concat() no está deprecado, pero tampoco resuelve el problema de las alocaciones en loops. StringBuilder sigue siendo la solución correcta.",
+    "Incorrecto. La diferencia de performance es enorme: para 10 000 concatenaciones, StringBuilder puede ser 100-1000x más rápido."
+  ]}
+/>
+
+<Quiz
+  question="¿Para qué sirve el tipo `int?` en C# y cómo se diferencia de `int`?"
+  options={[
+    "Es un alias de `uint` (entero sin signo)",
+    "Es un int que puede almacenar el valor null además de cualquier entero; es equivalente a Nullable<int>",
+    "Es un int que se inicializa automáticamente a 0 si no se asigna",
+    "Es un entero de mayor precisión (64 bits en lugar de 32)"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. `uint` es el tipo entero sin signo (0 a 4 294 967 295). `int?` es un Nullable<int>, algo completamente distinto.",
+    "Correcto. `int?` es azúcar sintáctica para `Nullable<int>`. Permite que una variable de tipo valor también pueda ser null, lo cual es útil, por ejemplo, cuando un campo en base de datos puede ser NULL.\n\n```csharp\nint? edad = null;       // válido\nint? otraEdad = 25;     // también válido\n\n// Trabajar con nullables\nif (edad.HasValue)\n    Console.WriteLine(edad.Value);\n\n// Operador de fusión de null\nint edadReal = edad ?? 0; // si es null, usa 0\n\n// Desde C# 6: null-conditional\nConsole.WriteLine(edad?.ToString() ?? \"Sin edad\");\n```",
+    "Incorrecto. Un `int` sin signo de interrogación ya se inicializa a 0 en campos de clase. `int?` se inicializa a `null`.",
+    "Incorrecto. La precisión no cambia. `int?` sigue siendo de 32 bits para el valor; simplemente puede ser null además."
+  ]}
+/>
+
+---
+
+## C# — Programación Orientada a Objetos
+
+<Quiz
+  question="¿Cuál de los siguientes NO es uno de los 4 pilares de la Programación Orientada a Objetos?"
+  options={[
+    "Encapsulamiento",
+    "Herencia",
+    "Concurrencia",
+    "Polimorfismo"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto como respuesta: el encapsulamiento SÍ es uno de los 4 pilares. Consiste en ocultar el estado interno y exponer solo una interfaz pública.",
+    "Incorrecto como respuesta: la herencia SÍ es uno de los 4 pilares. Permite que una clase reutilice comportamiento de otra.",
+    "Correcto. Los 4 pilares son: Encapsulamiento, Herencia, Polimorfismo y Abstracción. La concurrencia es un concepto de programación paralela/asíncrona, no un pilar de la POO.\n\n```csharp\n// Abstracción: define 'qué' sin 'cómo'\ninterface IRepositorio<T> { Task<T> ObtenerAsync(int id); }\n\n// Encapsulamiento: estado privado, interfaz pública\npublic class Cuenta {\n    private decimal _saldo;\n    public void Depositar(decimal m) { if (m > 0) _saldo += m; }\n}\n\n// Herencia + Polimorfismo\nclass Animal { public virtual string Sonido() => \"...\"; }\nclass Perro : Animal { public override string Sonido() => \"Guau\"; }\n```",
+    "Incorrecto como respuesta: el polimorfismo SÍ es uno de los 4 pilares. Permite tratar objetos de distintos tipos de forma uniforme a través de su tipo base."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo deberías elegir una `abstract class` en lugar de una `interface`?"
+  options={[
+    "Cuando quieres que una clase implemente múltiples contratos distintos al mismo tiempo",
+    "Cuando las clases derivadas comparten implementación base y estado común, y tienen relación 'es un tipo de'",
+    "Siempre que necesites definir métodos sin implementación",
+    "Cuando necesitas que el contrato sea implementado por clases sin relación entre sí"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. La posibilidad de implementar múltiples contratos es precisamente la ventaja de las interfaces, no de las clases abstractas (que solo admiten herencia simple).",
+    "Correcto. Una clase abstracta es la mejor opción cuando existe una jerarquía de herencia real ('es un tipo de'), las subclases comparten código base y puede haber estado (campos) compartido.\n\n```csharp\n// Clase abstracta: Vehiculo es la base real\npublic abstract class Vehiculo {\n    protected int _velocidad;\n    public abstract string TipoMotor();\n    public void Acelerar(int kmh) => _velocidad += kmh; // implementación compartida\n}\n\npublic class Auto : Vehiculo {\n    public override string TipoMotor() => \"Combustión\";\n}\n\n// Interfaz: contrato sin relación de herencia\npublic interface IExportable { byte[] ExportarPDF(); }\n// Auto, Factura y Reporte pueden implementarla sin relación entre sí\n```",
+    "Incorrecto. Tanto las interfaces como las clases abstractas pueden tener métodos sin implementación. La diferencia no está en eso, sino en si se comparte código/estado.",
+    "Incorrecto. Para clases sin relación entre sí que deben cumplir un contrato, la interfaz es la elección correcta, no la clase abstracta."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué diferencia hay entre `override` y `new` al redefinir un método en una subclase en C#?"
+  options={[
+    "Son equivalentes: ambos reemplazan el método de la clase base",
+    "`override` aplica polimorfismo real (se llama según el tipo en runtime); `new` oculta el método base (shadowing, se llama según el tipo en compilación)",
+    "`new` es la forma moderna de `override` introducida en C# 6",
+    "`override` solo funciona con métodos estáticos; `new` con métodos de instancia"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. No son equivalentes. La diferencia es crítica: `override` respeta el polimorfismo, `new` lo rompe.",
+    "Correcto. Con `override`, si una variable de tipo base apunta a un objeto derivado, se ejecuta el método del objeto real (polimorfismo). Con `new`, se ejecuta el método según el tipo declarado de la variable.\n\n```csharp\nclass Base {\n    public virtual void Hablar() => Console.WriteLine(\"Base\");\n}\nclass HijoOverride : Base {\n    public override void Hablar() => Console.WriteLine(\"HijoOverride\");\n}\nclass HijoNew : Base {\n    public new void Hablar() => Console.WriteLine(\"HijoNew\");\n}\n\nBase b1 = new HijoOverride();\nBase b2 = new HijoNew();\nb1.Hablar(); // \"HijoOverride\" ← polimorfismo real\nb2.Hablar(); // \"Base\" ← llama al método de Base porque el tipo declarado es Base\n```",
+    "Incorrecto. `new` no es una versión moderna de `override`. Existen desde las primeras versiones de C# y tienen semánticas muy distintas.",
+    "Incorrecto. Tanto `override` como `new` se usan con métodos de instancia. `override` requiere que el método base sea `virtual`, `abstract` u `override`. Los métodos estáticos no pueden ser `override`."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es el modificador de acceso que permite acceso desde la misma clase, clases derivadas, pero NO desde ensamblados externos?"
+  options={[
+    "`public`",
+    "`private`",
+    "`protected`",
+    "`internal`"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. `public` es accesible desde cualquier lugar: misma clase, derivadas, mismo ensamblado y ensamblados externos.",
+    "Incorrecto. `private` solo es accesible desde la misma clase. No lo pueden ver las clases derivadas.",
+    "Correcto. `protected` permite acceso desde la misma clase y desde cualquier clase derivada (aunque esté en otro ensamblado), pero no desde código externo que no sea una subclase.\n\n```csharp\npublic class Animal {\n    private string _secreto = \"privado\";         // solo Animal\n    protected string _nombre = \"Animal genérico\"; // Animal y subclases\n    internal string _interno = \"mismo ensamblado\"; // solo este proyecto\n    public string Tipo = \"Animal\";               // todos\n}\n\npublic class Perro : Animal {\n    public void Ladrar() {\n        Console.WriteLine(_nombre);  // ✅ accede a protected\n        // Console.WriteLine(_secreto); // ❌ private\n    }\n}\n```",
+    "Incorrecto. `internal` es accesible desde cualquier clase dentro del mismo ensamblado (proyecto), pero no desde ensamblados externos, y no tiene en cuenta la jerarquía de herencia."
+  ]}
+/>
+
+---
+
+## C# — LINQ y Colecciones
+
+<Quiz
+  question="¿Cuál es la diferencia principal entre `IEnumerable<T>`, `ICollection<T>` e `IList<T>`?"
+  options={[
+    "Son sinónimos intercambiables; el compilador elige cuál usar según el contexto",
+    "`IEnumerable<T>` solo permite iterar; `ICollection<T>` añade Count y modificación; `IList<T>` añade acceso por índice",
+    "`IList<T>` es siempre más rápido que `IEnumerable<T>` para cualquier operación",
+    "`IEnumerable<T>` solo funciona con arrays y no con listas genéricas"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. No son intercambiables. Cada interfaz tiene un contrato distinto: usar la incorrecta puede generar evaluaciones múltiples o exponer más API de la necesaria.",
+    "Correcto. Forman una jerarquía donde cada una extiende la anterior:\n\n```csharp\n// IEnumerable<T>: solo iterar (foreach), evaluación diferida\nIEnumerable<int> seq = numeros.Where(n => n > 0); // no materializa\n\n// ICollection<T>: añade Count, Add, Remove, Contains, Clear\nICollection<string> col = new List<string>();\ncol.Add(\"hola\"); // ✅\n\n// IList<T>: añade índice, Insert, RemoveAt, IndexOf\nIList<string> lista = new List<string> { \"a\", \"b\" };\nConsole.WriteLine(lista[0]); // ✅ acceso por índice\n```\n\nRegla de diseño: en parámetros de método, acepta la interfaz más genérica que necesites (preferiblemente `IEnumerable<T>`).",
+    "Incorrecto. `IList<T>` puede ser más lento en iteración si la implementación no está optimizada. La velocidad depende de la implementación concreta, no de la interfaz.",
+    "Incorrecto. `IEnumerable<T>` funciona con cualquier tipo que lo implemente: arrays, listas, diccionarios, resultados de LINQ, etc."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia entre `FirstOrDefault()` y `SingleOrDefault()` en LINQ?"
+  options={[
+    "Son idénticos; solo difieren en el nombre por razones históricas",
+    "`FirstOrDefault()` devuelve el primero sin importar cuántos haya; `SingleOrDefault()` lanza excepción si hay más de uno",
+    "`SingleOrDefault()` es más rápido porque termina antes al encontrar el primer elemento",
+    "`FirstOrDefault()` lanza excepción si no hay elementos; `SingleOrDefault()` devuelve null"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Tienen comportamientos muy distintos en cuanto a cuántos elementos se esperan en la secuencia.",
+    "Correcto. La diferencia clave está en la expectativa sobre la cardinalidad:\n\n```csharp\nvar numeros = new[] { 1, 2, 2, 3 };\n\n// FirstOrDefault: devuelve el primero que cumple la condición (o default)\nvar primero = numeros.FirstOrDefault(n => n == 2); // 2, sin problemas\n\n// SingleOrDefault: espera exactamente 0 o 1 resultado\n// Si hay más de uno → InvalidOperationException\nvar unico = numeros.SingleOrDefault(n => n == 2); // ❌ lanza excepción (hay dos 2)\n\n// Cuándo usar cada uno:\n// FirstOrDefault → cuando puede haber varios, solo te importa el primero\n// SingleOrDefault → cuando la lógica de negocio garantiza unicidad (ej: buscar por ID)\n```",
+    "Incorrecto. `SingleOrDefault()` tiene que recorrer toda la secuencia para verificar que no hay más de un elemento, por lo que es más lento, no más rápido.",
+    "Incorrecto. Ambos devuelven el valor `default(T)` (null para tipos referencia, 0 para int, etc.) si no encuentran elementos. Ninguno lanza excepción por no encontrar resultados."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué es la evaluación diferida (deferred execution) en LINQ?"
+  options={[
+    "Que LINQ carga todos los datos en memoria al declarar la query para evitar múltiples accesos a la base de datos",
+    "Que la query LINQ no se ejecuta cuando se define, sino cuando se itera o se materializa con ToList()/ToArray()",
+    "Que LINQ ejecuta las operaciones en un hilo de fondo para no bloquear el hilo principal",
+    "Que LINQ pospone la compilación de la expresión lambda hasta la primera llamada"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Es exactamente lo contrario: la evaluación diferida significa que los datos NO se cargan en memoria al declarar la query.",
+    "Correcto. Con evaluación diferida, definir una query LINQ no ejecuta nada. La ejecución ocurre cuando se consume la secuencia.\n\n```csharp\nvar numeros = new List<int> { 1, 2, 3, 4, 5 };\n\n// Esto NO ejecuta el filtro todavía:\nvar pares = numeros.Where(n => {\n    Console.WriteLine($\"¿Es {n} par?\");\n    return n % 2 == 0;\n});\n\nConsole.WriteLine(\"Antes de iterar\");\n// Output hasta aquí: solo \"Antes de iterar\"\n\nforeach (var n in pares) // ← AQUÍ se ejecuta\n    Console.WriteLine(n);\n\n// Materialización fuerza ejecución inmediata:\nvar lista = pares.ToList();  // ejecuta y guarda en memoria\nvar array = pares.ToArray(); // igual\nint count = pares.Count();   // igual\n```\n\n⚠️ Si iteras la misma variable `IEnumerable` dos veces sin materializar, ejecutas la query dos veces.",
+    "Incorrecto. La evaluación diferida no tiene nada que ver con hilos o concurrencia. La ejecución ocurre en el mismo hilo.",
+    "Incorrecto. Las lambdas se compilan en tiempo de compilación. La evaluación diferida se refiere a cuándo se recorren los datos, no a cuándo se compila el código."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo preferirías un `Dictionary<TKey, TValue>` sobre una `List<T>`?"
+  options={[
+    "Cuando necesitas mantener los elementos ordenados por su valor",
+    "Cuando necesitas búsquedas frecuentes por clave con complejidad O(1) en lugar de O(n)",
+    "Cuando tienes pocos elementos (menos de 10) ya que el Dictionary ocupa menos memoria",
+    "Cuando necesitas iterar en orden de inserción"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. `Dictionary<TKey,TValue>` no garantiza orden. Si necesitas elementos ordenados por valor, usa `SortedList<TKey,TValue>` o una lista con `.OrderBy()`.",
+    "Correcto. La ventaja principal de `Dictionary` es la búsqueda por clave en O(1) gracias a la tabla hash, versus O(n) en una lista.\n\n```csharp\n// List: buscar un usuario por ID requiere recorrer toda la lista O(n)\nvar usuarios = new List<Usuario> { ... };\nvar user = usuarios.FirstOrDefault(u => u.Id == 42); // O(n)\n\n// Dictionary: búsqueda directa O(1)\nvar usuarios = new Dictionary<int, Usuario>();\nusuarios[42] = new Usuario { Id = 42, Nombre = \"Ana\" };\n\nif (usuarios.TryGetValue(42, out var user))\n    Console.WriteLine(user.Nombre); // O(1)\n\n// Cuándo usar cada uno:\n// List<T>     → orden importa, acceso por índice, no buscas por clave\n// Dictionary  → búsquedas frecuentes por clave única\n```",
+    "Incorrecto. Es al contrario: `Dictionary` tiene un overhead de memoria mayor que `List` por el almacenamiento de la tabla hash. Para pocos elementos, `List` es más eficiente en memoria.",
+    "Incorrecto. Desde .NET 5+, `Dictionary` mantiene el orden de inserción como detalle de implementación, pero no es un comportamiento garantizado por contrato. Para orden de inserción garantizado, usa `List<T>` o `LinkedList<T>`."
+  ]}
+/>
+
+---
+
+## C# — Async/Await
+
+<Quiz
+  question="¿Qué hace realmente `await` cuando se encuentra una operación asíncrona de I/O (como una consulta a la base de datos)?"
+  options={[
+    "Crea un nuevo hilo en el ThreadPool y bloquea el hilo actual hasta que ese hilo termine",
+    "Libera el hilo actual para que pueda atender otras tareas; cuando la operación termine, reanuda la ejecución",
+    "Convierte la operación asíncrona en síncrona para garantizar el orden de ejecución",
+    "Pausa toda la aplicación hasta que la operación de I/O se complete"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. `await` NO crea un nuevo hilo. Para I/O, el sistema operativo se encarga de la espera y el hilo se libera al pool.",
+    "Correcto. `await` en una operación de I/O (red, disco, base de datos) libera el hilo del pool para que pueda atender otras requests mientras el hardware trabaja. Cuando la operación termina, el runtime retoma la ejecución en el punto donde estaba.\n\n```csharp\n// Un hilo puede atender múltiples requests de forma concurrente\npublic async Task<IActionResult> GetUsuario(int id)\n{\n    // Aquí el hilo se libera mientras la DB responde\n    var usuario = await _context.Usuarios.FindAsync(id);\n    // El hilo (posiblemente diferente) continúa aquí\n    return Ok(usuario);\n}\n\n// ❌ Nunca bloquear async con .Result o .Wait()\n// var u = _context.Usuarios.FindAsync(id).Result; // posible deadlock\n```",
+    "Incorrecto. `await` no hace la operación síncrona; la hace asíncrona. El método se suspende y puede reanudar más tarde.",
+    "Incorrecto. Solo el método actual se suspende en el punto del `await`. El resto de la aplicación (otros hilos, otras requests) sigue funcionando."
+  ]}
+/>
+
+<Quiz
+  question="¿Por qué se recomienda retornar `Task` en lugar de `void` en métodos async?"
+  options={[
+    "Porque `async void` no compila en versiones modernas de C#",
+    "Porque `async void` no permite al llamador observar la tarea: las excepciones se pierden y no se puede hacer await de ella",
+    "Porque `Task` ocupa menos memoria que `void` en métodos asíncronos",
+    "No hay diferencia real; es solo una convención de estilo"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. `async void` sí compila. El problema es semántico y en runtime.",
+    "Correcto. `async void` tiene tres problemas graves:\n\n```csharp\n// ❌ async void: las excepciones no se pueden capturar desde fuera\npublic async void CargarDatosVoid()\n{\n    throw new Exception(\"error\"); // nadie puede capturar esto → crash de app\n}\n\n// No se puede hacer await\nCargarDatosVoid(); // sin await → sin control de errores\n\n// ✅ async Task: el llamador puede observar la tarea y capturar excepciones\npublic async Task CargarDatosAsync()\n{\n    throw new Exception(\"error\"); // se propaga al await\n}\n\ntry {\n    await CargarDatosAsync(); // ✅ captura la excepción\n} catch (Exception ex) {\n    Console.WriteLine(ex.Message);\n}\n```\n\nUso legítimo de `async void`: event handlers de UI (`button.Click += async (s,e) => { ... }`).",
+    "Incorrecto. La memoria no es el factor diferenciador aquí. La diferencia es sobre el manejo de excepciones y la observabilidad de la tarea.",
+    "Incorrecto. La diferencia es fundamental en cuanto a comportamiento en runtime: excepciones no observadas y falta de control de flujo."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué problema concreto indica el warning CS4014 en C#?"
+  options={[
+    "Que el método async retorna void en lugar de Task",
+    "Que estás llamando a un método async sin usar await, por lo que la Task no es observada y las excepciones se pierden",
+    "Que el método async no tiene ningún await en su cuerpo",
+    "Que dos métodos async se llaman en paralelo sin sincronización"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. El warning por retornar void en lugar de Task es una advertencia de análisis estático o de buenas prácticas, no el CS4014.",
+    "Correcto. CS4014 advierte que una llamada a un método async no está siendo observada con `await`.\n\n```csharp\npublic async Task ProcesarAsync()\n{\n    // ⚠️ CS4014: la Task no está siendo awaited\n    GuardarEnDBAsync(); // si lanza excepción → se pierde silenciosamente\n\n    // ✅ Con await:\n    await GuardarEnDBAsync();\n\n    // ✅ Si quieres lanzar y olvidar intencionalmente (fire and forget):\n    _ = GuardarEnDBAsync(); // descarta explícitamente para suprimir CS4014\n    // (pero aún sin manejo de excepciones)\n}\n```\n\nEste warning es una señal de alerta: en el 90% de los casos es un bug, no intencional.",
+    "Incorrecto. Un método async sin `await` en su cuerpo genera el warning CS1998 ('Este método async carece de operadores await'), no CS4014.",
+    "Incorrecto. Llamadas paralelas sin sincronización no generan CS4014. Ese es un problema lógico que el compilador no detecta automáticamente."
+  ]}
+/>
+
+<Quiz
+  question="¿Para qué sirve `ConfigureAwait(false)` y en qué tipo de proyectos es importante usarlo?"
+  options={[
+    "Hace que el método async se ejecute más rápido al desactivar la compresión del contexto",
+    "Evita que el código continúe en el SynchronizationContext original tras el await, evitando deadlocks en apps de escritorio/ASP.NET clásico y mejorando performance en librerías",
+    "Permite que el método async se cancele automáticamente si el usuario navega a otra página",
+    "Es necesario en todos los proyectos modernos; sin él, async/await no funciona correctamente"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. No tiene nada que ver con compresión. El efecto es sobre el contexto de sincronización (SynchronizationContext) donde se reanuda el código.",
+    "Correcto. Por defecto, `await` reanuda la ejecución en el contexto de sincronización original (útil en WPF para actualizar la UI). `ConfigureAwait(false)` le dice al runtime que puede reanudar en cualquier hilo disponible.\n\n```csharp\n// En una librería reutilizable:\npublic async Task<string> ObtenerDatosAsync()\n{\n    var datos = await HttpClient.GetStringAsync(url)\n        .ConfigureAwait(false); // no necesita volver al contexto original\n    return datos.ToUpper();\n}\n\n// ✅ Úsalo en: librerías de clases (.NET Standard, NuGet packages)\n// ✅ Úsalo en: código de infraestructura sin lógica de UI\n// ❌ No es necesario en: ASP.NET Core (no tiene SynchronizationContext)\n// ❌ No úsalo cuando: necesitas acceder a objetos ligados al contexto (HttpContext, UI)\n```",
+    "Incorrecto. La cancelación de tareas se maneja con `CancellationToken`, no con `ConfigureAwait`.",
+    "Incorrecto. `ConfigureAwait(false)` es una optimización opcional, no un requisito. En ASP.NET Core incluso es innecesario porque no hay SynchronizationContext."
+  ]}
+/>
+
+---
+
+## SQL Básico
+
+<Quiz
+  question="Tienes tablas `Pedidos` y `Clientes`. Quieres obtener todos los pedidos aunque el cliente haya sido eliminado. ¿Qué JOIN usarías?"
+  options={[
+    "INNER JOIN Clientes ON Pedidos.ClienteId = Clientes.Id",
+    "LEFT JOIN Clientes ON Pedidos.ClienteId = Clientes.Id",
+    "RIGHT JOIN Clientes ON Pedidos.ClienteId = Clientes.Id",
+    "CROSS JOIN Clientes"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. INNER JOIN solo devuelve filas con coincidencia en ambas tablas. Si el cliente fue eliminado, ese pedido desaparecería del resultado.",
+    "Correcto. LEFT JOIN devuelve todas las filas de la tabla izquierda (Pedidos) más las coincidencias de la tabla derecha (Clientes). Si no hay cliente, las columnas de Clientes aparecerán como NULL.\n\n```sql\nSELECT\n    p.Id AS PedidoId,\n    p.Total,\n    c.Nombre AS ClienteNombre  -- NULL si el cliente no existe\nFROM Pedidos p\nLEFT JOIN Clientes c ON p.ClienteId = c.Id;\n-- Todos los pedidos aparecen, con o sin cliente\n\n-- Para encontrar pedidos SIN cliente:\nSELECT p.*\nFROM Pedidos p\nLEFT JOIN Clientes c ON p.ClienteId = c.Id\nWHERE c.Id IS NULL;\n```",
+    "Incorrecto. RIGHT JOIN devuelve todas las filas de Clientes (tabla derecha). Obtendríamos todos los clientes aunque no tengan pedidos, no todos los pedidos.",
+    "Incorrecto. CROSS JOIN produce el producto cartesiano: cada pedido combinado con cada cliente. Si tienes 100 pedidos y 50 clientes, obtendrías 5000 filas. No es lo que se necesita aquí."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia entre `WHERE` y `HAVING` en SQL?"
+  options={[
+    "Son equivalentes; `HAVING` es simplemente la sintaxis moderna de `WHERE`",
+    "`WHERE` filtra filas individuales antes del GROUP BY; `HAVING` filtra grupos después del GROUP BY",
+    "`WHERE` solo funciona con columnas numéricas; `HAVING` funciona con cualquier tipo",
+    "`HAVING` es más rápido porque aplica el filtro después de construir los índices"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. No son equivalentes ni intercambiables. Intentar usar funciones de agregación en WHERE da error de sintaxis.",
+    "Correcto. La secuencia de ejecución SQL es: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY.\n\n```sql\n-- ¿Qué categorías tienen más de 3 productos con precio > 50?\nSELECT\n    CategoriaId,\n    COUNT(*) AS TotalProductos,\n    AVG(Precio) AS PrecioPromedio\nFROM Productos\nWHERE Precio > 50          -- filtra filas ANTES de agrupar\nGROUP BY CategoriaId\nHAVING COUNT(*) > 3;       -- filtra grupos DESPUÉS de agrupar\n\n-- ❌ Esto da error:\nSELECT CategoriaId, COUNT(*)\nFROM Productos\nWHERE COUNT(*) > 3         -- COUNT no se puede usar en WHERE\nGROUP BY CategoriaId;\n```",
+    "Incorrecto. `WHERE` funciona con cualquier tipo de dato (texto, fechas, números). La limitación no es el tipo sino el momento de evaluación.",
+    "Incorrecto. `HAVING` no es más rápido; de hecho, es más costoso porque requiere que el motor primero agrupe todos los datos y luego filtre. Filtrar con `WHERE` antes de agrupar es más eficiente."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es el propósito principal de un índice en una base de datos relacional?"
+  options={[
+    "Garantizar la unicidad de los valores en una columna",
+    "Acelerar las búsquedas y filtros evitando recorrer toda la tabla",
+    "Comprimir los datos de la tabla para ahorrar espacio en disco",
+    "Asegurar la integridad referencial entre tablas"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. La unicidad se garantiza con constraints (UNIQUE, PRIMARY KEY). Un índice puede ser no único y no impone restricciones de unicidad a menos que sea declarado como UNIQUE INDEX.",
+    "Correcto. Un índice (generalmente implementado como B-Tree) permite búsquedas en O(log n) en lugar de O(n) con un scan secuencial.\n\n```sql\n-- Sin índice: escanea las 1 000 000 filas\nSELECT * FROM Pedidos WHERE ClienteId = 42;\n\n-- Con índice: navega el B-Tree directamente\nCREATE INDEX IX_Pedidos_ClienteId ON Pedidos(ClienteId);\n-- Ahora la misma query es O(log n)\n\n-- Índice compuesto (para queries con múltiples columnas)\nCREATE INDEX IX_Pedidos_Cliente_Fecha\n    ON Pedidos(ClienteId, FechaPedido DESC);\n\n-- ⚠️ Los índices tienen costo: cada INSERT/UPDATE/DELETE\n-- debe actualizar también todos los índices de la tabla\n```",
+    "Incorrecto. Los índices ocupan espacio adicional en disco, no lo reducen. Son estructuras adicionales que el motor mantiene junto a los datos.",
+    "Incorrecto. La integridad referencial se implementa con FOREIGN KEY constraints, no con índices (aunque SQL Server crea un índice automáticamente en las claves primarias)."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué significa el acrónimo ACID en bases de datos relacionales?"
+  options={[
+    "Authentication, Concurrency, Integrity, Durability",
+    "Atomicity, Consistency, Isolation, Durability",
+    "Availability, Consistency, Isolation, Distribution",
+    "Atomicity, Caching, Indexing, Durability"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Authentication no es una propiedad transaccional. ACID describe garantías de las transacciones, no de seguridad.",
+    "Correcto. ACID describe las cuatro propiedades que garantizan que las transacciones de base de datos se procesan de forma confiable:\n\n- **Atomicity (Atomicidad)**: la transacción es todo o nada. Si falla a mitad, se revierte completa.\n- **Consistency (Consistencia)**: la BD pasa de un estado válido a otro estado válido, respetando todas las restricciones.\n- **Isolation (Aislamiento)**: las transacciones concurrentes no se interfieren entre sí; cada una ve un estado consistente.\n- **Durability (Durabilidad)**: una vez confirmada (COMMIT), la transacción persiste aunque el sistema falle.\n\n```sql\nBEGIN TRANSACTION;\n    UPDATE Cuentas SET Saldo -= 1000 WHERE Id = 1;\n    UPDATE Cuentas SET Saldo += 1000 WHERE Id = 2;\n    -- Si falla aquí, el ROLLBACK deshace ambas operaciones (Atomicity)\nCOMMIT;\n```",
+    "Incorrecto. Esto mezcla propiedades del teorema CAP (Consistency, Availability, Partition tolerance) con ACID. Son conceptos distintos.",
+    "Incorrecto. Caching e Indexing son técnicas de optimización de bases de datos, no propiedades ACID de transacciones."
+  ]}
+/>
+
+---
+
+## React — Fundamentos
+
+<Quiz
+  question="¿Cuándo re-renderiza un componente que usa `useState`?"
+  options={[
+    "En cada tick del event loop del navegador, independientemente de si el estado cambió",
+    "Solo cuando se llama a la función setter con un valor diferente al actual (React hace comparación por referencia)",
+    "Solo cuando el padre se re-renderiza, no cuando cambia el estado propio",
+    "Siempre que el usuario mueve el mouse sobre el componente"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. React no re-renderiza en cada tick. Los re-renders están controlados y solo ocurren cuando hay un cambio de estado, props o contexto.",
+    "Correcto. React compara el nuevo valor con el anterior usando `Object.is()` (comparación por referencia para objetos, por valor para primitivos). Si son iguales, no re-renderiza.\n\n```tsx\nconst [count, setCount] = useState(0);\n\n// ✅ Provoca re-render (nuevo valor)\nsetCount(1);\n\n// ❌ NO provoca re-render (mismo valor)\nsetCount(0); // React detecta que 0 === 0\n\n// ⚠️ Con objetos: siempre crea uno nuevo\nconst [user, setUser] = useState({ nombre: 'Ana' });\n// ❌ NO provoca re-render (misma referencia)\nuser.nombre = 'Juan';\nsetUser(user); // Object.is(user, user) === true!\n\n// ✅ SÍ provoca re-render (nueva referencia)\nsetUser({ ...user, nombre: 'Juan' });\n```",
+    "Incorrecto. El re-render por estado propio es independiente del padre. El padre puede re-renderizar sin que el hijo lo haga (con React.memo) y viceversa.",
+    "Incorrecto. Los eventos del mouse no causan re-renders automáticos. Solo los cambios de estado, props o contexto lo hacen."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué problema causa tener un array de dependencias vacío `[]` en un `useEffect` que usa una variable del componente?"
+  options={[
+    "El efecto se ejecuta en cada render, causando un bucle infinito",
+    "El efecto captura los valores iniciales de las variables y no se actualiza cuando cambian (stale closure)",
+    "El efecto nunca se ejecuta porque React ignora los efectos con dependencias vacías",
+    "No hay ningún problema; `[]` es el valor recomendado para todos los useEffect"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Un array vacío `[]` hace que el efecto se ejecute solo una vez al montar el componente, no en cada render.",
+    "Correcto. Con `[]`, el efecto se ejecuta solo al montar el componente y cierra sobre los valores iniciales de las variables. Si esas variables cambian después, el efecto no lo sabe (stale closure).\n\n```tsx\nfunction Contador() {\n    const [count, setCount] = useState(0);\n\n    useEffect(() => {\n        const id = setInterval(() => {\n            console.log(count); // ⚠️ siempre imprime 0 (valor inicial)\n            setCount(count + 1); // ⚠️ siempre establece 1, no incrementa\n        }, 1000);\n        return () => clearInterval(id);\n    }, []); // count no está en las dependencias\n\n    // ✅ Correcto:\n    useEffect(() => {\n        const id = setInterval(() => {\n            setCount(c => c + 1); // usa la forma funcional para evitar stale closure\n        }, 1000);\n        return () => clearInterval(id);\n    }, []);\n}\n```",
+    "Incorrecto. Un array de dependencias vacío `[]` hace que el efecto se ejecute exactamente una vez al montarse el componente.",
+    "Incorrecto. `[]` solo es correcto cuando el efecto genuinamente no depende de ningún valor del componente. React recomienda incluir todas las dependencias reales."
+  ]}
+/>
+
+<Quiz
+  question="¿Por qué es un problema usar el índice del array como `key` en una lista que puede cambiar de orden o tener elementos eliminados?"
+  options={[
+    "React no permite el índice como key; dará un error de compilación",
+    "Si el orden cambia, la key de cada elemento cambia, confundiendo a React sobre qué elemento es cuál y causando bugs de estado",
+    "El rendimiento es idéntico, es solo una recomendación de estilo",
+    "Solo es problema en listas de más de 100 elementos"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. React permite el índice como key y no lanza error. Solo muestra un warning si no se proporciona ninguna key.",
+    "Correcto. La `key` es la forma en que React asocia un elemento del DOM con un elemento del array. Si se elimina el primer elemento de la lista, todos los demás reciben una key diferente, haciendo que React trate esos elementos como nuevos, perdiendo su estado.\n\n```tsx\n// ❌ Problema: key basada en índice\n// Si eliminas 'Ana' (índice 0), 'Bob' pasa a ser índice 0\n// React piensa que 'Ana' cambió, no que fue eliminada\nconst items = ['Ana', 'Bob', 'Carlos'];\nitems.map((name, index) => (\n    <li key={index}>{name}<input /></li>\n));\n// El valor del <input> de Bob aparece donde estaba el de Ana\n\n// ✅ Correcto: key estable y única\nconst items = [{ id: 1, name: 'Ana' }, { id: 2, name: 'Bob' }];\nitems.map(item => (\n    <li key={item.id}>{item.name}<input /></li>\n));\n// React sabe exactamente cuál es cuál\n```",
+    "Incorrecto. Puede causar bugs visuales reales, especialmente en componentes con estado interno (inputs con texto, componentes animados, etc.).",
+    "Incorrecto. El problema ocurre independientemente del tamaño de la lista; depende de si los elementos cambian de posición."
+  ]}
+/>
+
+<Quiz
+  question="¿Para qué sirve el Virtual DOM en React?"
+  options={[
+    "Es una base de datos en memoria donde React guarda el estado de todos los componentes",
+    "Es una representación ligera del DOM real en JavaScript; React lo usa para calcular el mínimo conjunto de cambios necesarios antes de actualizar el DOM real",
+    "Es un mecanismo de seguridad que evita inyecciones XSS en el DOM",
+    "Es el nombre del motor de renderizado 3D que usa React Native"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. El estado de los componentes se gestiona con hooks (useState, useReducer) y el Context API, no con el Virtual DOM.",
+    "Correcto. El Virtual DOM es una copia en memoria del árbol de nodos del DOM real, representada como objetos JavaScript. Cuando el estado cambia, React crea un nuevo Virtual DOM y lo compara con el anterior (proceso llamado 'reconciliación' o 'diffing'). Solo aplica al DOM real los cambios mínimos necesarios, ya que manipular el DOM real es costoso.\n\nFlujo:\n1. `setState()` o cambio de props\n2. React genera un nuevo Virtual DOM\n3. Diffing: compara nuevo vs anterior Virtual DOM\n4. Solo actualiza los nodos reales que cambiaron\n\nEsto hace que React sea eficiente incluso con muchos componentes.",
+    "Incorrecto. La protección XSS en React se logra escapando automáticamente el contenido antes de renderizarlo, no mediante el Virtual DOM.",
+    "Incorrecto. React Native usa un bridge diferente para comunicarse con los componentes nativos del SO. El Virtual DOM es específico de React para la web."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué ocurre cuando llamas a `setEstado` con el mismo valor que tiene actualmente el estado?"
+  options={[
+    "React siempre re-renderiza el componente, independientemente del valor",
+    "React hace una comparación superficial; si el valor es el mismo (Object.is), omite el re-render",
+    "React lanza un error porque no se puede establecer el mismo valor dos veces seguidas",
+    "El componente se re-renderiza pero sus hijos no"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. React incluye una optimización llamada 'bailout': si el nuevo valor es igual al actual, no se programa ningún re-render.",
+    "Correcto. React usa `Object.is()` para comparar el valor nuevo con el actual. Para primitivos (número, string, booleano), compara por valor. Para objetos y arrays, compara por referencia.\n\n```tsx\nconst [nombre, setNombre] = useState('Ana');\n\nsetNombre('Ana');   // ❌ mismo valor → sin re-render (bailout)\nsetNombre('Juan'); // ✅ valor diferente → re-render\n\nconst [lista, setLista] = useState([1, 2, 3]);\n\nsetLista([1, 2, 3]); // ✅ re-render! (nueva referencia de array)\nsetLista(lista);     // ❌ sin re-render (misma referencia)\n\n// Por eso siempre debes crear nuevos objetos/arrays al actualizar estado\n```",
+    "Incorrecto. React no lanza ningún error. Simplemente ignora la actualización si el valor es idéntico.",
+    "Incorrecto. Si React hace bailout, ni el componente ni sus hijos se re-renderizan."
+  ]}
+/>
+
+---
+
+## JavaScript / TypeScript
+
+<Quiz
+  question="¿Cuál es la diferencia principal entre `var`, `let` y `const` en JavaScript?"
+  options={[
+    "Solo difieren en que `const` no puede cambiar su valor; `var` y `let` son idénticos",
+    "`var` tiene scope de función y hoisting sin inicializar; `let` y `const` tienen scope de bloque y no se pueden usar antes de declararse (TDZ)",
+    "`let` y `const` solo están disponibles en módulos ES6; en scripts normales solo existe `var`",
+    "`const` evita cualquier modificación del valor, incluyendo las propiedades de objetos"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. `var` y `let` difieren en scope y hoisting, no solo en mutabilidad.",
+    "Correcto. Las diferencias fundamentales son scope y hoisting:\n\n```javascript\n// var: scope de función, hoisting (declarada pero undefined)\nconsole.log(x); // undefined (no error, pero confuso)\nvar x = 5;\nif (true) { var x = 10; } // modifica la misma variable\nconsole.log(x); // 10\n\n// let: scope de bloque, Temporal Dead Zone (TDZ)\n// console.log(y); // ReferenceError: Cannot access 'y' before initialization\nlet y = 5;\nif (true) { let y = 10; } // variable diferente, scope de bloque\nconsole.log(y); // 5\n\n// const: igual que let pero la referencia no puede reasignarse\nconst z = 5;\n// z = 6; // TypeError\nconst obj = { a: 1 };\nobj.a = 2; // ✅ la propiedad sí puede cambiar\n```",
+    "Incorrecto. `let` y `const` están disponibles en cualquier contexto moderno (scripts, módulos, Node.js). No están restringidos a módulos ES6.",
+    "Incorrecto. `const` solo evita la reasignación de la variable (la referencia). Las propiedades de objetos y elementos de arrays sí pueden modificarse."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué imprimirá este código? `console.log(0 == '0')` y `console.log(0 === '0')`"
+  options={[
+    "false y false",
+    "true y true",
+    "true y false",
+    "false y true"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. `0 == '0'` es true porque `==` aplica coerción de tipos y convierte el string '0' al número 0.",
+    "Incorrecto. `0 === '0'` es false porque `===` compara también el tipo (number vs string).",
+    "Correcto. `==` (igualdad abstracta) aplica coerción de tipos antes de comparar: convierte '0' a 0 y luego compara 0 === 0 → true. `===` (igualdad estricta) compara valor Y tipo: number vs string → false.\n\n```javascript\nconsole.log(0 == '0');   // true  (coerción: '0' → 0)\nconsole.log(0 === '0');  // false (number !== string)\n\n// Otros casos sorprendentes de ==:\nconsole.log(false == 0);      // true\nconsole.log(null == undefined); // true\nconsole.log(null == 0);        // false (¡confuso!)\nconsole.log('' == false);      // true\nconsole.log([] == false);      // true\n\n// Regla: siempre usa === salvo que explícitamente\n// quieras comparar null y undefined a la vez: valor == null\n```",
+    "Incorrecto. Es imposible que `==` sea más estricto que `===`. La coerción de tipos de `==` siempre devuelve al menos los mismos true que `===`."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué es un closure en JavaScript y por qué es útil?"
+  options={[
+    "Es una función que no puede acceder a variables externas; sirve para encapsular completamente su lógica",
+    "Es una función que recuerda y accede a las variables del scope donde fue creada, incluso después de que ese scope haya terminado",
+    "Es el mecanismo que cierra o limpia recursos (como un finally en Java) al terminar una función",
+    "Es una función flecha (arrow function) que no tiene su propio `this`"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Es exactamente lo contrario: un closure SÍ puede acceder a variables externas; eso es su definición.",
+    "Correcto. Un closure se forma cuando una función interna referencia variables del scope de la función externa. Esas variables quedan 'capturadas' y siguen vivas aunque la función externa haya terminado.\n\n```javascript\nfunction crearContador(inicio = 0) {\n    let count = inicio; // variable capturada por el closure\n\n    return {\n        incrementar: () => ++count,  // accede a count\n        decrementar: () => --count,\n        obtener: () => count,\n    };\n}\n\nconst c1 = crearContador(5);\nconst c2 = crearContador(0);\n\nc1.incrementar(); // 6\nc1.incrementar(); // 7\nc2.incrementar(); // 1  ← instancia independiente de count\n\n// Usos prácticos: módulos, datos privados, memoización,\n// callbacks con configuración\n```",
+    "Incorrecto. No existe un mecanismo llamado closure para limpiar recursos en JavaScript. Para eso existen patrones como RAII o callbacks de limpieza.",
+    "Incorrecto. Las arrow functions sí crean closures (como las funciones normales), pero un closure no es exclusivo de las arrow functions."
+  ]}
+/>
+
+<Quiz
+  question="¿En qué orden se ejecutan las siguientes líneas y por qué?"
+  options={[
+    "1, 2, 3, 4 — en orden de aparición, JavaScript es síncrono",
+    "1, 4, 3, 2 — los síncronos primero, luego microtasks (Promise), luego macrotasks (setTimeout)",
+    "1, 4, 2, 3 — setTimeout siempre se ejecuta antes que las Promises",
+    "El orden no es determinístico; depende del motor de JavaScript"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. JavaScript es single-threaded pero no ejecuta todo en orden de aparición cuando hay código asíncrono.",
+    "Correcto. El Event Loop prioriza: código síncrono → microtasks (Promises, queueMicrotask) → macrotasks (setTimeout, setInterval).\n\n```javascript\nconsole.log('1');  // síncrono → Call Stack inmediato\n\nsetTimeout(() => console.log('2'), 0); // macrotask\n\nPromise.resolve().then(() => console.log('3')); // microtask\n\nconsole.log('4');  // síncrono → Call Stack inmediato\n\n// Salida: 1, 4, 3, 2\n// - 1 y 4: síncronos, se ejecutan primero\n// - 3: microtask (Promise), se ejecuta antes que macrotasks\n// - 2: macrotask (setTimeout), se ejecuta último\n\n// Las microtasks vacían su cola ENTERA antes de pasar a la siguiente macrotask\n```",
+    "Incorrecto. Las Promises (microtasks) tienen mayor prioridad que setTimeout (macrotask), no al revés.",
+    "Incorrecto. El orden es completamente determinístico y está definido por la especificación del Event Loop de HTML."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia entre `null` y `undefined` en JavaScript?"
+  options={[
+    "Son exactamente lo mismo; solo difieren en nombre por razones históricas",
+    "`undefined` es la ausencia no intencional de valor (variable no inicializada); `null` es la ausencia intencional asignada por el programador",
+    "`null` es para variables numéricas sin valor; `undefined` es para variables de texto sin valor",
+    "`typeof null` retorna 'null' y `typeof undefined` retorna 'undefined'"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. No son lo mismo: `null === undefined` es false (aunque `null == undefined` sea true por coerción).",
+    "Correcto. La distinción semántica es importante:\n\n```javascript\nlet a;           // undefined: declarada pero no inicializada\nlet b = null;    // null: explícitamente 'sin valor'\n\nfunction fn(x) {\n    console.log(x); // undefined si no se pasa argumento\n}\n\nconst obj = { nombre: 'Ana' };\nconsole.log(obj.apellido); // undefined: propiedad no existe\n\n// typeof tiene un bug histórico:\ntypeof undefined; // 'undefined'\ntypeof null;      // 'object' ← bug en JavaScript!\n\n// Para verificar ambos a la vez:\nif (valor == null) { ... } // true para null Y undefined\n// Equivale a: valor === null || valor === undefined\n```",
+    "Incorrecto. Ambos funcionan con cualquier tipo de variable. La diferencia es semántica (intencional vs no intencional), no de tipo de dato.",
+    "Incorrecto. `typeof null` retorna `'object'` (un famoso bug histórico de JavaScript), no `'null'`."
+  ]}
+/>
+
+<Quiz
+  question="En TypeScript, ¿cuándo preferirías `type` sobre `interface` para definir la forma de un objeto?"
+  options={[
+    "Siempre que el objeto tenga más de 5 propiedades",
+    "Cuando necesitas tipos unión, intersección, tipos mapeados o cuando la entidad no es un objeto (alias de primitivos, tuplas)",
+    "`type` y `interface` son completamente equivalentes; la elección es puramente personal",
+    "`interface` solo funciona en archivos .tsx; `type` funciona en cualquier archivo TypeScript"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. El número de propiedades no determina qué usar. La elección depende de las capacidades que necesitas.",
+    "Correcto. `interface` es ideal para describir la forma de objetos y clases (y soporta declaration merging). `type` es más versátil: permite uniones, intersecciones, tuplas y alias de primitivos.\n\n```typescript\n// interface: para objetos y clases, soporta extends y merging\ninterface Usuario {\n    id: number;\n    nombre: string;\n}\ninterface Admin extends Usuario {\n    permisos: string[];\n}\n\n// type: para uniones, intersecciones, tuplas, alias\ntype Estado = 'activo' | 'inactivo' | 'pendiente'; // unión\ntype Punto = [number, number]; // tupla\ntype AdminOUsuario = Admin & Usuario; // intersección\ntype Nullable<T> = T | null; // genérico\n\n// Regla práctica:\n// - Modelos de dominio (clases, entidades) → interface\n// - Uniones, alias de tipos, utilidades → type\n```",
+    "Incorrecto. Aunque son similares para definir objetos, tienen diferencias importantes: `interface` soporta declaration merging (dos interfaces con el mismo nombre se fusionan); `type` no.",
+    "Incorrecto. Tanto `type` como `interface` funcionan en archivos `.ts` y `.tsx` sin restricciones."
+  ]}
+/>
+
+---
+
+## Algoritmos y Estructuras de Datos
+
+<Quiz
+  question="¿Cuál es la complejidad de buscar un elemento en un array sin ordenar comparado con buscarlo en un Dictionary<K,V> en C#?"
+  options={[
+    "Array: O(1) — Dictionary: O(n)",
+    "Array: O(n) — Dictionary: O(1) en promedio",
+    "Ambos son O(n) porque recorren todos los elementos",
+    "Array: O(log n) — Dictionary: O(1)"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Un array sin ordenar no tiene acceso O(1) por valor; solo tiene acceso O(1) por índice. Buscar un valor requiere recorrerlo.",
+    "Correcto. Buscar un valor en un array sin ordenar requiere recorrerlo elemento por elemento: O(n). `Dictionary<K,V>` usa una tabla hash internamente, por lo que la búsqueda por clave es O(1) en promedio. Ejemplo: `dict.ContainsKey(key)` es O(1), mientras que `array.Contains(value)` es O(n).",
+    "Incorrecto. El Dictionary usa hashing para acceder directamente a la posición del elemento sin recorrer toda la colección.",
+    "Incorrecto. Un array sin ordenar no permite búsqueda binaria (eso requiere que esté ordenado). Y el acceso por índice es O(1), pero buscar un valor específico es O(n)."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la complejidad Big O de dos loops anidados que iteran N elementos cada uno?"
+  options={[
+    "O(N) porque los loops comparten el mismo conjunto de elementos",
+    "O(2N) porque son dos loops que hacen N iteraciones cada uno",
+    "O(N²) porque por cada elemento externo se recorren N elementos internos",
+    "O(log N) si los elementos están ordenados"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Que compartan el mismo conjunto de N elementos no reduce las iteraciones totales. El loop interno se ejecuta N veces por cada vuelta del externo.",
+    "Incorrecto. O(2N) simplifica a O(N), que describe un loop simple. Dos loops anidados producen N*N = N² operaciones totales.",
+    "Correcto. Con dos loops anidados de N iteraciones cada uno, el cuerpo interno se ejecuta N*N veces en total. Eso es O(N²). Ejemplo: comparar todos los pares de un array — el loop externo va de `i=0` a `N-1`, y el interno de `j=0` a `N-1`, resultando en N² comparaciones.",
+    "Incorrecto. El orden de los datos no cambia la cantidad de iteraciones de loops anidados. La búsqueda binaria O(log N) aplica a un único recorrido con decisiones de mitad, no a loops anidados."
+  ]}
+/>
+
+<Quiz
+  question="Tienes que implementar un historial de navegación (ir atrás y adelante) y también una cola de impresión (primer documento enviado = primero en imprimirse). ¿Qué estructura usarías para cada caso?"
+  options={[
+    "Historial: Queue<T> — Cola de impresión: Stack<T>",
+    "Historial: Stack<T> — Cola de impresión: Stack<T>",
+    "Historial: Stack<T> — Cola de impresión: Queue<T>",
+    "Ambos casos se resuelven igual con List<T>"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Queue sigue FIFO (primero en entrar, primero en salir), por lo que no modela bien un historial donde la última página visitada es la primera en volver. Stack sigue LIFO, que es justo lo opuesto de lo que necesita una cola de impresión.",
+    "Incorrecto. Usar Stack para la cola de impresión significa que el último documento enviado se imprime primero, lo cual es incorrecto para una cola justa.",
+    "Correcto. `Stack<T>` sigue LIFO (último en entrar, primero en salir): perfecto para historial, donde la última página visitada es la primera en recuperarse al presionar Atrás. `Queue<T>` sigue FIFO (primero en entrar, primero en salir): perfecto para impresión, donde el primer trabajo enviado debe procesarse primero. Ejemplo: `stack.Push(pagina)` al navegar, `stack.Pop()` al volver; `queue.Enqueue(doc)` al enviar, `queue.Dequeue()` al imprimir.",
+    "Incorrecto. Aunque `List<T>` puede simular ambos comportamientos manualmente, usar `Stack<T>` y `Queue<T>` comunica la intención claramente y evita errores al insertar o quitar en el extremo incorrecto."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo es aplicable la búsqueda binaria y cuál es su complejidad?"
+  options={[
+    "Aplicable a cualquier colección; complejidad O(1)",
+    "Aplicable solo a árboles binarios; complejidad O(n)",
+    "Aplicable a arrays o listas ordenadas; complejidad O(log N)",
+    "Aplicable a diccionarios; complejidad O(N²)"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. La búsqueda binaria no es aplicable a colecciones desordenadas. Si el array no está ordenado, no se puede descartar la mitad en cada paso.",
+    "Incorrecto. La búsqueda binaria no requiere un árbol binario como estructura; se aplica a arrays y listas con acceso por índice que estén ordenados.",
+    "Correcto. La búsqueda binaria requiere que los datos estén ordenados. En cada paso compara el elemento del medio con el objetivo y descarta la mitad donde no puede estar: si el array tiene N elementos, en el peor caso hace log₂(N) comparaciones — O(log N). Ejemplo: buscar 7 en `[1, 3, 5, 7, 9]`: compara con 5 (centro), va a la mitad derecha, compara con 7, encontrado en 2 pasos.",
+    "Incorrecto. Los diccionarios usan hashing para búsqueda O(1), no búsqueda binaria. La búsqueda binaria aplica a estructuras con acceso secuencial ordenado."
+  ]}
+/>
+
+---
+
+## Testing
+
+<Quiz
+  question="¿Cuál es la diferencia principal entre un unit test, un integration test y un end-to-end (e2e) test?"
+  options={[
+    "Son nombres distintos para el mismo tipo de prueba; la diferencia es solo de convención de equipo",
+    "Unit: prueba una unidad aislada con dependencias simuladas. Integration: prueba la colaboración entre componentes reales. E2E: prueba el flujo completo desde la interfaz hasta la base de datos",
+    "Unit tests solo se usan en backend; e2e tests solo se usan en frontend",
+    "Integration tests son más rápidos que unit tests porque prueban menos código"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Tienen diferencias fundamentales en alcance, velocidad y tipo de problema que detectan. No son intercambiables.",
+    "Correcto. Un unit test prueba una sola clase o función en aislamiento, reemplazando dependencias externas con mocks. Un integration test verifica que dos o más componentes reales funcionan juntos (por ejemplo, servicio + base de datos). Un e2e test simula la interacción completa del usuario: abre el navegador, hace clic, llena formularios y verifica el resultado final. Los unit tests son los más rápidos y abundantes; los e2e los más lentos y los menos numerosos (pirámide de testing).",
+    "Incorrecto. Los unit tests se usan tanto en backend como en frontend. Los e2e tests pueden cubrir cualquier capa del sistema.",
+    "Incorrecto. Los integration tests son más lentos que los unit tests porque levantan más infraestructura real (bases de datos, servicios externos, red)."
+  ]}
+/>
+
+<Quiz
+  question="En el patrón Arrange-Act-Assert (AAA), ¿qué debe contener cada sección?"
+  options={[
+    "Arrange: ejecuta el código bajo prueba. Act: configura mocks. Assert: limpia el estado",
+    "Arrange: prepara el estado y dependencias. Act: ejecuta la acción bajo prueba. Assert: verifica el resultado esperado",
+    "Arrange y Act son opcionales; solo Assert es obligatorio",
+    "Assert debe ir antes de Act para definir el comportamiento esperado antes de ejecutar"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Las secciones están invertidas. Arrange es donde se prepara, no donde se ejecuta.",
+    "Correcto. El patrón AAA organiza cada test en tres bloques: Arrange crea los objetos, configura mocks y establece el estado inicial. Act llama al método o función bajo prueba. Assert verifica que el resultado, excepción o estado resultante coincide con lo esperado. Este orden hace el test legible y predecible. Ejemplo: Arrange crea un `CarritoService` con productos; Act llama a `carrito.CalcularTotal()`; Assert comprueba que el total es 150.",
+    "Incorrecto. Arrange y Act son esenciales: sin Arrange no hay contexto, y sin Act no hay nada que verificar.",
+    "Incorrecto. Assert siempre va después de Act. Si colocas Assert antes, estarías verificando el estado antes de que ocurra la acción, lo cual no tiene sentido."
+  ]}
+/>
+
+<Quiz
+  question="¿Para qué sirven los mocks en testing y qué problema resuelven?"
+  options={[
+    "Los mocks aceleran el código de producción en entornos de prueba al eliminar operaciones lentas",
+    "Los mocks permiten reemplazar dependencias externas con objetos controlados, aislando la unidad bajo prueba y eliminando efectos secundarios reales",
+    "Los mocks son obligatorios en todos los tests; sin ellos los tests no son válidos",
+    "Los mocks sirven para generar datos de prueba aleatorios automáticamente"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Los mocks no modifican el código de producción. Son objetos sustitutos que solo existen durante la ejecución de los tests.",
+    "Correcto. Los mocks reemplazan dependencias que no queremos invocar realmente en un unit test: bases de datos, APIs externas, servicios de email, relojes del sistema. Esto evita efectos secundarios reales, hace los tests rápidos y deterministas, y permite verificar cómo el código interactúa con esas dependencias. Ejemplo: en vez de llamar a una API de pagos real, se inyecta un mock que simula la respuesta exitosa o el error, permitiendo probar ambos caminos sin costo ni riesgo.",
+    "Incorrecto. Los mocks son apropiados para unit tests donde se aísla la unidad. Los integration tests deliberadamente usan dependencias reales para probar la colaboración.",
+    "Incorrecto. La generación de datos aleatorios es responsabilidad de otras herramientas (como Bogus o Faker). Los mocks simulan el comportamiento de objetos y servicios."
+  ]}
+/>
+
+<Quiz
+  question="¿Por qué el 100% de code coverage no garantiza que el código está libre de bugs?"
+  options={[
+    "Porque el coverage solo mide líneas ejecutadas, no que los comportamientos y combinaciones estén correctamente verificados",
+    "Porque el 100% de coverage es imposible de alcanzar en proyectos reales",
+    "Porque el coverage solo funciona en lenguajes compilados, no en JavaScript o Python",
+    "Porque tener más tests siempre introduce más bugs al código de producción"
+  ]}
+  correctIndex={0}
+  explanations={[
+    "Correcto. El code coverage mide qué líneas fueron ejecutadas durante los tests, pero no qué se verificó sobre ellas. Un test puede ejecutar una línea sin hacer ningún Assert sobre su resultado. Además, el coverage no mide las combinaciones de condiciones (branch coverage), los valores límite, las condiciones de carrera ni los casos de integración entre módulos. Se puede tener 100% de coverage con tests que no detectan ningún bug real.",
+    "Incorrecto. En proyectos pequeños o con esfuerzo deliberado es posible alcanzar 100% de coverage. El problema no es alcanzarlo, sino lo que ese número garantiza.",
+    "Incorrecto. Las herramientas de coverage funcionan en todos los lenguajes principales: Istanbul para JavaScript, Coverage.py para Python, Coverlet para .NET, JaCoCo para Java.",
+    "Incorrecto. Más tests bien diseñados detectan más bugs; no los introducen. El problema es que la métrica de coverage sola no dice si los tests son de buena calidad."
+  ]}
+/>
+
+---
+
+## Patrones y Principios
+
+<Quiz
+  question="¿Qué es el principio DRY y cuál es el problema concreto de violarlo?"
+  options={[
+    "DRY significa escribir código corto. Violarlo produce funciones demasiado largas",
+    "DRY significa 'Don't Repeat Yourself': cada pieza de conocimiento debe tener una única representación. Violarlo obliga a actualizar la misma lógica en múltiples lugares cuando cambia",
+    "DRY prohíbe usar bucles; hay que usar recursión para evitar repetir código",
+    "DRY es un principio de diseño de base de datos que prohíbe tener columnas duplicadas en tablas"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. DRY no es sobre la longitud del código, sino sobre la duplicación de conocimiento o lógica.",
+    "Correcto. DRY (Don't Repeat Yourself) establece que cada pieza de conocimiento del sistema debe tener una única representación autoritativa. Si copias y pegas la misma lógica de validación en tres lugares, cuando esa lógica deba cambiar tendrás que encontrar y actualizar los tres lugares — y es fácil olvidar uno, introduciendo inconsistencias. La solución es extraer esa lógica a un método o clase reutilizable. Ejemplo: en lugar de repetir la validación de email en tres controladores, crear un método `ValidarEmail(string email)` y llamarlo desde los tres.",
+    "Incorrecto. DRY no tiene relación con loops vs recursión. Usar un bucle no viola DRY.",
+    "Incorrecto. Aunque el concepto aplica también a bases de datos (normalización), DRY es un principio general de ingeniería de software que aplica principalmente al código."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia entre un DTO (Data Transfer Object) y una Entidad de dominio?"
+  options={[
+    "Son exactamente lo mismo; DTO es solo el nombre que se usa en el frontend y Entidad en el backend",
+    "Un DTO transporta datos entre capas sin lógica de negocio. Una Entidad representa un concepto del dominio con identidad y puede contener lógica de negocio",
+    "Las Entidades siempre mapean 1:1 con tablas de base de datos; los DTOs no",
+    "Los DTOs solo se usan en APIs REST; las Entidades solo en bases de datos relacionales"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Son conceptos distintos con responsabilidades distintas que pueden coexistir en el mismo lado (backend puede tener ambos).",
+    "Correcto. Un DTO es un objeto simple cuyo único propósito es transportar datos: no tiene lógica de negocio, solo propiedades. Se usa para evitar exponer directamente las Entidades de dominio en la API y para adaptar la forma de los datos a lo que cada capa necesita. Una Entidad de dominio representa un concepto real del negocio, tiene identidad propia (generalmente un ID) y puede contener comportamiento. Ejemplo: `UsuarioDTO` tiene solo `Nombre` y `Email` para la respuesta de la API, mientras que `Usuario` (Entidad) tiene además el hash de contraseña, métodos como `CambiarContrasena()` y lógica de validación.",
+    "Incorrecto. Las Entidades de dominio no necesariamente mapean 1:1 con tablas; en Domain-Driven Design pueden tener estructuras complejas que se traducen a múltiples tablas.",
+    "Incorrecto. Los DTOs se usan en cualquier transferencia entre capas: entre la capa de aplicación y la de dominio, entre microservicios, en colas de mensajes, etc."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué es el patrón MVC y qué responsabilidad tiene cada capa?"
+  options={[
+    "Model: base de datos. View: lógica de negocio. Controller: interfaz de usuario",
+    "Model: datos y lógica de negocio. View: presentación al usuario. Controller: recibe peticiones, coordina Model y View",
+    "Model: interfaz de usuario. View: base de datos. Controller: lógica de negocio",
+    "MVC es un patrón solo para aplicaciones de escritorio; no aplica a aplicaciones web"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Las responsabilidades están completamente invertidas. La lógica de negocio pertenece al Model, no al View.",
+    "Correcto. MVC separa la aplicación en tres capas con responsabilidades claras: el Model contiene los datos, las entidades y la lógica de negocio (validaciones, cálculos, acceso a datos). La View es responsable únicamente de mostrar información al usuario sin lógica. El Controller recibe las peticiones del usuario, invoca los métodos del Model apropiados y decide qué View mostrar con los resultados. Esta separación facilita cambiar la interfaz sin tocar la lógica, y probar la lógica sin necesidad de una interfaz.",
+    "Incorrecto. El Model no maneja la interfaz de usuario ni la base de datos directamente; representa los datos y la lógica del dominio.",
+    "Incorrecto. MVC es ampliamente usado en aplicaciones web: ASP.NET Core MVC, Ruby on Rails, Laravel y Django lo implementan. También se usa en aplicaciones móviles y de escritorio."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué es la Inyección de Dependencias y qué problema concreto resuelve?"
+  options={[
+    "Es una técnica para importar librerías externas sin declararlas en el archivo de configuración del proyecto",
+    "Es un patrón donde una clase recibe sus dependencias desde fuera en lugar de crearlas internamente, lo que reduce el acoplamiento y facilita el testing",
+    "Es una forma de optimizar el rendimiento inyectando valores directamente en memoria sin pasar por constructores",
+    "Es exclusiva de frameworks como Angular; en .NET se gestiona diferente y no aplica el mismo concepto"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. La Inyección de Dependencias no tiene que ver con importar librerías ni con archivos de configuración del proyecto.",
+    "Correcto. Sin inyección de dependencias, una clase crea sus propias dependencias internamente con `new`, lo que la acopla a implementaciones concretas y hace imposible reemplazarlas en tests. Con DI, las dependencias se pasan desde fuera (por constructor, propiedad o método), lo que permite cambiar la implementación sin modificar la clase. Ejemplo: en vez de que `PedidoService` haga `new EmailService()` internamente, recibe un `IEmailService` por constructor — en producción se inyecta `SmtpEmailService` y en tests un mock que no envía emails reales. ASP.NET Core tiene un contenedor de DI integrado que gestiona este ciclo de vida automáticamente.",
+    "Incorrecto. La DI no es una técnica de optimización de memoria. Se trata de cómo se satisfacen las dependencias de un objeto, no de rendimiento.",
+    "Incorrecto. La Inyección de Dependencias es un patrón agnóstico al lenguaje y framework. ASP.NET Core tiene soporte nativo de DI con `IServiceCollection`, y el concepto es idéntico al de Angular, Spring o cualquier otro framework."
+  ]}
+/>
+
+---
+
+## Git
+
+<Quiz
+  question="¿Cuál es la diferencia entre `git merge` y `git rebase`?"
+  options={[
+    "Son equivalentes; `rebase` es solo el nombre antiguo de `merge`",
+    "`merge` crea un commit de fusión preservando el historial completo; `rebase` reaplica los commits sobre otra base creando un historial lineal",
+    "`rebase` siempre es más seguro que `merge` y se recomienda para todas las situaciones",
+    "`merge` solo funciona con ramas locales; `rebase` es necesario para integrar ramas remotas"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Son operaciones diferentes con resultados distintos en el historial del repositorio.",
+    "Correcto. La diferencia es cómo se integra el historial:\n\n```\n# Situación inicial:\n    A---B---C  (main)\n         \\\n          D---E  (feature)\n\n# git merge: preserva historial, crea merge commit\n    A---B---C---M  (main)\n         \\     /\n          D---E\n\n# git rebase: reescribe commits, historial lineal\n    A---B---C---D'---E'  (feature rebasada sobre main)\n```\n\n**Cuándo usar cada uno:**\n- `merge`: en ramas compartidas/públicas (main, develop), cuando quieres preservar el contexto\n- `rebase`: en ramas personales de feature antes de hacer PR, para limpiar el historial\n\n⚠️ Regla de oro: nunca hagas rebase en ramas que otros ya tienen.",
+    "Incorrecto. Rebase no es siempre más seguro. En ramas compartidas, rebase reescribe los commits (nuevos SHA), lo que causa conflictos a todos los que tienen esos commits.",
+    "Incorrecto. Ambos funcionan con ramas locales y remotas. Para integrar cambios remotos, `git pull --rebase` usa rebase en lugar de merge."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué hace `git stash` y cuándo lo usarías?"
+  options={[
+    "Elimina permanentemente los cambios no commiteados del working directory",
+    "Guarda temporalmente los cambios no commiteados en una pila, dejando el working directory limpio para poder cambiar de rama",
+    "Crea un commit con mensaje 'WIP' en la rama actual con todos los cambios",
+    "Copia los archivos modificados a un directorio de respaldo en el disco"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. `git stash` NO elimina los cambios permanentemente. Los guarda en una pila y se pueden recuperar.",
+    "Correcto. `git stash` es útil cuando tienes cambios a medias y necesitas cambiar de rama sin perder ni commitear tu trabajo.\n\n```bash\n# Tienes cambios sin terminar en feature-login\ngit stash           # guarda los cambios, working directory limpio\ngit checkout main   # puedes cambiar de rama sin conflictos\n\n# ... haces algo urgente en main ...\n\ngit checkout feature-login\ngit stash pop       # recupera los cambios guardados\n\n# Otros comandos útiles:\ngit stash list              # ver todas las entradas del stash\ngit stash push -m \"WIP login form\"  # stash con nombre descriptivo\ngit stash apply stash@{1}   # aplicar sin eliminar del stash\ngit stash drop stash@{0}    # eliminar entrada específica\n```",
+    "Incorrecto. `git stash` no crea commits en el historial visible. Los guarda en una pila interna separada.",
+    "Incorrecto. `git stash` opera dentro del repositorio Git, no copia archivos a un directorio del sistema de archivos externo."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia entre `git reset` y `git revert`?"
+  options={[
+    "Son equivalentes; `revert` es solo un alias de `reset` con `--hard`",
+    "`git reset` mueve el puntero HEAD (reescribe historial); `git revert` crea un nuevo commit que deshace los cambios sin reescribir el historial",
+    "`git revert` solo funciona en archivos individuales; `git reset` trabaja con commits completos",
+    "`git reset` es seguro para ramas remotas; `git revert` solo para ramas locales"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Son operaciones fundamentalmente distintas con impactos muy diferentes en el historial del repositorio.",
+    "Correcto. La diferencia clave es si se reescribe el historial:\n\n```bash\n# git reset: mueve HEAD hacia atrás, eliminando commits del historial\ngit reset --soft HEAD~1   # deshace el commit, cambios quedan en staging\ngit reset --mixed HEAD~1  # deshace el commit, cambios quedan en working dir\ngit reset --hard HEAD~1   # deshace el commit Y descarta los cambios\n\n# ⚠️ reset en commits ya pusheados requiere force push\n# Esto causa problemas a otros colaboradores\n\n# git revert: crea un nuevo commit que invierte los cambios\ngit revert abc123   # crea un commit que deshace abc123\n# Historial queda: ... → abc123 → ... → Revert 'abc123'\n\n# ✅ Usa reset para: deshacer commits locales que nadie más tiene\n# ✅ Usa revert para: deshacer commits ya compartidos/pusheados\n```",
+    "Incorrecto. `git revert` trabaja con commits, no con archivos individuales. Para deshacer cambios en archivos específicos, se usa `git checkout -- archivo` o `git restore`.",
+    "Incorrecto. Es exactamente al revés: `git reset` es peligroso en ramas remotas (requiere force push y puede causar problemas a colaboradores); `git revert` es el método seguro para deshacer cambios en ramas compartidas."
+  ]}
+/>

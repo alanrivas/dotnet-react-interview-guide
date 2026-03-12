@@ -1,0 +1,115 @@
+import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
+
+const sidebars: SidebarsConfig = {
+  interviewSidebar: [
+    {
+      type: 'doc',
+      id: 'intro',
+      label: '🏠 Introducción',
+    },
+    {
+      type: 'category',
+      label: '🟢 Junior',
+      collapsed: false,
+      link: { type: 'doc', id: 'junior/index' },
+      items: [
+        {
+          type: 'category',
+          label: '📖 Teoría',
+          collapsed: true,
+          items: [
+            'junior/csharp-fundamentos',
+            'junior/poo',
+            'junior/dotnet-basico',
+            'junior/javascript-typescript',
+            'junior/html-css',
+            'junior/react-basico',
+            'junior/sql-basico',
+            'junior/http-web',
+            'junior/git',
+            'junior/algoritmos-basicos',
+            'junior/testing-basico',
+            'junior/patrones-basicos',
+          ],
+        },
+        { type: 'doc', id: 'junior/preguntas',   label: '🎯 Banco de Preguntas' },
+        { type: 'doc', id: 'junior/live-coding',  label: '💻 Live Coding' },
+        { type: 'doc', id: 'junior/simulacro',    label: '🧪 Simulacro de Entrevista' },
+      ],
+    },
+    {
+      type: 'category',
+      label: '🟡 Semi-Senior',
+      collapsed: false,
+      link: { type: 'doc', id: 'semi-senior/index' },
+      items: [
+        {
+          type: 'category',
+          label: '📖 Teoría',
+          collapsed: true,
+          items: [
+            'semi-senior/csharp-avanzado',
+            'semi-senior/aspnet-core',
+            'semi-senior/entity-framework',
+            'semi-senior/apis-rest',
+            'semi-senior/javascript-avanzado',
+            'semi-senior/react-avanzado',
+            'semi-senior/estado-global',
+            'semi-senior/testing',
+            'semi-senior/patrones-diseno',
+            'semi-senior/sql-avanzado',
+            'semi-senior/autenticacion-oauth',
+            'semi-senior/docker',
+            'semi-senior/typescript-avanzado',
+            'semi-senior/performance-frontend',
+            'semi-senior/caching-redis',
+          ],
+        },
+        { type: 'doc', id: 'semi-senior/preguntas',   label: '🎯 Banco de Preguntas' },
+        { type: 'doc', id: 'semi-senior/live-coding',  label: '💻 Live Coding' },
+        { type: 'doc', id: 'semi-senior/simulacro',    label: '🧪 Simulacro de Entrevista' },
+      ],
+    },
+    {
+      type: 'category',
+      label: '🔴 Senior',
+      collapsed: false,
+      link: { type: 'doc', id: 'senior/index' },
+      items: [
+        {
+          type: 'category',
+          label: '📖 Teoría',
+          collapsed: true,
+          items: [
+            'senior/arquitectura',
+            'senior/clean-architecture',
+            'senior/microservicios',
+            'senior/performance',
+            'senior/seguridad',
+            'senior/concurrencia',
+            'senior/devops',
+            'senior/cloud',
+            'senior/system-design',
+            'senior/liderazgo-tecnico',
+            'senior/observabilidad',
+            'senior/event-driven',
+            'senior/escalabilidad-bd',
+          ],
+        },
+        { type: 'doc', id: 'senior/preguntas',   label: '🎯 Banco de Preguntas' },
+        { type: 'doc', id: 'senior/live-coding',  label: '💻 Live Coding' },
+        { type: 'doc', id: 'senior/simulacro',    label: '🧪 Simulacro de Entrevista' },
+      ],
+    },
+    {
+      type: 'category',
+      label: '🧠 Habilidades Transversales',
+      collapsed: false,
+      items: [
+        { type: 'doc', id: 'comportamiento-star', label: '🌟 Preguntas de Comportamiento (STAR)' },
+      ],
+    },
+  ],
+};
+
+export default sidebars;

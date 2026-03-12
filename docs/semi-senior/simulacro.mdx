@@ -1,0 +1,601 @@
+---
+id: simulacro
+title: 🧪 Simulacro de Entrevista — Semi-Senior
+sidebar_position: 101
+---
+
+import Quiz from '@site/src/components/Quiz';
+
+# 🧪 Simulacro de Entrevista — Semi-Senior
+
+Simula una entrevista técnica real. **30 preguntas**, temas mezclados, sin mirar las respuestas hasta contestar. Tiempo estimado: 50 minutos.
+
+:::tip Cómo usarlo
+Responde cada pregunta como lo harías en una entrevista real: piensa en voz alta y justifica tu elección antes de hacer clic.
+:::
+
+---
+
+## C# Avanzado
+
+<Quiz
+  question="¿Cuándo es preferible usar `ValueTask` sobre `Task` como tipo de retorno?"
+  options={[
+    "Cuando la operación siempre es asíncrona y tarda varios segundos",
+    "Cuando el resultado suele estar disponible de forma sincrónica, evitando la asignación en el heap",
+    "Cuando se necesita soporte para `CancellationToken`",
+    "`ValueTask` siempre es superior a `Task` y debe usarse en todos los casos"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Si la operación es siempre asíncrona, `Task` es la opción estándar con mayor compatibilidad.",
+    "Correcto. `ValueTask` es un struct que evita la asignación en heap cuando el resultado ya está disponible (ruta sincrónica). Por ejemplo, un método que lee de caché primero: si el valor está en caché retorna síncronamente sin alloation. Si la mayoría de llamadas son asíncronas, `Task` tiene menor overhead.",
+    "Incorrecto. Tanto `Task` como `ValueTask` son compatibles con `CancellationToken`; no es un criterio de selección.",
+    "Incorrecto. `ValueTask` tiene restricciones: no puede ser `await`-ed múltiples veces ni convertido a `Task` sin `AsTask()`. Úsalo solo cuando el profiling justifique la optimización."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué ventaja aportan los `record` de C# respecto a las `class` convencionales?"
+  options={[
+    "Los `record` son más rápidos porque se almacenan en el stack",
+    "Los `record` no pueden heredar de otras clases, lo que evita bugs",
+    "Los `record` proporcionan igualdad por valor, `ToString()` generado y expresiones `with` para copias inmutables",
+    "Los `record` no pueden tener métodos ni lógica personalizada"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Los `record` (record class) son reference types y se almacenan en el heap, igual que las clases.",
+    "Incorrecto. Los `record class` sí pueden heredar de otros `record`. Los `record struct` no aplican herencia.",
+    "Correcto. Un `record` genera automáticamente: `Equals` basado en valores de propiedades, `GetHashCode`, `ToString` legible, y soporte para `with`: `var p2 = p1 with { Nombre = \"Ana\" }`. Ideal para DTOs y tipos inmutables del dominio.",
+    "Incorrecto. Los `record` pueden tener métodos, propiedades calculadas, constructores adicionales y cualquier lógica que necesiten."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué hace el pattern matching con `switch expression` en C# 8+?"
+  options={[
+    "Solo puede comparar tipos numéricos enteros",
+    "Es equivalente a una cadena `if-else` sin ninguna ventaja adicional",
+    "Permite evaluar un valor contra múltiples patrones retornando un resultado de forma expresiva, con verificación de exhaustividad",
+    "Solo funciona con tipos primitivos, no con clases ni interfaces"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El switch expression funciona con cualquier tipo: clases, interfaces, tuplas, patrones posicionales, etc.",
+    "Incorrecto. El compilador verifica exhaustividad (todos los casos cubiertos) y el resultado es una expresión, no una sentencia, lo que permite asignación directa.",
+    "Correcto. Ejemplo: `string desc = figura switch { Circulo c => $\"Radio {c.Radio}\", Rectangulo r => $\"{r.Ancho}x{r.Alto}\", _ => \"Desconocido\" }`. Más conciso que `if-else` y con soporte para patrones de tipo, propiedad, relacional y posicional.",
+    "Incorrecto. El switch expression es especialmente potente con tipos de clase, permitiendo deconstruction y property patterns."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué garantiza la restricción `where T : struct` en un método genérico?"
+  options={[
+    "Que T implemente una interfaz específica",
+    "Que T sea un tipo de referencia (clase)",
+    "Que T sea un value type y por tanto nunca podrá ser null",
+    "Que T tenga un constructor sin parámetros público"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Para requerir una interfaz se usa `where T : IAlgunaInterfaz`.",
+    "Incorrecto. Para restringir a reference types se usa `where T : class`.",
+    "Correcto. `where T : struct` limita T a value types (int, DateTime, struct personalizados, etc.). Como los value types no pueden ser null (salvo `Nullable`), el compilador puede optimizar y garantizar no-null. Útil en código de alto rendimiento.",
+    "Incorrecto. La restricción de constructor sin parámetros es `where T : new()`, que se puede combinar con otras restricciones."
+  ]}
+/>
+
+---
+
+## DI / ASP.NET Core
+
+<Quiz
+  question="¿Qué problema causa registrar un servicio `Scoped` como dependencia de un `Singleton` en ASP.NET Core?"
+  options={[
+    "No hay problema; el contenedor de DI lo resuelve automáticamente",
+    "El servicio Scoped se convierte efectivamente en Singleton, compartiendo estado entre distintas requests HTTP",
+    "El servicio Scoped se recrea en cada llamada al Singleton",
+    "ASP.NET Core lanza un error en tiempo de compilación antes de ejecutar"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. ASP.NET Core lanza `InvalidOperationException` en tiempo de ejecución (o en build si se activa la validación) advirtiendo del problema.",
+    "Correcto. Este antipatrón se llama 'captive dependency'. El Singleton captura la instancia Scoped en su constructor y la retiene para siempre. Una instancia de DbContext que debería durar una request acaba durando toda la vida del proceso, causando bugs de concurrencia y estado corrupto.",
+    "Incorrecto. El Singleton captura la instancia en su constructor una sola vez; no la solicita de nuevo.",
+    "Incorrecto. El error se detecta en tiempo de ejecución, no de compilación, a menos que se configure `ValidateScopes = true` en `CreateDefaultBuilder`."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué hace el middleware `UseRouting()` en el pipeline de ASP.NET Core?"
+  options={[
+    "Registra los controladores y sus acciones en el contenedor de DI",
+    "Aplica autenticación y autorización a todas las rutas de la aplicación",
+    "Analiza la URL entrante y determina qué endpoint debe manejar la request",
+    "Habilita CORS para todas las rutas automáticamente"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El registro de controladores en DI se hace con `services.AddControllers()` en `ConfigureServices`.",
+    "Incorrecto. Para eso sirven `UseAuthentication()` y `UseAuthorization()`, que deben ir después de `UseRouting()`.",
+    "Correcto. `UseRouting()` analiza la URL y asigna el endpoint correspondiente (ruta matching). El endpoint seleccionado se ejecuta más adelante con `UseEndpoints()` o `MapControllers()`. Entre ambos se colocan middlewares que necesitan conocer el endpoint como `UseAuthorization()`.",
+    "Incorrecto. CORS se habilita con `UseCors()`, que es un middleware independiente."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál es la ventaja principal de las Minimal APIs sobre los controladores en ASP.NET Core 6+?"
+  options={[
+    "Las Minimal APIs soportan más verbos HTTP que los controladores",
+    "Los controladores no pueden usar inyección de dependencias",
+    "Las Minimal APIs tienen mejor soporte nativo para autenticación",
+    "Menos abstracciones y menor overhead por request; ideales para microservicios simples y APIs pequeñas"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Ambos modelos soportan los mismos verbos HTTP (GET, POST, PUT, PATCH, DELETE, etc.).",
+    "Incorrecto. Los controladores soportan DI perfectamente desde su introducción en ASP.NET Core.",
+    "Incorrecto. Ambos modelos tienen el mismo soporte de autenticación y autorización.",
+    "Correcto. Las Minimal APIs eliminan el overhead de reflexión de los controladores MVC, tienen menos configuración y son más explícitas. Para un microservicio con pocos endpoints, `app.MapGet(\"/items\", handler)` es más directo y performante que un controlador completo con filtros, model binding pesado y convenciones MVC."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué proporciona `IOptions` en ASP.NET Core?"
+  options={[
+    "Persistencia automática de configuración en base de datos",
+    "Acceso fuertemente tipado a una sección de `appsettings.json` registrada en DI",
+    "Modificación de configuración en tiempo de ejecución sin reiniciar la aplicación",
+    "Validación automática de todas las opciones al iniciar la aplicación"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. `IOptions` solo lee configuración; no persiste nada en base de datos.",
+    "Correcto. Se define una clase `MisOpciones`, se registra con `services.Configure<MisOpciones>(config.GetSection(\"MisOpciones\"))` y se inyecta `IOptions<MisOpciones>`. Así accedes a la configuración de forma tipada sin usar magic strings.",
+    "Incorrecto. Para configuración recargable en caliente se usa `IOptionsSnapshot` (por request) o `IOptionsMonitor` (con callbacks de cambio).",
+    "Incorrecto. La validación automática al iniciar se logra con `ValidateOnStart()` y `ValidateDataAnnotations()`, que son opcionales y no vienen activados por defecto."
+  ]}
+/>
+
+---
+
+## Entity Framework Core
+
+<Quiz
+  question="¿Qué beneficio aporta `AsNoTracking()` en una consulta de EF Core?"
+  options={[
+    "Previene que se ejecuten múltiples consultas concurrentes sobre el mismo DbContext",
+    "Desactiva el lazy loading para esa consulta específica",
+    "Mejora el rendimiento en consultas de solo lectura al no registrar las entidades en el Change Tracker",
+    "Impide automáticamente el problema N+1"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. EF Core no permite multithreading en el mismo DbContext por diseño; eso no lo controla `AsNoTracking`.",
+    "Incorrecto. El lazy loading se controla con la configuración del DbContext y las propiedades `virtual`, no con `AsNoTracking`.",
+    "Correcto. El Change Tracker de EF almacena snapshots de cada entidad para detectar cambios en `SaveChanges()`. Con `AsNoTracking()`, EF no crea esos snapshots, reduciendo memoria y tiempo de procesamiento. Ideal para endpoints de lectura como listados y reportes.",
+    "Incorrecto. `AsNoTracking` no resuelve N+1; para eso se usa `Include()` o `Select()` con proyección explícita."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuándo ocurre el problema N+1 en EF Core?"
+  options={[
+    "Cuando se ejecuta una migración con más de un cambio de esquema",
+    "Cuando hay más de un DbContext registrado en el contenedor de DI",
+    "Cuando se itera una colección cargada con lazy loading dentro de un bucle, generando una query por cada elemento",
+    "Cuando se usan más de un nivel de `Include()` en la misma consulta"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El número de cambios en una migración no tiene relación con el problema N+1.",
+    "Incorrecto. Múltiples DbContext en DI no causan N+1 por sí solos.",
+    "Correcto. Ejemplo clásico: se carga una lista de `Pedidos` (1 query) y luego se accede a `pedido.Lineas` dentro de un `foreach` (N queries, una por pedido). La solución es usar `Include(p => p.Lineas)` o proyectar con `Select`.",
+    "Incorrecto. Múltiples niveles de `Include()` generan JOINs o queries separadas pero de forma controlada, no N+1."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuándo es preferible usar `Select()` en lugar de `Include()` para cargar datos relacionados?"
+  options={[
+    "`Include()` siempre es más eficiente porque usa un solo JOIN en SQL",
+    "`Select()` no puede proyectar datos de entidades relacionadas",
+    "Cuando solo necesitas un subconjunto de campos; `Select()` genera SQL más eficiente al evitar cargar columnas innecesarias",
+    "Son equivalentes en SQL generado; la elección es solo de estilo"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. `Include()` carga la entidad relacionada completa con todas sus columnas, lo cual puede ser costoso si la entidad tiene muchos campos o relaciones en cascada.",
+    "Incorrecto. `Select()` puede proyectar perfectamente campos de entidades relacionadas: `.Select(p => new { p.Id, p.Cliente.Nombre })`.",
+    "Correcto. `Include()` carga entidades completas (útil cuando necesitas modificarlas). `Select()` proyecta solo lo necesario: `SELECT id, cliente_nombre` en vez de `SELECT * FROM pedidos JOIN clientes`. Para APIs de lectura, `Select()` suele generar queries significativamente más ligeras.",
+    "Incorrecto. El SQL generado puede ser muy diferente en complejidad y número de columnas retornadas."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué son las migraciones en EF Core y para qué sirven?"
+  options={[
+    "Son scripts que importan datos de una base de datos externa al modelo EF",
+    "Sincronizan automáticamente la BD con el modelo sin necesidad de intervención manual",
+    "Son cambios de esquema versionados que pueden aplicarse (`update`) o revertirse (`down`) de forma controlada",
+    "Solo funcionan con SQL Server; otros proveedores requieren scripts manuales"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Las migraciones gestionan cambios de esquema, no importación de datos.",
+    "Incorrecto. Las migraciones no son automáticas; requieren ejecutar `dotnet ef database update` explícitamente en cada entorno.",
+    "Correcto. Cada migración tiene un método `Up` (aplica el cambio) y `Down` (lo revierte). Se versionan junto al código fuente, permitiendo que cualquier desarrollador o pipeline de CI/CD lleve la base de datos al estado correcto ejecutando `dotnet ef database update`.",
+    "Incorrecto. EF Core soporta múltiples proveedores: PostgreSQL, MySQL, SQLite, Cosmos DB, etc."
+  ]}
+/>
+
+---
+
+## APIs REST / Autenticación
+
+<Quiz
+  question="¿Cuál de estas operaciones HTTP es idempotente?"
+  options={[
+    "`POST /facturas` para crear una factura",
+    "`POST /facturas/99/duplicar` para duplicar una factura",
+    "`PUT /facturas/99` para reemplazar una factura existente",
+    "Ninguna operación HTTP es idempotente por definición de HTTP"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. `POST` no es idempotente: llamarlo dos veces crea dos facturas.",
+    "Incorrecto. `POST` a una acción tampoco es idempotente; duplicar dos veces crea dos duplicados.",
+    "Correcto. `PUT` es idempotente porque enviar el mismo payload al mismo recurso múltiples veces produce el mismo estado final. Si el recurso ya tiene los datos del payload, el resultado es idéntico. `GET`, `DELETE` y `HEAD` también son idempotentes.",
+    "Incorrecto. HTTP define explícitamente idempotencia para GET, PUT, DELETE, HEAD y OPTIONS."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿En qué parte de un JWT se almacena la firma y qué garantiza?"
+  options={[
+    "En el header; garantiza la identidad del emisor",
+    "En el payload; garantiza que los claims no han sido alterados",
+    "En la tercera sección (signature); garantiza la integridad del header y el payload",
+    "En una cookie separada asociada al token"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El header contiene el tipo de token y el algoritmo de firma, no la firma en sí.",
+    "Incorrecto. El payload contiene los claims (sub, exp, roles, etc.) pero no la firma.",
+    "Correcto. Un JWT tiene formato `header.payload.signature`. La firma se calcula con `HMACSHA256(base64(header) + '.' + base64(payload), secret)`. Cualquier modificación al header o payload invalida la firma, lo que el servidor detecta al verificar.",
+    "Incorrecto. La firma es la tercera parte del propio token, separada por un punto. No está en ningún almacén externo."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál es la diferencia entre autenticación y autorización?"
+  options={[
+    "Son sinónimos en el contexto de seguridad de aplicaciones web",
+    "La autorización siempre ocurre antes que la autenticación en el pipeline HTTP",
+    "Autenticación verifica quién eres; autorización verifica qué puedes hacer",
+    "La autenticación solo aplica a usuarios humanos; la autorización aplica a servicios y APIs"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Son conceptos distintos aunque relacionados: primero debes saber quién eres (autenticación) antes de decidir qué puedes hacer (autorización).",
+    "Incorrecto. La autenticación siempre precede a la autorización. En ASP.NET Core: `UseAuthentication()` va antes de `UseAuthorization()`.",
+    "Correcto. Autenticación: verificar identidad (JWT válido, cookie de sesión, certificado). Autorización: verificar permisos (`[Authorize(Roles = \"Admin\")]`). Puedes estar autenticado y no tener autorización para un recurso específico (403 Forbidden).",
+    "Incorrecto. Tanto usuarios humanos como servicios (service accounts, API keys) participan en autenticación y autorización."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué beneficio aporta versionar una API con rutas como `/api/v2/recursos`?"
+  options={[
+    "Indica que la API está en fase beta y puede cambiar sin aviso",
+    "Obliga a todos los clientes a migrar simultáneamente a la nueva versión",
+    "Permite evolucionar la API con cambios breaking sin romper clientes existentes que usan versiones anteriores",
+    "Solo es necesario cuando se cambian los métodos HTTP de un endpoint"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El versionado es para APIs productivas y estables, no solo para betas.",
+    "Incorrecto. La migración puede ser gradual; clientes pueden usar v1 y v2 simultáneamente durante un período de transición.",
+    "Correcto. Un cambio breaking (eliminar campo, cambiar tipo de dato, renombrar endpoint) en v1 rompería todos los clientes. Con versionado, se libera v2 con los cambios y v1 sigue disponible. Los clientes migran a su ritmo.",
+    "Incorrecto. Cualquier cambio breaking justifica una nueva versión: cambios en contratos, semántica, autenticación, etc."
+  ]}
+/>
+
+---
+
+## Patrones y SOLID
+
+<Quiz
+  question="¿Qué problema resuelve el patrón Repository?"
+  options={[
+    "Permite ejecutar múltiples operaciones de base de datos en paralelo automáticamente",
+    "Automatiza la generación de consultas SQL a partir del modelo de dominio",
+    "Abstrae la lógica de acceso a datos, desacoplando el dominio de la infraestructura de persistencia",
+    "Implementa caché automático en todas las consultas al detectar repeticiones"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El paralelismo de queries no es responsabilidad del Repository; lo gestiona el proveedor de base de datos.",
+    "Incorrecto. La generación de SQL la hace el ORM (EF Core, Dapper). El Repository es una abstracción por encima.",
+    "Correcto. El Repository define una interfaz (`IProductoRepository`) con métodos como `GetById`, `Add`, `Save`. El dominio depende de la interfaz, no de EF Core. Esto facilita cambiar el ORM, hacer pruebas unitarias con mocks y mantener el dominio puro.",
+    "Incorrecto. El caché debe implementarse explícitamente, ya sea en el Repository o en una capa de servicio."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué enuncia el principio de Sustitución de Liskov (LSP)?"
+  options={[
+    "Una clase debe tener una sola razón para cambiar",
+    "Los módulos de alto nivel no deben depender de módulos de bajo nivel",
+    "Una clase no debe implementar interfaces con métodos que no usa",
+    "Los objetos de una clase base deben poder ser reemplazados por instancias de clases derivadas sin alterar el comportamiento correcto del programa"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Eso es el Principio de Responsabilidad Única (SRP), la S de SOLID.",
+    "Incorrecto. Eso es el Principio de Inversión de Dependencias (DIP), la D de SOLID.",
+    "Incorrecto. Eso es el Principio de Segregación de Interfaces (ISP), la I de SOLID.",
+    "Correcto. LSP dice que si `Perro` hereda de `Animal`, cualquier código que funcione con `Animal` debe funcionar igual con `Perro`. Violación clásica: `Rectangulo` hereda de `Cuadrado` y sobrescribe `SetAncho` de forma que cambia la altura, rompiendo las invariantes del `Rectangulo`."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué rol cumple MediatR en una arquitectura .NET?"
+  options={[
+    "Implementa el patrón Observer para eventos de dominio entre microservicios",
+    "Gestiona la comunicación HTTP entre servicios de la misma solución",
+    "Implementa el patrón Mediator: desacopla quien envía un command/query de quien lo maneja",
+    "Proporciona un sistema de logging estructurado con correlación de requests"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. MediatR es in-process; no gestiona comunicación entre microservicios. Para eso existen buses como MassTransit o NServiceBus.",
+    "Incorrecto. MediatR no hace llamadas HTTP; es una librería de mensajería en memoria dentro del mismo proceso.",
+    "Correcto. Con MediatR, el controlador hace `mediator.Send(new CrearPedidoCommand(...))` sin saber nada de `CrearPedidoCommandHandler`. Esto facilita CQRS, desacopla capas y hace los handlers testeables de forma aislada.",
+    "Incorrecto. El logging estructurado lo proveen Serilog, NLog u otras librerías de logging."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué viola el principio Open/Closed (OCP)?"
+  options={[
+    "Agregar una nueva clase que implementa una interfaz existente",
+    "Usar herencia para extender el comportamiento base",
+    "Añadir código a una clase existente cada vez que aparece un nuevo tipo de descuento en lugar de usar polimorfismo",
+    "Tener múltiples implementaciones de una misma interfaz en diferentes capas"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Agregar nuevas implementaciones es exactamente lo que OCP promueve: extender sin modificar.",
+    "Incorrecto. La herencia con `virtual`/`override` es uno de los mecanismos para cumplir OCP.",
+    "Correcto. Si cada vez que hay un nuevo tipo de descuento (10%, VIP, Navidad) modificas la clase `CalculadoraDescuento` añadiendo un `if`, estás violando OCP. La solución: interfaz `IDescuento` con `Calcular()` e implementaciones separadas. Abiertas para extensión, cerradas para modificación.",
+    "Incorrecto. Múltiples implementaciones de una interfaz es un patrón saludable y no viola OCP."
+  ]}
+/>
+
+---
+
+## Testing
+
+<Quiz
+  question="¿Cuál es la diferencia entre un Mock y un Stub en testing?"
+  options={[
+    "Un Stub verifica que se llamaron los métodos correctos; un Mock retorna valores predefinidos",
+    "Son términos intercambiables que describen lo mismo",
+    "Los Mocks solo se usan en pruebas de integración; los Stubs en unitarias",
+    "Un Stub proporciona respuestas predefinidas para llamadas; un Mock además verifica que las interacciones ocurrieron como se esperaba"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Es al revés: el Mock verifica interacciones; el Stub retorna valores predefinidos.",
+    "Incorrecto. Aunque en la práctica muchas librerías (Moq, NSubstitute) los mezclan, conceptualmente son distintos en el Test Double taxonomy de Meszaros.",
+    "Incorrecto. Ambos se usan principalmente en pruebas unitarias para reemplazar dependencias reales.",
+    "Correcto. Stub: `_repo.Setup(r => r.GetById(1)).Returns(producto)` — solo define el retorno. Mock: además verifica `_repo.Verify(r => r.Save(It.IsAny<Producto>()), Times.Once())` — asegura que el método fue llamado con los argumentos correctos."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué caracteriza a un buen test unitario?"
+  options={[
+    "Debe probar múltiples clases en conjunto para ser más eficiente",
+    "Debe conectarse a la base de datos para verificar que la persistencia funciona",
+    "Debe ser rápido, aislado de dependencias externas, determinístico y probar una sola unidad de comportamiento",
+    "Debe cubrir obligatoriamente todos los métodos privados de la clase bajo prueba"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Probar múltiples clases en conjunto es una prueba de integración, no unitaria.",
+    "Incorrecto. Conectarse a base de datos real convierte el test en integración y lo hace lento, dependiente del entorno y no determinístico.",
+    "Correcto. Las características FIRST: Fast (milisegundos), Independent (no depende de otros tests), Repeatable (mismo resultado siempre), Self-validating (pasa o falla sin inspección manual), Timely (escrito junto al código). Cada test prueba un solo comportamiento para que el mensaje de fallo sea preciso.",
+    "Incorrecto. Los métodos privados se prueban indirectamente a través de los públicos. Probar internals directamente acopla los tests a la implementación."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué ciclo describe correctamente TDD (Test-Driven Development)?"
+  options={[
+    "Escribir todos los tests al final, después de completar el código de producción",
+    "Generar tests automáticamente a partir del código con herramientas de análisis estático",
+    "Rojo → Verde → Refactorizar: primero escribir el test que falla, luego el código mínimo para pasarlo, luego mejorar el diseño",
+    "Ejecutar tests en producción con un subconjunto de usuarios reales (A/B testing)"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Escribir tests al final es testing tradicional, no TDD. Pierde el beneficio de que los tests guíen el diseño.",
+    "Incorrecto. Eso sería generación automática de tests, no TDD.",
+    "Correcto. TDD tiene tres fases: 1) Red: escribe un test que falla porque la funcionalidad no existe. 2) Green: escribe el código mínimo necesario para que el test pase. 3) Refactor: mejora el código manteniendo los tests en verde. Este ciclo guía el diseño emergente.",
+    "Incorrecto. Eso describe feature flags o experimentos en producción, no TDD."
+  ]}
+/>
+
+---
+
+## React Avanzado / TypeScript
+
+<Quiz
+  question="¿Cuándo es útil `useCallback` para optimizar un componente React?"
+  options={[
+    "Para memorizar el resultado de un cálculo costoso en el componente",
+    "Para ejecutar efectos secundarios de forma asíncrona sin bloquear el render",
+    "Para acceder directamente a un nodo del DOM sin re-render",
+    "Para evitar que componentes hijos re-renderizen innecesariamente cuando el padre re-renderiza y les pasa funciones como props"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Memorizar resultados de cálculos costosos es el caso de uso de `useMemo`, no `useCallback`.",
+    "Incorrecto. Los efectos asíncronos se manejan con `useEffect`.",
+    "Incorrecto. Para acceder a nodos del DOM se usa `useRef`.",
+    "Correcto. Sin `useCallback`, cada render del padre crea una nueva referencia de función aunque su código sea idéntico. Si un hijo envuelto en `React.memo` recibe esa función como prop, se re-renderiza innecesariamente. `useCallback` estabiliza la referencia entre renders."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué hace el tipo utilitario `Partial` en TypeScript?"
+  options={[
+    "Hace que todas las propiedades del tipo sean de solo lectura (`readonly`)",
+    "Elimina las propiedades opcionales, dejando solo las requeridas",
+    "Hace que todas las propiedades del tipo sean opcionales",
+    "Crea un subconjunto del tipo con solo las propiedades especificadas"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Para hacer propiedades readonly se usa `Readonly<T>`.",
+    "Incorrecto. Para quedarse solo con las requeridas podría usarse una combinación de `Required` y `Pick`.",
+    "Correcto. `Partial<Usuario>` convierte `{ nombre: string; email: string }` en `{ nombre?: string; email?: string }`. Muy útil para DTOs de actualización parcial (PATCH) y en tests donde no necesitas rellenar todos los campos.",
+    "Incorrecto. Para seleccionar un subconjunto de propiedades se usa `Pick<T, K>`."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál es la ventaja principal de React Query sobre `useEffect` para fetching de datos?"
+  options={[
+    "React Query solo soporta REST; `useEffect` es más flexible con GraphQL y WebSockets",
+    "React Query evita el uso del Virtual DOM, haciéndolo más rápido",
+    "Gestiona automáticamente caché, estados loading/error, deduplicación y refetching sin boilerplate manual",
+    "React Query funciona sin necesidad de un backend; genera los datos localmente"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. React Query es agnóstico al protocolo; funciona con REST, GraphQL, WebSockets y cualquier función async.",
+    "Incorrecto. React Query usa React normalmente con el Virtual DOM.",
+    "Correcto. Con `useEffect` implementas manualmente: loading state, error state, caché, refetch on focus, deduplicación de requests simultáneas y stale-while-revalidate. React Query lo da todo configurado. `useQuery({ queryKey: ['user', id], queryFn: fetchUser })` reemplaza 40 líneas de boilerplate.",
+    "Incorrecto. React Query siempre llama a una función async que tú provees; no genera datos."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué hace el tipo utilitario `Omit` en TypeScript?"
+  options={[
+    "Selecciona solo las propiedades especificadas del tipo (lo contrario de lo que hace)",
+    "Marca las propiedades especificadas como opcionales en el tipo",
+    "Crea un nuevo tipo basado en T excluyendo las propiedades especificadas en K",
+    "Convierte las propiedades especificadas en `readonly` dentro del tipo"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Seleccionar propiedades específicas es lo que hace `Pick<T, K>`, que es el complemento de `Omit`.",
+    "Incorrecto. Para hacer propiedades opcionales se usa `Partial<T>` o manualmente con `?`.",
+    "Correcto. `Omit<Usuario, 'password' | 'salt'>` crea un tipo con todas las propiedades de `Usuario` excepto `password` y `salt`. Muy útil para crear tipos de respuesta de API que excluyen campos sensibles.",
+    "Incorrecto. Para readonly se usa `Readonly<T>`."
+  ]}
+/>
+
+---
+
+## Docker / Caché
+
+<Quiz
+  question="¿Qué ventaja ofrece un Dockerfile multi-stage para aplicaciones .NET?"
+  options={[
+    "Permite ejecutar múltiples aplicaciones dentro del mismo contenedor",
+    "Habilita la comunicación directa entre contenedores sin necesidad de redes Docker",
+    "Hace que el contenedor arranque más rápido en producción",
+    "Reduce el tamaño de la imagen final al separar el entorno de compilación del de ejecución"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Un contenedor debe ejecutar un solo proceso/aplicación; eso no es responsabilidad de multi-stage.",
+    "Incorrecto. La comunicación entre contenedores se gestiona con redes Docker o Docker Compose.",
+    "Incorrecto. El tiempo de arranque depende de la aplicación, no de si se usó multi-stage.",
+    "Correcto. Stage 1 (build): usa `mcr.microsoft.com/dotnet/sdk` con compilador, NuGet, etc. Stage 2 (runtime): usa `mcr.microsoft.com/dotnet/aspnet`, solo el runtime. La imagen final no incluye el SDK (varios cientos de MB), reduciendo el tamaño y la superficie de ataque."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué es el TTL (Time To Live) en Redis y qué ocurre cuando expira?"
+  options={[
+    "Es el tiempo máximo que Redis puede estar desconectado antes de reiniciarse",
+    "Es el número máximo de operaciones por segundo que permite la instancia de Redis",
+    "Es el tiempo de vida asignado a una clave; cuando expira, Redis la elimina automáticamente",
+    "Es el tamaño máximo en bytes permitido para el valor de una clave"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El TTL es para claves individuales, no para la disponibilidad del servidor.",
+    "Incorrecto. El throughput máximo de Redis se configura de otras formas (maxmemory-policy, etc.).",
+    "Correcto. Se establece con `SET clave valor EX 300` (300 segundos) o `EXPIRE clave 300`. Redis elimina la clave automáticamente al expirar. Esencial para caché de sesiones, tokens temporales y datos que deben refrescarse periódicamente.",
+    "Incorrecto. El tamaño máximo de valores en Redis se controla con `maxmemory`, no con TTL."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál es la diferencia clave entre `IMemoryCache` e `IDistributedCache` en ASP.NET Core?"
+  options={[
+    "`IMemoryCache` cifra los datos automáticamente; `IDistributedCache` no",
+    "`IDistributedCache` es más rápido porque accede a memoria local del proceso",
+    "`IMemoryCache` guarda en la memoria del proceso local y no se comparte entre instancias; `IDistributedCache` usa un almacén externo como Redis compartido entre todas las instancias",
+    "Son funcionalmente equivalentes; solo difieren en el nombre de la interfaz"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Ninguna de las dos implementaciones hace cifrado automático de datos.",
+    "Incorrecto. `IMemoryCache` es más rápido porque accede a RAM local; `IDistributedCache` (Redis) tiene latencia de red.",
+    "Correcto. En un despliegue con múltiples instancias (load balancer), `IMemoryCache` hace que cada instancia tenga su propia caché aislada. Si la request llega a otra instancia, el dato no está. `IDistributedCache` con Redis centraliza la caché y todas las instancias comparten el mismo estado.",
+    "Incorrecto. La diferencia es fundamental en arquitecturas con múltiples instancias o contenedores."
+  ]}
+/>

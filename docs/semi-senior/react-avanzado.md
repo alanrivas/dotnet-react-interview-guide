@@ -1,0 +1,294 @@
+---
+id: react-avanzado
+title: React Avanzado
+sidebar_position: 5
+---
+
+# React — Avanzado 🟡
+
+## useCallback y useMemo
+
+Optimizaciones para evitar re-renders y recalculos innecesarios.
+
+```tsx
+import { useState, useCallback, useMemo } from 'react';
+
+function ListaProductos({ categoriaId }: { categoriaId: number }) {
+  const [busqueda, setBusqueda] = useState('');
+  const [productos, setProductos] = useState<Producto[]>([]);
+
+  // useMemo: memoriza el resultado de un cálculo costoso
+  const productosFiltrados = useMemo(() => {
+    console.log('Calculando filtro...'); // solo cuando busqueda o productos cambia
+    return productos.filter(p =>
+      p.nombre.toLowerCase().includes(busqueda.toLowerCase())
+    );
+  }, [productos, busqueda]);
+
+  // useCallback: memoriza una función (evita que el hijo se re-renderice)
+  const handleEliminar = useCallback((id: number) => {
+    setProductos(prev => prev.filter(p => p.id !== id));
+  }, []); // no depende de nada externo
+
+  return (
+    <>
+      <input value={busqueda} onChange={e => setBusqueda(e.target.value)} />
+      {productosFiltrados.map(p => (
+        <ItemProducto key={p.id} producto={p} onEliminar={handleEliminar} />
+      ))}
+    </>
+  );
+}
+
+// memo: evita re-render si las props no cambiaron
+const ItemProducto = React.memo(({ producto, onEliminar }: ItemProps) => {
+  console.log('Render ItemProducto', producto.id);
+  return (
+    <div>
+      {producto.nombre}
+      <button onClick={() => onEliminar(producto.id)}>Eliminar</button>
+    </div>
+  );
+});
+```
+
+:::tip Cuándo usar memo/useCallback/useMemo
+Solo cuando tienes un **problema de rendimiento comprobado**. La optimización prematura añade complejidad. Úsalos cuando: el componente renderiza frecuentemente, el cálculo es costoso, o el hijo tiene `React.memo`.
+:::
+
+---
+
+## useReducer
+
+Para estado complejo con múltiples sub-valores o lógica de transición.
+
+```tsx
+type Estado = {
+  cargando: boolean;
+  error: string | null;
+  productos: Producto[];
+};
+
+type Accion =
+  | { type: 'CARGANDO' }
+  | { type: 'EXITO'; payload: Producto[] }
+  | { type: 'ERROR'; payload: string }
+  | { type: 'ELIMINAR'; payload: number };
+
+const estadoInicial: Estado = {
+  cargando: false,
+  error: null,
+  productos: [],
+};
+
+function reducer(estado: Estado, accion: Accion): Estado {
+  switch (accion.type) {
+    case 'CARGANDO':
+      return { ...estado, cargando: true, error: null };
+    case 'EXITO':
+      return { cargando: false, error: null, productos: accion.payload };
+    case 'ERROR':
+      return { cargando: false, error: accion.payload, productos: [] };
+    case 'ELIMINAR':
+      return {
+        ...estado,
+        productos: estado.productos.filter(p => p.id !== accion.payload)
+      };
+    default:
+      return estado;
+  }
+}
+
+function Productos() {
+  const [estado, dispatch] = useReducer(reducer, estadoInicial);
+
+  useEffect(() => {
+    dispatch({ type: 'CARGANDO' });
+    fetch('/api/productos')
+      .then(r => r.json())
+      .then(data => dispatch({ type: 'EXITO', payload: data }))
+      .catch(e => dispatch({ type: 'ERROR', payload: e.message }));
+  }, []);
+
+  if (estado.cargando) return <Spinner />;
+  if (estado.error) return <Error mensaje={estado.error} />;
+  return <Lista productos={estado.productos} />;
+}
+```
+
+---
+
+## Context API
+
+Compartir estado global sin prop drilling.
+
+```tsx
+// 1. Crear el context
+interface AuthContextType {
+  usuario: Usuario | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+}
+
+const AuthContext = createContext<AuthContextType | null>(null);
+
+// 2. Crear el Provider
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+
+  const login = async (email: string, password: string) => {
+    const data = await authService.login(email, password);
+    setUsuario(data.usuario);
+    localStorage.setItem('token', data.token);
+  };
+
+  const logout = () => {
+    setUsuario(null);
+    localStorage.removeItem('token');
+  };
+
+  return (
+    <AuthContext.Provider value={{ usuario, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// 3. Custom hook para consumir el context
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context)
+    throw new Error('useAuth debe usarse dentro de AuthProvider');
+  return context;
+}
+
+// 4. Uso en cualquier componente
+function NavBar() {
+  const { usuario, logout } = useAuth();
+  return (
+    <nav>
+      <span>Hola, {usuario?.nombre}</span>
+      <button onClick={logout}>Cerrar sesión</button>
+    </nav>
+  );
+}
+```
+
+---
+
+## Custom Hooks
+
+Extraer lógica reutilizable.
+
+```tsx
+// useFetch — hook genérico para fetch de datos
+function useFetch<T>(url: string) {
+  const [datos, setDatos] = useState<T | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch(url, { signal: controller.signal })
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(data => { setDatos(data); setCargando(false); })
+      .catch(e => {
+        if (e.name !== 'AbortError') {
+          setError(e);
+          setCargando(false);
+        }
+      });
+
+    return () => controller.abort(); // cleanup: cancelar fetch al desmontar
+  }, [url]);
+
+  return { datos, cargando, error };
+}
+
+// useLocalStorage
+function useLocalStorage<T>(key: string, valorInicial: T) {
+  const [valor, setValor] = useState<T>(() => {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : valorInicial;
+    } catch {
+      return valorInicial;
+    }
+  });
+
+  const setValorYGuardar = (nuevoValor: T) => {
+    setValor(nuevoValor);
+    localStorage.setItem(key, JSON.stringify(nuevoValor));
+  };
+
+  return [valor, setValorYGuardar] as const;
+}
+```
+
+---
+
+## React Query (TanStack Query)
+
+La solución moderna para state management de servidor.
+
+```tsx
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+// GET datos
+function Productos() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['productos'],
+    queryFn: () => fetch('/api/productos').then(r => r.json()),
+    staleTime: 5 * 60 * 1000, // 5 minutos en caché
+  });
+
+  if (isLoading) return <Spinner />;
+  if (error) return <Error />;
+  return <Lista productos={data} />;
+}
+
+// Mutación (POST/PUT/DELETE)
+function CrearProducto() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (nuevoProducto: CrearProductoDto) =>
+      fetch('/api/productos', {
+        method: 'POST',
+        body: JSON.stringify(nuevoProducto),
+      }).then(r => r.json()),
+    onSuccess: () => {
+      // Invalidar la caché para que React Query refetch
+      queryClient.invalidateQueries({ queryKey: ['productos'] });
+    },
+  });
+
+  return (
+    <button onClick={() => mutation.mutate({ nombre: 'Nuevo', precio: 99 })}>
+      {mutation.isPending ? 'Guardando...' : 'Crear'}
+    </button>
+  );
+}
+```
+
+---
+
+## Preguntas frecuentes de entrevista 🎯
+
+**1. ¿Cuándo usar Context API vs Redux vs React Query?**
+> - **Context**: estado global simple de UI (tema, idioma, usuario autenticado)
+> - **Redux/Zustand**: estado global complejo con muchas interacciones
+> - **React Query**: estado del servidor (datos que vienen de APIs) — cacheo, refetch, sincronización
+
+**2. ¿Qué es prop drilling y cómo se soluciona?**
+> Pasar props a través de múltiples niveles de componentes intermedios que no las necesitan. Se soluciona con Context API, estado global (Zustand/Redux) o componentes de composición.
+
+**3. ¿Cuándo usarías `useReducer` en vez de `useState`?**
+> Cuando el estado tiene múltiples sub-valores relacionados, cuando el siguiente estado depende del anterior de forma compleja, o cuando hay muchas acciones que modifican el estado de formas distintas.
+
+**4. ¿Qué es un Custom Hook?**
+> Una función que empieza con `use` y puede llamar a otros hooks. Permite extraer y reutilizar lógica stateful entre componentes. No crea un estado compartido — cada uso del custom hook tiene su propio estado.

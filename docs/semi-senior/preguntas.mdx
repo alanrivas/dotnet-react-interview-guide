@@ -1,0 +1,956 @@
+---
+id: preguntas
+title: 🎯 Banco de Preguntas — Semi-Senior
+sidebar_position: 99
+---
+
+import Quiz from '@site/src/components/Quiz';
+
+# 🎯 Banco de Preguntas — Semi-Senior
+
+Preguntas técnicas reales para posiciones Semi-Senior Full Stack .NET + React.
+
+:::tip Diferencia clave
+A este nivel, el "por qué" es tan importante como el "qué". Siempre explica los trade-offs de tu respuesta.
+:::
+
+---
+
+## C# Avanzado
+
+<Quiz
+  question="¿Cuándo deberías usar ValueTask<T> en lugar de Task<T>?"
+  options={[
+    "Cuando el método siempre realiza operaciones asíncronas reales (I/O, red)",
+    "Cuando el resultado puede estar disponible síncronamente sin allocations en el heap",
+    "Cuando necesitas hacer await múltiples veces sobre el mismo resultado",
+    "Cuando trabajas con UI threads y el Dispatcher de WPF o MAUI"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Si el método siempre es asíncrono, Task<T> es la opción estándar y más segura. ValueTask<T> no aporta ventaja aquí y añade complejidad.",
+    "Correcto. ValueTask<T> evita la alocación en heap cuando el resultado ya está disponible síncronamente. Ejemplo: public ValueTask<int> GetCachedCountAsync() { if (_cache.TryGetValue(key, out var val)) return new ValueTask<int>(val); return new ValueTask<int>(FetchFromDbAsync()); }",
+    "Incorrecto. ValueTask<T> NO debe ser awaited más de una vez. Reutilizarlo causa comportamiento indefinido. Si necesitas múltiples awaits, convierte a Task con .AsTask().",
+    "Incorrecto. ValueTask<T> no tiene relación con UI threads. Para operaciones en el dispatcher se usa Task con ConfigureAwait o SynchronizationContext."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué constraint de generics debes usar para garantizar que T es una clase y tiene constructor sin parámetros?"
+  options={[
+    "where T : struct",
+    "where T : new()",
+    "where T : class, new()",
+    "where T : object, new()"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. 'where T : struct' restringe T a tipos de valor (int, bool, struct), lo opuesto a lo que se pide. Además struct ya implica new() implícitamente.",
+    "Incorrecto. 'where T : new()' garantiza el constructor sin parámetros, pero no impide que T sea un struct. Sin 'class', podrías recibir tipos de valor.",
+    "Correcto. 'where T : class, new()' combina dos constraints: T debe ser un tipo de referencia (class) Y tener constructor sin parámetros. Ejemplo: public T Create<T>() where T : class, new() { return new T(); }",
+    "Incorrecto. 'object' no es un constraint válido en C# generics. Los constraints válidos son class, struct, notnull, unmanaged, interfaces, clases base concretas y new()."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia principal entre record, class y struct en C# 9+?"
+  options={[
+    "Los records se almacenan en el stack igual que los structs, por eso son más eficientes",
+    "Los records tienen igualdad por valor por defecto e inmutabilidad de propiedades init-only; class tiene igualdad por referencia",
+    "Los records no pueden tener métodos de instancia, solo propiedades",
+    "La única diferencia es sintáctica: record es un alias de class con menos código boilerplate"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Los record class (el tipo por defecto) son tipos de referencia y viven en el heap igual que class. Solo record struct se almacena en el stack.",
+    "Correcto. Un record genera automáticamente Equals, GetHashCode y == basados en los valores de sus propiedades. Ejemplo: record Person(string Name, int Age); var p1 = new Person('Ana', 30); var p2 = new Person('Ana', 30); Console.WriteLine(p1 == p2); // true. Con class, esto sería false (igualdad por referencia).",
+    "Incorrecto. Los records pueden tener métodos, constructores adicionales, propiedades calculadas y cualquier miembro que tenga una class normal.",
+    "Incorrecto. Aunque la sintaxis es más concisa, la diferencia semántica es fundamental: la igualdad por valor y la inmutabilidad por defecto cambian el comportamiento del programa."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué ventaja ofrece el switch expression con pattern matching en C# 8+ frente a un switch statement clásico?"
+  options={[
+    "El switch expression solo funciona con tipos primitivos como int, string y enum",
+    "Permite desestructurar objetos, combinar patrones y usarlo como expresión que devuelve un valor, todo de forma compacta",
+    "Es idéntico en rendimiento y capacidad al switch statement, solo es azúcar sintáctica cosmética",
+    "Requiere que todos los casos devuelvan void, por lo que no puede usarse en asignaciones"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. El pattern matching funciona con cualquier tipo: clases, records, structs, interfaces y tipos primitivos. Ejemplo: object obj = new Circle(5); var area = obj switch { Circle c => Math.PI * c.Radius * c.Radius, Rectangle r => r.Width * r.Height, _ => throw new ArgumentException() };",
+    "Correcto. El switch expression es una expresión (no un statement), por lo que puede asignarse a una variable o retornarse directamente. Además soporta property patterns ({ Status: 'Active' }), positional patterns y when guards, lo que elimina cadenas de if/else complejas.",
+    "Incorrecto. Además de la diferencia semántica (expresión vs statement), el compilador puede optimizar mejor los switch expressions y aplica exhaustiveness checking en tiempo de compilación.",
+    "Incorrecto. El switch expression DEBE devolver un valor (no void). Es precisamente su característica principal: cada brazo retorna un valor del mismo tipo."
+  ]}
+/>
+
+---
+
+## Inyección de Dependencias
+
+<Quiz
+  question="¿Cuál es el lifetime correcto para registrar un DbContext de Entity Framework en una API ASP.NET Core?"
+  options={[
+    "Singleton — para reutilizar la misma conexión y aprovechar el connection pooling",
+    "Transient — para garantizar que cada operación tenga su propio contexto limpio",
+    "Scoped — un DbContext por request HTTP, que se libera al finalizar la petición",
+    "No importa, DbContext es thread-safe y cualquier lifetime funciona igual"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Registrar DbContext como Singleton es peligroso: el contexto no es thread-safe y mantiene el change tracker activo entre requests, causando problemas de concurrencia y datos obsoletos.",
+    "Incorrecto. Transient crea un nuevo DbContext en cada inyección. Si un service y un repository dentro del mismo request reciben instancias diferentes, las transacciones y el change tracking no se comparten correctamente.",
+    "Correcto. AddDbContext<T>() registra el contexto como Scoped por defecto. Así todos los componentes del mismo request HTTP comparten el mismo contexto y change tracker, y el contexto se libera automáticamente al final del request. Ejemplo: builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(connectionString));",
+    "Incorrecto. DbContext explícitamente NO es thread-safe. La documentación oficial advierte contra su uso concurrente. El lifetime incorrecto es una fuente común de bugs difíciles de reproducir."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué es una 'captive dependency' (dependencia cautiva) en el contenedor de DI?"
+  options={[
+    "Una dependencia que no puede ser reemplazada por un mock en tests unitarios",
+    "Cuando un servicio Singleton captura una dependencia Scoped o Transient, extendiendo artificialmente su vida útil",
+    "Una dependencia circular entre dos servicios que se referencian mutuamente",
+    "Un servicio que solo puede inyectarse en controllers, no en middleware"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. La incapacidad de mockear se relaciona con el diseño (falta de interfaz), no con los lifetimes. La captive dependency es un problema de ciclo de vida.",
+    "Correcto. Si un Singleton depende de un Scoped service, el Scoped service se resuelve UNA vez cuando el Singleton se crea y queda 'capturado' para siempre, violando su ciclo de vida. Ejemplo: si OrderService (Singleton) inyecta AppDbContext (Scoped), todos los requests compartirán el mismo DbContext, causando concurrencia y datos corruptos. ASP.NET Core detecta esto en desarrollo y lanza InvalidOperationException.",
+    "Incorrecto. Las dependencias circulares son un problema diferente (A depende de B, B depende de A) que el DI container detecta y lanza una excepción al iniciarse.",
+    "Incorrecto. No existe tal restricción en el DI de .NET. Los servicios pueden inyectarse en controllers, middleware, Razor Pages, Minimal API handlers, etc., respetando sus lifetimes."
+  ]}
+/>
+
+<Quiz
+  question="¿Cómo implementar el patrón Decorator para INotificationService usando el DI nativo de .NET sin librerías externas?"
+  options={[
+    "Crear una nueva interfaz INotificationServiceDecorator que herede de INotificationService",
+    "Usar services.AddScoped<INotificationService>(sp => new LoggingDecorator(sp.GetRequiredService<EmailNotificationService>()))",
+    "Registrar ambas clases como Singleton y resolver manualmente en el constructor del decorator",
+    "El DI nativo de .NET no soporta el patrón Decorator; es obligatorio usar Scrutor o Autofac"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Crear una nueva interfaz no implementa el patrón Decorator. El decorator debe implementar la misma interfaz que la clase que envuelve para ser transparente al consumidor.",
+    "Correcto. Con la factory delegate del DI nativo puedes resolver la implementación concreta y pasarla al decorator: services.AddScoped<EmailNotificationService>(); services.AddScoped<INotificationService>(sp => new LoggingDecorator(sp.GetRequiredService<EmailNotificationService>())); Esto funciona sin librerías externas, aunque Scrutor simplifica la sintaxis con .Decorate<INotificationService, LoggingDecorator>().",
+    "Incorrecto. Registrar ambos como Singleton cuando el servicio interno debería ser Scoped introduce captive dependencies. Además, resolver manualmente en el constructor acopla el código al contenedor.",
+    "Incorrecto. El DI nativo sí soporta el patrón Decorator mediante factory delegates. Scrutor mejora la ergonomía pero no es obligatorio."
+  ]}
+/>
+
+---
+
+## ASP.NET Core
+
+<Quiz
+  question="¿En qué orden deben configurarse UseAuthentication y UseAuthorization en el pipeline de ASP.NET Core?"
+  options={[
+    "app.UseAuthorization() debe ir antes de app.UseAuthentication()",
+    "app.UseAuthentication() debe ir antes de app.UseAuthorization()",
+    "Pueden configurarse en cualquier orden; ASP.NET Core los reordena automáticamente",
+    "Solo se necesita app.UseAuthorization(); la autenticación es implícita con JWT"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Si UseAuthorization() se coloca antes de UseAuthentication(), cuando el middleware de autorización evalúa el HttpContext, el usuario (HttpContext.User) aún no ha sido poblado por el middleware de autenticación, por lo que todas las políticas fallan.",
+    "Correcto. El orden correcto en Program.cs es: app.UseRouting(); app.UseAuthentication(); app.UseAuthorization(); app.MapControllers(); Primero UseAuthentication() establece la identidad del usuario (User.Identity), luego UseAuthorization() evalúa si esa identidad tiene permiso para acceder al recurso.",
+    "Incorrecto. ASP.NET Core ejecuta los middlewares exactamente en el orden en que son registrados. No hay reordenamiento automático. Este es uno de los errores más comunes en la configuración de APIs.",
+    "Incorrecto. UseAuthentication() es obligatorio para que funcione cualquier esquema de autenticación (JWT, Cookies, etc.). Sin él, HttpContext.User siempre será un ClaimsPrincipal no autenticado."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo deberías usar un IActionFilter en lugar de middleware en ASP.NET Core?"
+  options={[
+    "Cuando necesitas lógica que aplique a toda la aplicación, incluyendo archivos estáticos y health checks",
+    "Cuando la lógica es específica de MVC/controllers y necesitas acceso al ActionContext, ModelState o ActionArguments",
+    "Los action filters siempre tienen mejor rendimiento que el middleware, por lo que son siempre preferibles",
+    "Para validar y renovar tokens JWT en cada request antes de llegar al controlador"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Para lógica transversal que aplica a toda la aplicación (logging global, manejo de excepciones globales, CORS, compresión), el middleware es la herramienta correcta porque actúa antes del routing y MVC.",
+    "Correcto. Los IActionFilter tienen acceso a ActionExecutingContext que expone ActionArguments (parámetros del action ya resueltos), ModelState, Controller y RouteData. Son ideales para validación de modelos personalizada, auditoría de acciones MVC o transformación de respuestas de controllers. Ejemplo: public class ValidateModelFilter : IActionFilter { public void OnActionExecuting(ActionExecutingContext ctx) { if (!ctx.ModelState.IsValid) ctx.Result = new BadRequestObjectResult(ctx.ModelState); } }",
+    "Incorrecto. El rendimiento depende del caso de uso. Los action filters solo se ejecutan para requests que llegan a MVC, por lo que son irrelevantes para archivos estáticos. El overhead no justifica usarlos donde middleware es más apropiado.",
+    "Incorrecto. La validación y renovación de tokens debe hacerse en middleware de autenticación (UseAuthentication), no en action filters. Los filters se ejecutan después del routing y model binding, demasiado tarde para redirigir flujos de autenticación."
+  ]}
+/>
+
+<Quiz
+  question={"Para el endpoint [HttpPut(\"{id}\")] public IActionResult Update(int id, UpdateDto dto), ¿de dónde infiere ASP.NET Core cada parámetro?"}
+  options={[
+    "Ambos parámetros (id y dto) se leen del cuerpo del request (body)",
+    "id se lee del body porque es primitivo; dto se lee del query string porque es complejo",
+    "id se lee de la ruta (route) y dto se infiere como [FromBody] por ser un tipo complejo",
+    "Ambos parámetros se leen del query string si no se especifican atributos explícitos"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Un request HTTP PUT solo puede tener un body. ASP.NET Core no leería ambos parámetros del body simultáneamente. Además, los parámetros primitivos que aparecen en la ruta se resuelven automáticamente de la ruta.",
+    "Incorrecto. La lógica es la inversa: los tipos simples (int, string, Guid) que coinciden con un segmento de ruta se leen de la ruta; los tipos complejos (clases, records) se infieren como [FromBody] en métodos PUT/POST.",
+    "Correcto. ASP.NET Core aplica estas reglas por defecto: (1) si el nombre del parámetro coincide con un token de la ruta ('{id}'), se lee de la ruta [FromRoute]; (2) tipos complejos en métodos PUT/POST se asumen [FromBody]. Equivale a: public IActionResult Update([FromRoute] int id, [FromBody] UpdateDto dto).",
+    "Incorrecto. Los tipos complejos nunca se leen del query string por defecto en PUT/POST. Para leer un objeto del query string deberías usar [FromQuery] explícitamente, lo que requeriría que el cliente envíe ?Name=value&Age=30 en la URL."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es una ventaja real y documentada de Minimal APIs sobre Controllers en .NET 6+?"
+  options={[
+    "Las Minimal APIs soportan más verbos HTTP que los controllers (PATCH, OPTIONS, etc.)",
+    "Tienen menor overhead en startup y menor allocations por request, siendo ideales para microservicios de alto rendimiento",
+    "Las Minimal APIs generan documentación Swagger completa de forma automática sin ninguna configuración adicional",
+    "Solo las Minimal APIs soportan async/await; los controllers de MVC son siempre síncronos"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Tanto Controllers como Minimal APIs soportan todos los verbos HTTP estándar: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD. No hay diferencia en verbos disponibles.",
+    "Correcto. Los benchmarks oficiales de ASP.NET Core muestran que Minimal APIs tienen menos capas de reflexión en el pipeline MVC, lo que resulta en menor tiempo de startup y menos alocaciones por request. Ejemplo: app.MapGet('/products/{id}', async (int id, IProductService svc) => await svc.GetByIdAsync(id)); Ideal para microservicios pequeños con pocos endpoints donde el overhead de MVC completo no se justifica.",
+    "Incorrecto. Tanto Controllers como Minimal APIs requieren instalar y configurar Swashbuckle (o Microsoft.AspNetCore.OpenApi en .NET 9+). Las Minimal APIs incluso requieren configuración adicional para que los tipos de retorno sean correctamente documentados.",
+    "Incorrecto. Los controllers de MVC han soportado async/await desde .NET 4.5. Esto no es diferenciador de ningún tipo entre las dos aproximaciones."
+  ]}
+/>
+
+---
+
+## Entity Framework Core
+
+<Quiz
+  question="Tienes este código: var posts = context.Posts.ToList(); foreach (var post in posts) { var count = context.Comments.Count(c => c.PostId == post.Id); } ¿Qué problema tiene y cómo solucionarlo?"
+  options={[
+    "No hay problema; EF Core cachea los resultados de queries repetidas automáticamente",
+    "Problema N+1: ejecuta 1 query para Posts y N queries para Comments. Solución: usar Include(p => p.Comments) en la query original",
+    "El problema es que ToList() carga todo en memoria; debería usarse AsQueryable() siempre",
+    "El problema es usar Count() en lugar de Any(); Count() carga todas las entidades relacionadas"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. EF Core NO cachea automáticamente los resultados de queries. Cada llamada a context.Comments.Count(...) genera una nueva query a la base de datos.",
+    "Correcto. El código genera 1 query para los posts + 1 query por cada post (N queries). Con 100 posts son 101 queries. La solución es: var posts = context.Posts.Include(p => p.Comments).ToList(); foreach (var post in posts) { var count = post.Comments.Count; } Esto genera exactamente 1 o 2 queries (con split query) en lugar de N+1.",
+    "Incorrecto. AsQueryable() no resuelve el N+1; solo difiere la ejecución hasta que se enumera. El problema es la estructura del loop que genera queries dentro de la iteración.",
+    "Incorrecto. Count() en IQueryable<T> se traduce a SQL COUNT() y no carga entidades. El problema no está en Count() vs Any(), sino en que se ejecuta una query por iteración del loop."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo es correcto y beneficioso usar .AsNoTracking() en Entity Framework Core?"
+  options={[
+    "Siempre, en todas las queries, para maximizar el rendimiento de la aplicación",
+    "Solo en operaciones de escritura (INSERT, UPDATE, DELETE) para evitar conflictos",
+    "En queries de solo lectura donde no vas a modificar las entidades devueltas en el mismo contexto",
+    "Cuando usas transacciones explícitas con BeginTransactionAsync()"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Si usas AsNoTracking() en una entidad que luego intentas actualizar con context.Update(entity) o context.SaveChanges(), EF Core no sabe el estado original de la entidad y puede generar SQL UPDATE innecesarios o perder cambios. Usarlo siempre sin criterio es un error.",
+    "Incorrecto. En operaciones de escritura, el change tracker de EF Core es precisamente lo que detecta qué propiedades cambiaron para generar el SQL UPDATE mínimo necesario. Deshabilitar el tracking en escrituras elimina esa optimización.",
+    "Correcto. AsNoTracking() es ideal para endpoints GET que devuelven datos sin modificarlos: var products = await context.Products.AsNoTracking().Where(p => p.IsActive).ToListAsync(); Beneficios: menor memoria (no se guarda snapshot del estado original), mayor velocidad de materialización y menor presión en el garbage collector.",
+    "Incorrecto. El uso de transacciones explícitas es ortogonal al tracking. Puedes usar BeginTransactionAsync() con o sin tracking. Las transacciones controlan la atomicidad de las operaciones a nivel de base de datos."
+  ]}
+/>
+
+<Quiz
+  question="¿Cómo se revierte la base de datos a una migración anterior llamada 'AddProductsTable' en EF Core?"
+  options={[
+    "dotnet ef migrations remove",
+    "dotnet ef database update AddProductsTable",
+    "dotnet ef migrations rollback AddProductsTable",
+    "dotnet ef database reset --to AddProductsTable"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. 'dotnet ef migrations remove' elimina el archivo de la migración más reciente que NO ha sido aplicada a la base de datos. No revierte migraciones ya aplicadas y no acepta un nombre de migración específico.",
+    "Correcto. 'dotnet ef database update AddProductsTable' ejecuta el método Down() de todas las migraciones posteriores a 'AddProductsTable', revirtiendo los cambios en la base de datos en orden inverso. Es equivalente a un rollback hasta ese punto. Para revertir TODAS las migraciones: dotnet ef database update 0",
+    "Incorrecto. El subcomando 'rollback' no existe en la CLI de EF Core. Es un error frecuente de devs que vienen de Rails o Flyway donde sí existe ese comando.",
+    "Incorrecto. 'dotnet ef database reset' no existe como comando en EF Core. Para resetear completamente, se usa 'dotnet ef database drop' seguido de 'dotnet ef database update'."
+  ]}
+/>
+
+<Quiz
+  question="¿Cómo envuelves múltiples operaciones de EF Core en una transacción explícita para garantizar atomicidad?"
+  options={[
+    "Llamar a SaveChanges() al final es suficiente; siempre envuelve todas las operaciones en una transacción automática",
+    "Usar el atributo [Transactional] sobre el método del servicio",
+    "using var transaction = await context.Database.BeginTransactionAsync(), ejecutar operaciones, llamar a SaveChangesAsync() y luego transaction.CommitAsync()",
+    "EF Core no soporta transacciones explícitas; debes usar ADO.NET directamente para ese caso"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. SaveChanges() envuelve sus propias operaciones en una transacción implícita, pero si necesitas que dos llamadas separadas a SaveChanges() sean atómicas (todo o nada), necesitas una transacción explícita. De lo contrario, la primera podría persistirse aunque la segunda falle.",
+    "Incorrecto. No existe un atributo [Transactional] built-in en ASP.NET Core ni en EF Core. Algunos ORMs como NHibernate tienen decoradores similares, pero en EF Core debes gestionar las transacciones manualmente o usar un interceptor.",
+    "Correcto. Ejemplo completo: await using var transaction = await context.Database.BeginTransactionAsync(); try { context.Orders.Add(order); await context.SaveChangesAsync(); context.Inventory.Update(item); await context.SaveChangesAsync(); await transaction.CommitAsync(); } catch { await transaction.RollbackAsync(); throw; } Ambos SaveChangesAsync() participan de la misma transacción.",
+    "Incorrecto. EF Core tiene soporte completo para transacciones explícitas via context.Database.BeginTransactionAsync(). También soporta transacciones ambientales con TransactionScope y transacciones externas con context.Database.UseTransaction()."
+  ]}
+/>
+
+---
+
+## APIs REST
+
+<Quiz
+  question="¿Cuál de estos verbos HTTP NO es idempotente según la especificación RFC 7231?"
+  options={[
+    "GET",
+    "PUT",
+    "DELETE",
+    "POST"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. GET es idempotente: múltiples requests GET al mismo recurso deben devolver el mismo resultado sin efectos secundarios en el servidor.",
+    "Incorrecto. PUT es idempotente: hacer PUT /products/1 con el mismo body 5 veces debe resultar en el mismo estado final que hacerlo 1 vez. Es una 'upsert' completa del recurso.",
+    "Incorrecto. DELETE es idempotente: la primera llamada elimina el recurso, las siguientes devuelven 404 pero el estado del servidor es el mismo (recurso no existente). No produce efectos adicionales.",
+    "Correcto. POST NO es idempotente. Cada llamada a POST /orders puede crear un nuevo recurso. Enviar el mismo request dos veces puede crear dos órdenes duplicadas. Por eso los clientes y proxies no reintentan automáticamente requests POST fallidos, a diferencia de GET o PUT."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál estrategia de versionado de API REST es generalmente más recomendada para APIs públicas?"
+  options={[
+    "Header-based versioning: Accept: application/vnd.myapi.v1+json",
+    "Query string versioning: GET /products?api-version=1.0",
+    "URL path versioning: GET /api/v1/products",
+    "No versionar; usar siempre backward compatibility con campos opcionales"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El header-based versioning es técnicamente puro REST (content negotiation), pero dificulta las pruebas directas en browser, no funciona bien con CDN caching, y complica la documentación Swagger. Es válido pero menos práctico.",
+    "Incorrecto. El query string versioning (/products?api-version=1) es fácil de implementar pero mezclado con parámetros funcionales del endpoint confunde la semántica de la URL y puede causar problemas con caching.",
+    "Correcto. El URL path versioning (/api/v1/products) es el más adoptado porque: (1) es inmediatamente visible en logs y documentación, (2) funciona perfectamente con CDN caching, (3) es fácil de probar en browser/Postman, (4) facilita deprecar versiones antiguas con redirecciones. Herramientas como Microsoft.AspNetCore.Mvc.Versioning soportan todos los estilos pero el URL path es el default recomendado.",
+    "Incorrecto. 'No versionar nunca' es una deuda técnica garantizada. Cuando el contrato del API cambia de forma breaking (eliminar campos, cambiar tipos, modificar comportamiento), sin versiones estás forzado a coordinar todos los clientes simultáneamente, algo imposible en APIs públicas."
+  ]}
+/>
+
+<Quiz
+  question="Un usuario autenticado intenta acceder a un recurso que pertenece a otro usuario. ¿Qué código HTTP debe devolver tu API?"
+  options={[
+    "401 Unauthorized — el usuario no tiene autorización para ese recurso",
+    "404 Not Found — para no revelar la existencia del recurso a usuarios no autorizados",
+    "403 Forbidden — el servidor entendió el request pero se niega a cumplirlo",
+    "400 Bad Request — el request está malformado porque el userId no corresponde"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. 401 significa que el cliente NO está autenticado o las credenciales son inválidas. En este caso el usuario SÍ está autenticado (tiene sesión válida), pero no tiene permiso. 401 siempre debe incluir el header WWW-Authenticate.",
+    "Incorrecto. Devolver 404 para ocultar recursos es una técnica válida de seguridad (security through obscurity) en algunos contextos, pero en la mayoría de APIs es correcto diferenciar 'no existe' de 'existe pero no tienes permiso' para dar mejores mensajes al cliente.",
+    "Correcto. 403 Forbidden es el código correcto cuando: el usuario está autenticado + el servidor entendió el request + el servidor se niega a ejecutarlo por falta de permisos. La distinción clave: 401 = 'no sé quién eres', 403 = 'sé quién eres, pero no puedes hacer esto'.",
+    "Incorrecto. 400 Bad Request indica que el request está sintácticamente malformado o tiene datos inválidos. Una petición a /api/orders/123 donde el order 123 pertenece a otro usuario es sintácticamente válida; el problema es de autorización, no de formato."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la principal ventaja de cursor-based pagination sobre offset-based pagination en una API con datos que cambian frecuentemente?"
+  options={[
+    "Es más simple de implementar en el backend porque no requiere conocer el total de registros",
+    "Evita registros duplicados o saltados cuando se insertan/eliminan datos entre páginas",
+    "Permite al cliente saltar directamente a cualquier página arbitraria (ej: ir a la página 50)",
+    "Consume menos ancho de banda porque el cursor es más pequeño que el offset numérico"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Aunque el cursor pagination no requiere COUNT(*), la implementación es generalmente más compleja: debes diseñar cursores opacos (base64), manejar la dirección de paginación y asegurar consistencia del cursor ante cambios de datos.",
+    "Correcto. Con offset pagination (LIMIT 10 OFFSET 20), si se inserta un registro en la primera página mientras el usuario está en la segunda, todos los registros se desplazan y el usuario ve un duplicado o se salta uno. El cursor-based pagination usa un identificador estable del último item visto (ej: created_at + id): SELECT * FROM posts WHERE created_at < :cursor ORDER BY created_at DESC LIMIT 10. Así, las inserciones/eliminaciones no afectan la consistencia de la paginación.",
+    "Incorrecto. Esta es precisamente la desventaja del cursor pagination: NO permite saltar a páginas arbitrarias. Solo puedes ir a la siguiente o anterior página. Para casos de uso donde el usuario necesita ir a 'la página 50', offset pagination o keyset con índices es más apropiado.",
+    "Incorrecto. El tamaño del cursor vs el offset numérico es insignificante en términos de ancho de banda. Esta no es una ventaja real del cursor-based pagination."
+  ]}
+/>
+
+---
+
+## Patrones de Diseño
+
+<Quiz
+  question="¿Cuál es el propósito principal del Repository Pattern en una arquitectura de software?"
+  options={[
+    "Mejorar automáticamente el rendimiento de las queries mediante caché transparente",
+    "Abstraer el mecanismo de acceso a datos para que la lógica de negocio no dependa del ORM o base de datos específica",
+    "Reemplazar Entity Framework con queries SQL puras para mayor control",
+    "Implementar el patrón Unit of Work y gestionar las transacciones de base de datos"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. El Repository Pattern no implementa caché por sí mismo. Aunque podrías agregar caché en una implementación concreta, no es su propósito. Para caché se usan patrones específicos como Cache-Aside.",
+    "Correcto. El Repository crea una capa de abstracción entre la lógica de negocio y la capa de datos: public interface IProductRepository { Task<Product> GetByIdAsync(int id); Task<IEnumerable<Product>> GetActiveAsync(); Task AddAsync(Product product); } La lógica de negocio solo conoce la interfaz, no si usa EF Core, Dapper o una API externa. Esto facilita testing (mockear el repositorio) y cambio de tecnología sin tocar los servicios.",
+    "Incorrecto. El Repository Pattern es agnóstico al ORM. Puedes implementarlo CON EF Core (usando DbContext internamente) o sin él. No es una alternativa a EF Core sino una capa encima de cualquier mecanismo de acceso a datos.",
+    "Incorrecto. Unit of Work es un patrón relacionado pero diferente. EF Core's DbContext ya implementa el patrón Unit of Work (acumula cambios y los persiste con SaveChanges). El Repository Pattern se enfoca en abstraer la colección de objetos de dominio."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál de estas clases viola el Principio de Responsabilidad Única (SRP) de SOLID?"
+  options={[
+    "UserRepository con métodos GetById, GetAll, Add, Update, Delete para la entidad User",
+    "UserService que valida los datos del usuario, lo persiste en la BD y envía el email de bienvenida",
+    "EmailService que solo tiene métodos para enviar diferentes tipos de emails",
+    "UserValidator que solo contiene reglas de validación para la entidad User"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. UserRepository tiene exactamente una responsabilidad: el acceso a datos de la entidad User. Tener múltiples métodos CRUD no viola SRP; todos sirven al mismo propósito.",
+    "Correcto. UserService tiene 3 responsabilidades completamente diferentes: (1) validar datos, (2) persistir en base de datos, (3) comunicarse por email. Si cambia la lógica de validación, la integración con email o la estructura de la BD, debes modificar la misma clase por razones distintas. Solución: UserValidator, UserRepository y EmailService como clases separadas coordinadas por UserRegistrationService.",
+    "Incorrecto. EmailService tiene una sola responsabilidad: el envío de emails. Tener métodos para diferentes tipos de emails (SendWelcome, SendPasswordReset, SendInvoice) no viola SRP mientras todos pertenezcan al dominio de 'envío de emails'.",
+    "Incorrecto. UserValidator tiene una sola responsabilidad: validar datos del usuario. Es un ejemplo de correcta aplicación de SRP."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo el patrón Strategy es claramente preferible a una cadena de if/else o switch?"
+  options={[
+    "Cuando solo hay 2-3 condiciones simples que raramente cambian",
+    "Cuando los algoritmos o comportamientos varían en tiempo de ejecución, se agregan frecuentemente o necesitan ser testeados de forma independiente",
+    "Strategy siempre es superior a if/else porque es más orientado a objetos",
+    "Cuando las condiciones no dependen de parámetros externos o del estado del sistema"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Para 2-3 condiciones simples y estables, un if/else o switch es más legible y pragmático. El patrón Strategy añade clases e indirección que no se justifica para casos triviales. Over-engineering es un problema real.",
+    "Correcto. Strategy es ideal cuando: (1) los algoritmos cambian en runtime según configuración o estado del usuario, (2) agregas nuevas variantes frecuentemente (OCP - Open/Closed Principle), (3) quieres testear cada estrategia independientemente. Ejemplo: Dictionary<string, IPaymentStrategy> strategies = new() { ['card'] = new CardPaymentStrategy(), ['paypal'] = new PayPalStrategy() }; strategies[method].Process(amount); Agregar 'crypto' solo requiere una nueva clase, sin modificar el código existente.",
+    "Incorrecto. El valor de un patrón está en resolver un problema real, no en ser 'más OOP'. Aplicar Strategy donde if/else es suficiente produce código más complejo sin beneficio. Los patrones deben justificarse por el problema que resuelven.",
+    "Incorrecto. Si los comportamientos no dependen de parámetros externos y no cambian, un switch simple es la solución más clara. Strategy agrega valor precisamente cuando hay variabilidad."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué problema arquitectónico resuelve principalmente MediatR en aplicaciones .NET?"
+  options={[
+    "Reemplaza el sistema de inyección de dependencias nativo con uno más potente",
+    "Implementa el patrón Mediator desacoplando los handlers de sus invocadores, lo que facilita CQRS y cross-cutting concerns",
+    "Proporciona caché automático para queries a base de datos mediante pipelines",
+    "Genera automáticamente endpoints REST a partir de la definición de Commands y Queries"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. MediatR no reemplaza el DI container; de hecho depende de él para resolver handlers. Se registra en el DI con services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly())).",
+    "Correcto. MediatR implementa el patrón Mediator: en lugar de que el Controller dependa directamente de 10 servicios, solo depende de IMediator. Ejemplo: public async Task<IActionResult> Create(CreateOrderCommand cmd) { var result = await _mediator.Send(cmd); return Ok(result); } El controller no sabe qué handler procesará el comando. Además, los IPipelineBehavior<TRequest, TResponse> permiten agregar logging, validación y transacciones de forma transversal sin modificar los handlers.",
+    "Incorrecto. MediatR no incluye caché por defecto. Puedes implementar un IPipelineBehavior que agregue caché, pero eso es código tuyo, no funcionalidad del paquete.",
+    "Incorrecto. MediatR no genera endpoints REST. Eso lo hacen herramientas como Carter o los propios Controllers/Minimal APIs de ASP.NET Core. MediatR solo media la comunicación entre componentes internos."
+  ]}
+/>
+
+---
+
+## Testing
+
+<Quiz
+  question="¿Cuál es la definición correcta de un test de integración en el contexto de .NET?"
+  options={[
+    "Prueba una sola función o método de forma aislada usando mocks para todas las dependencias externas",
+    "Prueba la interacción entre múltiples componentes reales, como un controller con EF Core conectado a una base de datos real o en memoria",
+    "Prueba flujos completos del usuario a través de la interfaz gráfica usando herramientas como Selenium o Playwright",
+    "Prueba el rendimiento y la capacidad de carga del sistema bajo condiciones de estrés"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Esa es la definición de un test unitario (unit test): aislado, rápido, sin dependencias externas reales, con todas las colaboradores mockeados.",
+    "Correcto. Un test de integración verifica que múltiples capas funcionan correctamente juntas. En .NET se usan WebApplicationFactory<Program> o bases de datos en memoria (SQLite, EF InMemory): using var factory = new WebApplicationFactory<Program>(); var client = factory.CreateClient(); var response = await client.GetAsync('/api/products'); response.EnsureSuccessStatusCode(); Este test ejecuta el middleware, routing, controller, servicio y repositorio reales.",
+    "Incorrecto. Esa es la definición de un test end-to-end (e2e). Los tests e2e prueban el sistema completo incluyendo el browser o cliente real, mientras que los de integración no requieren UI.",
+    "Incorrecto. Los tests de rendimiento (performance/load tests) son una categoría separada, usualmente realizados con herramientas como k6, JMeter o NBomber. No forman parte de la pirámide estándar unit/integration/e2e."
+  ]}
+/>
+
+<Quiz
+  question="En un unit test de OrderService que depende de IOrderRepository y IEmailService, ¿qué debes mockear?"
+  options={[
+    "Solo IEmailService, porque las operaciones de base de datos son rápidas y no afectan el aislamiento",
+    "Nada; los unit tests deben usar implementaciones reales para ser más confiables",
+    "Ambos: IOrderRepository e IEmailService, para aislar completamente OrderService y probar solo su lógica",
+    "Solo IOrderRepository; el EmailService puede usar una implementación real de pruebas en memoria"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Acceder a una base de datos real en un unit test rompe el aislamiento: el test depende de un estado externo, es más lento, puede fallar por razones ajenas al código testeado y no puede ejecutarse offline. Siempre se mockean las dependencias externas.",
+    "Incorrecto. Un test que usa implementaciones reales de repositorio (con DB) y servicio de email es un test de integración, no unitario. Los unit tests deben ser aislados, deterministicos y ejecutarse en milisegundos sin infraestructura externa.",
+    "Correcto. Ejemplo con Moq: var repoMock = new Mock<IOrderRepository>(); var emailMock = new Mock<IEmailService>(); repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(new Order { Id = 1 }); var service = new OrderService(repoMock.Object, emailMock.Object); await service.ProcessOrderAsync(1); emailMock.Verify(e => e.SendConfirmationAsync(It.IsAny<string>()), Times.Once); Así pruebas SOLO la lógica de OrderService.",
+    "Incorrecto. Incluso un EmailService 'en memoria' puede tener comportamiento diferente a la implementación real o puede lanzar excepciones inesperadas. La práctica estándar es mockear todas las dependencias directas en unit tests."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es el orden correcto del ciclo Red-Green-Refactor en TDD?"
+  options={[
+    "Verde (hacer pasar el test) → Rojo (escribir test que falla) → Refactor (mejorar el código)",
+    "Rojo (escribir test que falla) → Verde (escribir código mínimo para pasarlo) → Refactor (limpiar sin romper tests)",
+    "Refactor (diseñar la solución) → Rojo (escribir el test) → Verde (implementar)",
+    "Verde (escribir el código) → Rojo (escribir el test) → Refactor (optimizar)"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Empezar en verde significa escribir código sin un test que falle primero. Esto viola el principio TDD de 'test first' y no garantiza que el test realmente valida el comportamiento esperado.",
+    "Correcto. TDD sigue estrictamente este ciclo: (1) ROJO: escribir un test para funcionalidad que no existe aún; el test DEBE fallar (si pasa sin código, el test está mal). (2) VERDE: escribir el código MÍNIMO necesario para hacer pasar el test; no sobre-diseñar. (3) REFACTOR: mejorar la implementación (eliminar duplicación, mejorar nombres) mientras los tests siguen en verde. Repetir.",
+    "Incorrecto. Refactorizar antes de tener tests que fallen es diseño tradicional (BDUF). En TDD el diseño emerge de los ciclos cortos; no prediseñas la solución completa antes de los tests.",
+    "Incorrecto. En TDD jamás se escribe código de producción antes de un test fallido. 'Code first, test later' es la aproximación tradicional, no TDD."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la forma recomendada de hacer integration testing de endpoints HTTP en ASP.NET Core?"
+  options={[
+    "Instanciar el Controller directamente en el test e invocar los métodos de acción",
+    "Usar WebApplicationFactory<Program> para arrancar la app en memoria y hacer requests con HttpClient real",
+    "Mockear todos los middlewares y llamar directamente al método del controller sin pasar por el pipeline",
+    "Crear una colección de Postman y ejecutarla con newman como parte del CI/CD"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Instanciar el controller directamente omite el pipeline completo: model binding, filters, middleware de autenticación, routing y manejo de excepciones no se ejecutan. Esto no es un test de integración real sino casi un unit test del controller.",
+    "Correcto. WebApplicationFactory<Program> arranca la aplicación ASP.NET Core completa en memoria: public class ProductsApiTests : IClassFixture<WebApplicationFactory<Program>> { public async Task GetProducts_ReturnsOk() { var client = _factory.CreateClient(); var response = await client.GetAsync('/api/v1/products'); Assert.Equal(HttpStatusCode.OK, response.StatusCode); } } Ejecuta el pipeline completo incluyendo middleware, autenticación y base de datos (se puede sustituir con InMemory). Es el estándar de facto recomendado por Microsoft.",
+    "Incorrecto. Mockear los middlewares derrota el propósito del test de integración. Si mockeas la autenticación y el pipeline, básicamente estás haciendo un unit test del método del controller con pasos extra.",
+    "Incorrecto. Las colecciones de Postman son útiles para exploración y documentación, pero como tests automatizados en CI/CD son frágiles, difíciles de mantener y no se integran con el sistema de reportes de testing del proyecto (.NET test runner, coverage, etc.)."
+  ]}
+/>
+
+---
+
+## React Avanzado
+
+<Quiz
+  question="¿Cuál es la diferencia fundamental entre useCallback y useMemo en React?"
+  options={[
+    "useCallback es para componentes de clase, useMemo es exclusivo de functional components",
+    "useCallback memoiza una función (retorna la misma referencia entre renders), useMemo memoiza el resultado de ejecutar un cálculo",
+    "Son equivalentes en comportamiento; solo difieren en que useMemo acepta dependencias y useCallback no",
+    "useMemo es para efectos secundarios asincrónicos, useCallback es para funciones síncronas puras"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Ambos hooks son exclusivos de functional components. Los componentes de clase no tienen acceso a hooks.",
+    "Correcto. useCallback(fn, deps) retorna fn memoizada — la misma referencia de función mientras las deps no cambien. Útil para evitar que funciones pasadas como props a componentes hijos causen re-renders innecesarios. useMemo(() => computeExpensive(a, b), [a, b]) ejecuta la función y retorna su VALOR memoizado. Útil para cálculos costosos. Relación: useCallback(fn, deps) === useMemo(() => fn, deps).",
+    "Incorrecto. Ambos aceptan un array de dependencias como segundo argumento. La diferencia está en qué memoizan: una función (useCallback) vs el resultado de un cálculo (useMemo).",
+    "Incorrecto. Ninguno de los dos es para efectos secundarios; eso es responsabilidad de useEffect. Tanto useCallback como useMemo son puramente para memoización y optimización de rendimiento."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo deberías preferir useReducer sobre useState en un componente React?"
+  options={[
+    "Siempre que el estado sea un objeto con más de dos propiedades",
+    "Cuando la lógica de actualización es compleja, hay múltiples sub-valores interdependientes o las transiciones de estado deben ser explícitas y testeables",
+    "useReducer solo tiene sentido cuando se combina con Context API para estado global",
+    "Cuando necesitas estados asincrónicos; useState no soporta actualizaciones asíncronas"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. El número de propiedades no es el criterio. Un objeto con 10 propiedades independientes puede gestionarse bien con useState({ ...state, field: value }). El criterio es la complejidad de las transiciones de estado.",
+    "Correcto. useReducer es preferible cuando: (1) el nuevo estado depende del anterior de forma compleja, (2) múltiples acciones modifican el estado de formas interrelacionadas, (3) quieres testear la lógica de estado independientemente del componente. Ejemplo: const [state, dispatch] = useReducer(cartReducer, initialState); dispatch({ type: 'ADD_ITEM', payload: product }); El reducer es una función pura fácil de testear unitariamente sin montar el componente.",
+    "Incorrecto. useReducer funciona perfectamente de forma local en un componente sin Context. Combinarlo con Context es un patrón popular para estado global, pero no es su único caso de uso.",
+    "Incorrecto. useState sí soporta actualizaciones en callbacks asíncronos. El problema con async y estado en React no se resuelve con useReducer sino con el closure correcto o usando la forma funcional: setState(prev => prev + 1)."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué problema de rendimiento puede causar el uso incorrecto de Context API en React?"
+  options={[
+    "Memory leaks permanentes porque los contextos nunca liberan las referencias a sus consumidores",
+    "Re-renders innecesarios en TODOS los componentes consumidores cuando cualquier parte del valor del contexto cambia",
+    "El contexto solo puede actualizarse una vez por ciclo de render, perdiendo actualizaciones intermedias",
+    "Context API no es compatible con TypeScript, lo que obliga a usar casting de tipos que empeora el rendimiento"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. React no causa memory leaks por Context. Los componentes desmontados se limpian del árbol de subscribers automáticamente.",
+    "Correcto. Si tienes <AuthContext.Provider value={{ user, theme, language, notifications }}> y solo cambia notifications, TODOS los componentes que consuman useContext(AuthContext) se re-renderizarán, aunque solo usen user. Solución: separar contextos por dominio (AuthContext, ThemeContext, NotificationContext) o usar memo + selector patterns. Alternativa: usar Zustand o Jotai que permiten subscripciones selectivas.",
+    "Incorrecto. React no tiene tal restricción. Puedes llamar a la función setState del contexto múltiples veces en el mismo handler; React las agrupa en un solo re-render (batching automático en React 18+).",
+    "Incorrecto. Context API es completamente compatible con TypeScript. createContext<UserContextType | null>(null) con el tipo genérico apropiado funciona sin problemas y mejora la seguridad de tipos."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué ventaja concreta ofrece React Query sobre el patrón useState + useEffect para fetching de datos?"
+  options={[
+    "React Query usa Web Workers automáticamente para no bloquear el main thread durante las peticiones",
+    "Maneja automáticamente caché, deduplicación de requests, estados de loading/error, refetching en foco y sincronización de datos en background",
+    "Solo React Query permite hacer peticiones POST, PUT y DELETE; useEffect solo soporta GET",
+    "React Query elimina la necesidad de async/await usando un sistema de callbacks más eficiente"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. React Query no usa Web Workers. Las peticiones HTTP siguen en el main thread via fetch o axios. Los Web Workers son para cómputo intensivo, no para HTTP requests.",
+    "Correcto. Con useState + useEffect debes implementar manualmente: loading state, error handling, caché, cancelación de requests en cleanup, evitar race conditions y refetch. React Query lo resuelve todo: const { data, isLoading, error } = useQuery({ queryKey: ['products'], queryFn: fetchProducts, staleTime: 5 * 60 * 1000 }); Además, si dos componentes piden los mismos datos simultáneamente, React Query hace UN solo request (deduplicación). El refetching al volver a la pestaña o reconectar a internet es automático.",
+    "Incorrecto. Puedes hacer cualquier verbo HTTP con useEffect + fetch/axios. React Query también soporta mutaciones (useMutation) para POST/PUT/DELETE, pero esta no es la razón principal para usarlo.",
+    "Incorrecto. React Query usa internamente async/await y es completamente compatible con él. No lo elimina ni lo reemplaza con callbacks."
+  ]}
+/>
+
+---
+
+## SQL Avanzado
+
+<Quiz
+  question="¿Qué devuelve exactamente ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC)?"
+  options={[
+    "El número total de empleados en cada departamento (COUNT por partición)",
+    "Un número secuencial para cada fila dentro de cada departamento, reiniciando en 1 para cada departamento y ordenado por salario descendente",
+    "El rango del salario de cada empleado comparado con el promedio de su departamento",
+    "Elimina filas duplicadas dentro de cada departamento manteniendo solo la de mayor salario"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Para el conteo total usarías COUNT(*) OVER (PARTITION BY department_id), que devuelve el mismo número para todas las filas de un departamento.",
+    "Correcto. ROW_NUMBER() asigna 1, 2, 3... a las filas de cada partición según el ORDER BY especificado. Ejemplo práctico para obtener el empleado mejor pagado por departamento: SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC) AS rn FROM employees) ranked WHERE rn = 1; A diferencia de RANK(), ROW_NUMBER() nunca repite números aunque haya empates.",
+    "Incorrecto. Para comparar con el promedio usarías AVG(salary) OVER (PARTITION BY department_id). ROW_NUMBER() solo asigna números secuenciales, no calcula estadísticas.",
+    "Incorrecto. ROW_NUMBER() no elimina filas; las numera. Para eliminar duplicados en una CTE y quedarte con uno por grupo, primero asignas ROW_NUMBER() y luego filtras WHERE rn = 1 en una query exterior."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo son preferibles las CTEs (WITH clause) sobre subqueries en SQL?"
+  options={[
+    "Siempre; las CTEs son compiladas y cacheadas por el motor SQL, lo que las hace siempre más rápidas",
+    "Cuando necesitas referenciar el mismo resultado intermedio múltiples veces, o para mejorar la legibilidad de queries complejas con múltiples pasos lógicos",
+    "Solo cuando la subquery devuelve más de 1000 filas; para resultados pequeños las subqueries son más eficientes",
+    "Las CTEs no pueden usarse con JOINs, por lo que solo son útiles en queries simples"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. En la mayoría de motores SQL (SQL Server, PostgreSQL, MySQL 8+), una CTE no materializada es tratada igual que una subquery por el optimizador. No hay ventaja de rendimiento garantizada. SQL Server tiene CTEs recursivas que sí pueden ser más eficientes para jerarquías.",
+    "Correcto. Las CTEs brillan en: (1) Legibilidad: WITH monthly_sales AS (...), top_customers AS (...) SELECT * FROM top_customers JOIN monthly_sales... es más legible que subqueries anidadas. (2) Reutilización: si necesitas la misma subquery en dos JOINs, una CTE la define una vez. (3) CTEs recursivas para jerarquías y grafos: WITH RECURSIVE org_chart AS (SELECT id, manager_id FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.manager_id FROM employees e JOIN org_chart o ON e.manager_id = o.id) SELECT * FROM org_chart;",
+    "Incorrecto. No existe tal umbral de 1000 filas. La decisión entre CTE y subquery es de legibilidad y semántica, no de tamaño del resultado.",
+    "Incorrecto. Las CTEs son completamente compatibles con JOINs, WHERE, GROUP BY, HAVING y cualquier cláusula SQL. Son esencialmente vistas temporales con scope de query."
+  ]}
+/>
+
+<Quiz
+  question="Para la query: SELECT * FROM orders WHERE status = 'active' AND created_date > '2024-01-01' ORDER BY user_id, ¿qué estrategia de índice es más óptima?"
+  options={[
+    "Tres índices separados: uno en status, uno en created_date y uno en user_id",
+    "Un índice compuesto en (status, created_date, user_id) en ese orden específico",
+    "Solo un índice en status, ya que es la columna con mayor selectividad en este caso",
+    "Los índices no ayudan con cláusulas ORDER BY; solo aceleran WHERE"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Tener tres índices separados hace que el optimizador tenga que elegir uno y hacer lookups adicionales, o combinarlos con index merge (costoso). Además, el ORDER BY no podría ser satisfecho por ninguno de ellos de forma óptima.",
+    "Correcto. El índice compuesto (status, created_date, user_id) sigue la regla ESR (Equality, Sort, Range) de forma óptima: (1) status se usa para Equality (= 'active'), (2) created_date se usa para Range (> '2024-01-01'), (3) user_id está incluido para Sort sin ordenamiento adicional. El motor puede satisfacer WHERE + ORDER BY con un único index scan. CREATE INDEX ix_orders_status_date_user ON orders (status, created_date, user_id);",
+    "Incorrecto. Sin conocer la cardinalidad real, no podemos asumir que status tiene mayor selectividad. Además, un índice solo en status requeriría un sort adicional para ORDER BY user_id y un index scan más amplio para el filtro de fecha.",
+    "Incorrecto. Los índices SÍ ayudan con ORDER BY. Si el índice termina con la columna del ORDER BY y el WHERE ya filtró suficientemente, el motor puede devolver filas ya ordenadas sin un sort adicional, eliminando la operación de ordenamiento del plan de ejecución."
+  ]}
+/>
+
+---
+
+## Docker
+
+<Quiz
+  question="¿Cuál es el beneficio principal de un multi-stage build en un Dockerfile para una app .NET?"
+  options={[
+    "Permite ejecutar múltiples contenedores en paralelo dentro de un único docker run",
+    "Reduce drásticamente el tamaño de la imagen final al separar el entorno de compilación (SDK) del entorno de ejecución (runtime)",
+    "Mejora la velocidad de ejecución de la aplicación porque el código se precompila en la fase de build",
+    "Permite usar diferentes sistemas operativos base (Windows y Linux) en la misma imagen Docker"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Multi-stage build es una característica del proceso de construcción de imágenes (docker build), no de la ejecución (docker run). No tiene relación con el número de contenedores que puedes ejecutar.",
+    "Correcto. Ejemplo: FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build WORKDIR /src COPY . . RUN dotnet publish -c Release -o /app/publish FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime WORKDIR /app COPY --from=build /app/publish . ENTRYPOINT [\"dotnet\", \"MyApp.dll\"] La imagen final solo contiene el runtime de ASP.NET (~220MB) en lugar del SDK completo (~800MB). El código fuente y las herramientas de compilación no terminan en la imagen de producción, mejorando también la seguridad.",
+    "Incorrecto. El rendimiento en ejecución no mejora con multi-stage builds. La aplicación .NET se compila a IL y se JIT-compila en runtime igual que sin multi-stage. La ventaja es exclusivamente de tamaño de imagen.",
+    "Incorrecto. Una imagen Docker tiene un único sistema operativo base por stage. Puedes usar diferentes imágenes base en diferentes stages (ej: ubuntu en build, alpine en runtime), pero son del mismo OS family (Linux). No puedes mezclar Linux y Windows en la misma imagen."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia práctica entre COPY y ADD en un Dockerfile, y cuál deberías preferir?"
+  options={[
+    "COPY es para archivos locales del build context; ADD es exclusivamente para descargar desde URLs remotas",
+    "ADD puede descomprimir archivos .tar.gz automáticamente y descargar URLs remotas; COPY solo copia archivos locales. Se prefiere COPY por ser más explícito y predecible",
+    "COPY es más lento que ADD en todos los escenarios porque no usa compresión interna",
+    "No hay diferencia funcional; ADD es simplemente el nombre antiguo de COPY en versiones anteriores de Docker"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. COPY también copia archivos locales del build context, al igual que ADD. La diferencia está en las capacidades adicionales de ADD (descompresión de tarballs y URLs remotas), no en que sean exclusivos de un tipo de fuente.",
+    "Correcto. ADD tiene dos superpoderes que COPY no tiene: (1) descomprime automáticamente archivos .tar, .tar.gz, .tar.bz2 al destino, (2) puede descargar archivos desde URLs HTTP/HTTPS. Sin embargo, las mejores prácticas de Docker recomiendan usar COPY en casi todos los casos porque: su comportamiento es explícito y predecible, ADD con URLs no cachea bien las layers y es mejor usar RUN curl para descargas. Solo usa ADD cuando genuinamente necesitas descompresión automática de tarballs.",
+    "Incorrecto. La velocidad no es la diferencia. Ambos crean layers de imagen. ADD no usa compresión interna que lo haga más rápido.",
+    "Incorrecto. Son instrucciones distintas con capacidades distintas. ADD existe desde las primeras versiones de Docker y no es un alias deprecado de COPY."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia conceptual entre una imagen Docker y un contenedor Docker?"
+  options={[
+    "Una imagen es un contenedor detenido; un contenedor es una imagen que está actualmente en ejecución",
+    "Una imagen es una plantilla inmutable de solo lectura con el sistema de archivos y configuración; un contenedor es una instancia en ejecución de esa imagen con su propia capa de escritura",
+    "Las imágenes siempre se almacenan en Docker Hub; los contenedores son siempre locales y nunca se pueden compartir",
+    "Un contenedor puede convertirse en imagen únicamente mediante el comando docker export seguido de docker import"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Aunque la analogía es cercana, es imprecisa. Una imagen no es 'un contenedor detenido': una imagen nunca tuvo estado de ejecución. Un contenedor detenido es un contenedor con estado EXITED que conserva su capa de escritura y puede reiniciarse.",
+    "Correcto. La analogía clásica: imagen = clase, contenedor = instancia. La imagen define el filesystem (capas de solo lectura, inmutables). Al crear un contenedor con docker run, Docker añade una capa de escritura sobre las capas de la imagen. Múltiples contenedores pueden derivar de la misma imagen sin interferirse. Cuando el contenedor se elimina, su capa de escritura desaparece (a menos que uses volúmenes para persistencia).",
+    "Incorrecto. Las imágenes pueden almacenarse en cualquier registry (Docker Hub, GitHub Container Registry, AWS ECR, un registry privado) o solo localmente sin push. Los contenedores tampoco 'se comparten' per se; se comparte la imagen de la que derivan.",
+    "Incorrecto. El comando correcto para crear una imagen desde un contenedor en ejecución o detenido es docker commit <container_id> <new_image_name>. docker export/import también funciona pero produce una imagen aplanada (sin historial de layers), lo que es peor que docker commit o usar un Dockerfile."
+  ]}
+/>
+
+
+---
+
+## TypeScript Avanzado
+
+<Quiz
+  question="¿Cuál es la diferencia entre Partial<T> y Required<T> en TypeScript y cuándo usar cada uno?"
+  options={[
+    "Partial<T> elimina propiedades del tipo T; Required<T> añade propiedades nuevas al tipo",
+    "Partial<T> hace todas las propiedades opcionales (agrega ?); Required<T> hace todas las propiedades obligatorias (quita ?). Se usan para actualización parcial y validación respectivamente",
+    "Son equivalentes: ambos generan el mismo tipo, solo cambia el nombre por convención",
+    "Partial<T> solo funciona con interfaces; Required<T> solo funciona con type aliases"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Partial<T> no elimina propiedades, las hace opcionales. Required<T> no añade propiedades, quita la opcionalidad de las existentes.",
+    "Correcto. Partial<T> transforma cada propiedad de T en opcional: type UpdateUserDto = Partial<User>. Útil para endpoints PATCH donde solo envías los campos a modificar. Required<T> quita todos los '?' haciendo todo obligatorio: type StrictConfig = Required<AppConfig>. Útil cuando tienes defaults y necesitas garantizar que están todos preseteados.",
+    "Incorrecto. Generan tipos opuestos. Partial<User> con 'name: string' produce 'name?: string'. Required<Partial<User>> devuelve al tipo original con todo obligatorio.",
+    "Incorrecto. Ambos utility types funcionan igual con interfaces y type aliases. TypeScript no distingue entre ambos para estos utility types."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué hace Pick<T, K> vs Omit<T, K> en TypeScript?"
+  options={[
+    "Pick<T, K> crea un tipo con SOLO las propiedades listadas en K; Omit<T, K> crea un tipo con TODAS las propiedades EXCEPTO las de K",
+    "Pick<T, K> es para interfaces y Omit<T, K> es para clases; no pueden usarse indistintamente",
+    "Pick<T, K> elimina propiedades en runtime del objeto; Omit<T, K> las deja en runtime pero las oculta al compilador",
+    "Pick y Omit son idénticos, la diferencia es solo de legibilidad según cuántas propiedades quieras incluir o excluir"
+  ]}
+  correctIndex={0}
+  explanations={[
+    "Correcto. Pick selecciona un subconjunto: type LoginDto = Pick<User, 'email' | 'password'>. Omit excluye propiedades: type PublicUser = Omit<User, 'password' | 'salt'>. Regla práctica: si quieres pocas propiedades usa Pick; si quieres casi todo menos algunas usa Omit.",
+    "Incorrecto. Ambos utility types funcionan con cualquier tipo en TypeScript: interfaces, type aliases e incluso tipos inferidos. No hay restricción de uso.",
+    "Incorrecto. Pick y Omit son operaciones puramente a nivel de tipos en tiempo de compilación. No modifican objetos en runtime; el JavaScript generado no tiene rastro de ellos.",
+    "Incorrecto. Aunque en algunos casos llevan al mismo resultado lógico, son semánticamente opuestos y generan tipos distintos. Pick<User, 'id'> no es lo mismo que Omit<User, 'email' | 'name' | 'password'>; el segundo podría tener más propiedades no contempladas."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué son los Mapped Types en TypeScript y para qué sirven?"
+  options={[
+    "Son una forma de iterar arrays de objetos en TypeScript de manera tipada, similar a Array.map pero con type safety",
+    "Son una sintaxis que permite transformar cada propiedad de un tipo existente aplicando modificadores, creando nuevos tipos derivados",
+    "Son decoradores de clase que mapean propiedades del constructor a columnas de una base de datos",
+    "Son aliases de tipos primitivos que se mapean a tipos de JavaScript en tiempo de ejecución"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Los Mapped Types son una construcción del sistema de tipos, no tienen relación con Array.map ni con iterar datos en runtime.",
+    "Correcto. Los Mapped Types usan la sintaxis: type Readonly<T> = { readonly [K in keyof T]: T[K] }. Iteran sobre las propiedades de T y aplican transformaciones. Los utility types como Partial, Required, Readonly, Record están implementados con Mapped Types. Ejemplo propio: type Nullable<T> = { [K in keyof T]: T[K] | null }.",
+    "Incorrecto. Los decoradores son una feature separada (experimental) para metadata en clases. No tienen relación con Mapped Types.",
+    "Incorrecto. TypeScript no mapea tipos a runtime; el sistema de tipos desaparece en la compilación. Los Mapped Types son exclusivamente una herramienta de transformación estructural de tipos."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo deberías preferir interface sobre type en TypeScript, considerando declaration merging y extensión?"
+  options={[
+    "Siempre debes usar type; interface está deprecada en TypeScript moderno y se mantendrá solo por compatibilidad",
+    "interface permite declaration merging (fusión de declaraciones) y se extiende con extends; type usa intersección con & y no puede redeclararse. Prefiere interface para contratos de objetos y APIs públicas",
+    "type es más rápido en compilación para proyectos grandes; interface solo debe usarse cuando interoperas con librerías JavaScript antiguas",
+    "La única diferencia real es que type puede definir primitivos y uniones; para objetos son completamente intercambiables sin ninguna diferencia práctica"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Interface sigue siendo una parte fundamental de TypeScript y no está deprecada. Ambas coexisten con casos de uso distintos.",
+    "Correcto. Declaration merging: puedes declarar la misma interface dos veces y TypeScript las fusiona: interface Window { myLib: string } en un archivo de tipos, y en otro: interface Window { analytics: Analytics }. Con type esto da error. Para extensión: interface Animal extends Mammal es más legible que type Animal = Mammal & ..., y el error del compilador es más claro. Regla general: interfaces para formas de objetos y APIs públicas; type para uniones, intersecciones, tuplas y aliases de primitivos.",
+    "Incorrecto. La diferencia de rendimiento en compilación entre interface y type es marginal y no debería ser el factor decisivo en el diseño del código.",
+    "Incorrecto. Hay diferencias prácticas relevantes: declaration merging (solo interface), implementación en clases (interface es más natural), y mensajes de error del compilador (interface suele mostrar el nombre, type muestra la estructura expandida)."
+  ]}
+/>
+
+---
+
+## Performance del Frontend
+
+<Quiz
+  question="¿Qué es el Code Splitting y cómo se implementa en React con React.lazy?"
+  options={[
+    "Code Splitting divide el código CSS en múltiples archivos para cargar estilos bajo demanda según la ruta activa",
+    "Code Splitting divide el bundle de JavaScript en chunks que se cargan bajo demanda. React.lazy con Suspense carga componentes solo cuando se necesitan, reduciendo el bundle inicial",
+    "Es una técnica para dividir componentes grandes en componentes más pequeños con el fin de mejorar la legibilidad del código",
+    "Code Splitting es exclusivo de Next.js y no está disponible en aplicaciones React con Create React App o Vite"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Code Splitting se refiere a JavaScript, no a CSS. Para CSS lazy-loading existen técnicas separadas como media queries o dynamic imports de hojas de estilo.",
+    "Correcto. Implementación básica: const Dashboard = React.lazy(() => import('./Dashboard')). Luego en JSX: <Suspense fallback={<Spinner />}><Dashboard /></Suspense>. El chunk de Dashboard.js solo se descarga cuando el usuario navega a ese componente. Con React Router: cada ruta puede ser un lazy component, logrando que el bundle inicial sea mínimo y las rutas se carguen on-demand.",
+    "Incorrecto. Dividir componentes en piezas más pequeñas es refactorización de componentes (component decomposition), no Code Splitting. Code Splitting es específicamente sobre dividir el bundle de JavaScript.",
+    "Incorrecto. React.lazy está disponible en cualquier configuración de React (CRA, Vite, webpack manual). Next.js tiene su propio next/dynamic pero React.lazy también funciona en Next.js para componentes del lado del cliente."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuál es la diferencia entre useMemo y useCallback en React?"
+  options={[
+    "useMemo memoiza el resultado de una función; useCallback memoiza la referencia de la función misma. Son equivalentes y se pueden usar indistintamente",
+    "useMemo memoiza el valor retornado por una función costosa; useCallback memoiza la definición de la función para evitar que se recree en cada render",
+    "useMemo es para valores primitivos y useCallback es para objetos y arrays; no funcionan con el tipo equivocado",
+    "useCallback reemplaza completamente a useMemo y es más moderno; useMemo existe solo por retrocompatibilidad"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. No son intercambiables. useMemo(() => compute(), deps) devuelve el resultado del cómputo. useCallback(() => fn(), deps) devuelve la función misma. Usarlos al revés produce resultados incorrectos.",
+    "Correcto. useMemo: const sortedList = useMemo(() => expensiveSort(items), [items]). Evita recalcular en cada render si items no cambió. useCallback: const handleClick = useCallback(() => onDelete(id), [id, onDelete]). Evita que handleClick sea una nueva referencia en cada render, importante cuando se pasa a componentes hijos con React.memo o como dependencia de useEffect. useCallback(fn, deps) es equivalente a useMemo(() => fn, deps).",
+    "Incorrecto. Ambos hooks funcionan con cualquier tipo de valor. La distinción no es sobre tipos de datos sino sobre qué se memoiza: el valor calculado vs la función.",
+    "Incorrecto. useCallback no reemplaza a useMemo. Son complementarios y resuelven problemas distintos: uno para cómputos costosos, otro para estabilidad de referencias de funciones."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué es el LCP (Largest Contentful Paint) y cuáles son las técnicas más efectivas para mejorarlo?"
+  options={[
+    "LCP mide el tiempo total hasta que la página es completamente interactiva; se mejora reduciendo el JavaScript del bundle",
+    "LCP mide cuándo el elemento de contenido más grande (imagen o bloque de texto) es visible en pantalla. Se mejora optimizando imágenes, usando CDN y precargando recursos críticos",
+    "LCP es una métrica de accesibilidad que mide si el texto principal es legible; no tiene relación con la velocidad de carga",
+    "LCP solo se aplica a imágenes; si tu página no tiene imágenes grandes, esta métrica no te afecta"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Lo que describes es más cercano a TTI (Time to Interactive). LCP mide específicamente cuándo el elemento visual más grande del viewport es renderizado, no la interactividad.",
+    "Correcto. LCP es una Core Web Vital de Google. Buen LCP: menor a 2.5s. Técnicas clave: (1) Optimizar la imagen hero: usar WebP/AVIF, dimensiones correctas, (2) Agregar <link rel='preload' as='image' href='hero.webp'> en el head para que el navegador la descargue antes, (3) Usar CDN para reducir latencia, (4) Evitar que CSS o JS bloqueen el render de ese elemento, (5) Server-Side Rendering para que el HTML llegue con el contenido ya presente.",
+    "Incorrecto. LCP es exclusivamente una métrica de rendimiento de carga visual, parte de las Core Web Vitals que Google usa en sus rankings de búsqueda.",
+    "Incorrecto. LCP considera el elemento visual más grande, que puede ser una imagen, un video con poster, un bloque de texto grande, o cualquier elemento de bloque con contenido. Las páginas de texto pueden tener LCP alto si el texto tarda en renderizarse."
+  ]}
+/>
+
+<Quiz
+  question="¿Por qué import _ from 'lodash' puede ser problemático para el bundle size y cómo solucionarlo?"
+  options={[
+    "Lodash está deprecada y genera warnings en el bundle; debes reemplazarla con underscore.js que es más moderna",
+    "Importar el módulo completo de lodash incluye todas sus funciones (~70KB minificado+gzip) aunque solo uses una. La solución es importar funciones específicas o usar lodash-es con tree-shaking",
+    "El problema es que lodash usa CommonJS y los bundlers modernos solo entienden ES Modules; hay que configurar un alias especial",
+    "Lodash tiene muchas dependencias transitivas que aumentan el bundle; la solución es instalar cada dependencia manualmente"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Lodash no está deprecada y sigue siendo ampliamente usada. Underscore.js es una librería diferente, más antigua, y tampoco resuelve el problema de bundle size.",
+    "Correcto. import _ from 'lodash' importa ~530KB sin minificar (~70KB gzipped). Si solo usas _.debounce, estás cargando cientos de funciones innecesarias. Soluciones: (1) Importación por path: import debounce from 'lodash/debounce', solo incluye ese módulo. (2) lodash-es: import { debounce } from 'lodash-es', es la versión ESM que permite tree-shaking automático con webpack/Rollup/Vite. (3) Alternativa moderna: muchas funciones de lodash se pueden reemplazar con métodos nativos de ES2022+.",
+    "Incorrecto. Aunque es verdad que lodash original usa CommonJS y lodash-es usa ES Modules, el problema principal es el tamaño del bundle completo, no la compatibilidad de módulos. Los bundlers manejan CommonJS correctamente.",
+    "Incorrecto. Lodash es una librería sin dependencias externas. El problema es puramente su propio tamaño cuando se importa en bloque."
+  ]}
+/>
+
+---
+
+## Caché y Redis
+
+<Quiz
+  question="¿Cuál es la diferencia entre Cache-Aside y Write-Through como estrategias de caché?"
+  options={[
+    "Cache-Aside es para lecturas y Write-Through es para escrituras; se deben usar juntos obligatoriamente en cualquier sistema",
+    "Cache-Aside: la aplicación gestiona el caché manualmente (lee caché, si falla lee BD y actualiza caché); Write-Through: cada escritura en caché se propaga automáticamente a la BD de forma sincrónica",
+    "Write-Through es más rápido en lectura porque siempre tiene los datos actualizados; Cache-Aside es más rápido en escritura porque no persiste en BD",
+    "Cache-Aside requiere Redis como backend; Write-Through solo funciona con cachés en memoria como IMemoryCache"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Son estrategias independientes con trade-offs distintos. No es obligatorio usarlas juntas; cada sistema elige según sus necesidades de consistencia y rendimiento.",
+    "Correcto. Cache-Aside (Lazy Loading): var data = await cache.GetAsync(key); if (data == null) { data = await db.GetAsync(id); await cache.SetAsync(key, data); }. Ventaja: solo cachea lo que se usa. Desventaja: primera lectura es lenta (cache miss). Write-Through: al guardar en BD, simultáneamente se actualiza el caché. Ventaja: caché siempre consistente. Desventaja: escrituras más lentas y se cachean datos que quizás nunca se lean.",
+    "Incorrecto. La velocidad de lectura en Write-Through depende de si el dato está en caché (puede haber misses igual). Cache-Aside no elimina la escritura en BD; simplemente no actualiza el caché al escribir (lo invalida o lo deja expirar).",
+    "Incorrecto. Ambas estrategias son agnósticas a la implementación de caché. Pueden usarse con Redis, Memcached, IMemoryCache, o cualquier otro sistema de caché."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo deberías usar IMemoryCache vs IDistributedCache en .NET?"
+  options={[
+    "IMemoryCache es para datos pequeños (menos de 1MB); IDistributedCache es para datos más grandes sin importar la arquitectura",
+    "IMemoryCache almacena datos en RAM del proceso actual (una sola instancia); IDistributedCache usa un almacén externo (Redis, SQL Server) compartido entre múltiples instancias",
+    "IDistributedCache siempre es preferible porque es más rápido al usar serialización binaria optimizada frente a IMemoryCache",
+    "Son intercambiables: IDistributedCache es simplemente la versión actualizada de IMemoryCache en .NET 6+"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. El criterio de elección no es el tamaño del dato sino la arquitectura de despliegue: ¿una instancia o múltiples instancias/pods?",
+    "Correcto. IMemoryCache: services.AddMemoryCache(). Guarda objetos en RAM del proceso. Perfecto para una sola instancia (app monolítica o un pod). Si tienes 3 pods, cada uno tiene su propio caché y pueden tener datos diferentes. IDistributedCache con Redis: services.AddStackExchangeRedisCache(o => o.Configuration = 'redis:6379'). Todos los pods comparten el mismo caché. Requiere serialización (byte[]) pero garantiza consistencia. Usa IMemoryCache para dev/monolitos; IDistributedCache para arquitecturas con múltiples réplicas o microservicios.",
+    "Incorrecto. IDistributedCache requiere serialización/deserialización y comunicación de red con el almacén externo, lo que lo hace más lento que IMemoryCache para accesos individuales. La ventaja es la consistencia entre instancias, no la velocidad.",
+    "Incorrecto. Son interfaces distintas con implementaciones y casos de uso diferentes que coexisten en .NET. IDistributedCache no reemplaza a IMemoryCache."
+  ]}
+/>
+
+<Quiz
+  question="¿Para qué sirve el TTL (Time To Live) en Redis y qué problemas puede causar no configurarlo?"
+  options={[
+    "TTL controla la velocidad máxima de transferencia de datos entre Redis y la aplicación; sin él, Redis puede saturarse",
+    "TTL define el tiempo de expiración de una clave: tras ese tiempo Redis la elimina automáticamente. Sin TTL, las claves persisten indefinidamente y la memoria de Redis puede llenarse hasta causar OOM",
+    "TTL es opcional y solo relevante para datos de sesión; para otros tipos de datos no tiene impacto porque Redis comprime datos automáticamente",
+    "Sin TTL las claves se replican a más nodos de Redis, aumentando la disponibilidad pero también el uso de red"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. TTL no tiene relación con el throughput o velocidad de transferencia. Es exclusivamente un mecanismo de expiración temporal de claves.",
+    "Correcto. await cache.SetAsync(key, data, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) }). Sin TTL: las claves se acumulan indefinidamente. Redis tiene maxmemory y una política de evicción (allkeys-lru, volatile-lru, noeviction). Con noeviction, Redis empieza a rechazar escrituras cuando se llena. Con allkeys-lru, elimina claves arbitrariamente. Siempre configura TTL acorde a la frecuencia de cambio del dato: datos de catálogo (horas), sesiones (minutos), rate limiting (segundos).",
+    "Incorrecto. TTL es relevante para cualquier tipo de clave en Redis, no solo sesiones. Redis no comprime datos automáticamente de forma que resuelva el problema de acumulación de claves.",
+    "Incorrecto. TTL no tiene relación con la replicación de datos entre nodos de Redis. La replicación se configura a nivel de topología del cluster, independientemente de los TTL de las claves."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué es el cache stampede (thundering herd) y cómo se mitiga?"
+  options={[
+    "Es cuando Redis recibe demasiadas conexiones simultáneas y colapsa; se mitiga aumentando el número de réplicas de lectura",
+    "Es cuando una clave expira y múltiples requests simultáneos detectan el cache miss, van todos a la BD al mismo tiempo y la sobrecargan. Se mitiga con locking o probabilistic early expiration",
+    "Es un ataque de seguridad donde un cliente externo invalida masivamente el caché; se mitiga con autenticación en Redis",
+    "Es la degradación del rendimiento cuando el caché está lleno; se mitiga aumentando la RAM asignada a Redis"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. El problema no es el número de conexiones a Redis sino la avalancha de consultas a la base de datos cuando una clave popular expira.",
+    "Correcto. Escenario: la clave 'products:featured' expira a las 12:00:00. En ese instante, 500 requests concurrentes ven que no está en caché y los 500 van a la BD a buscar lo mismo. La BD recibe 500 queries idénticas simultáneas. Mitigaciones: (1) Mutex/lock: solo el primer thread recalcula, los demás esperan: if (!await lock.AcquireAsync(key)) return await WaitForCache(key). (2) Probabilistic early expiration: antes de que expire, con cierta probabilidad un request la renueva anticipadamente. (3) Background refresh: un worker renueva el caché antes de que expire. (4) Staggered TTLs: TTL base + jitter aleatorio para que no expiren todas al mismo tiempo.",
+    "Incorrecto. Cache stampede es un problema de concurrencia interno de la aplicación, no un ataque externo. La autenticación en Redis no lo previene.",
+    "Incorrecto. Cache stampede ocurre por la expiración de claves populares, no porque el caché esté lleno. Aumentar RAM no resuelve el problema de coordinación entre threads."
+  ]}
+/>
+
+---
+
+## Autenticación Avanzada
+
+<Quiz
+  question="¿Cuál es la diferencia entre OAuth 2.0 y OpenID Connect (OIDC)?"
+  options={[
+    "OAuth 2.0 es más moderno y reemplaza a OIDC; son incompatibles entre sí y no deben usarse en el mismo sistema",
+    "OAuth 2.0 es un protocolo de autorización (delegar acceso a recursos); OIDC es una capa de identidad sobre OAuth 2.0 que añade autenticación e información del usuario mediante el ID Token",
+    "OAuth 2.0 usa tokens JWT y OIDC usa tokens opacos; la diferencia es exclusivamente el formato del token",
+    "Son idénticos en funcionalidad; OIDC es simplemente el nombre que usa Google y OAuth 2.0 es el nombre que usa Microsoft para el mismo protocolo"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. OIDC está construido sobre OAuth 2.0 y son complementarios. OIDC extiende OAuth 2.0 para añadir autenticación; no son incompatibles.",
+    "Correcto. OAuth 2.0 resuelve autorización: 'Esta app puede acceder a tus fotos de Google Drive'. Devuelve un Access Token para llamar APIs. No dice quién eres, solo qué puedes hacer. OIDC añade autenticación encima de OAuth 2.0: además del Access Token, devuelve un ID Token (JWT) con claims del usuario: sub, email, name, picture. Endpoint adicional: /userinfo. Flujo OIDC: scope='openid profile email'. Regla: si solo necesitas acceder a una API en nombre del usuario, OAuth 2.0. Si necesitas saber quién es el usuario (login), OIDC.",
+    "Incorrecto. OAuth 2.0 por sí mismo no define el formato del token (puede ser opaco o JWT). OIDC sí requiere que el ID Token sea JWT, pero el Access Token puede seguir siendo opaco.",
+    "Incorrecto. Son protocolos distintos definidos por el IETF y la OpenID Foundation respectivamente. Tanto Google como Microsoft implementan ambos."
+  ]}
+/>
+
+<Quiz
+  question="¿Por qué se recomienda el flujo PKCE para SPAs en lugar del flujo implícito (Implicit Flow) de OAuth 2.0?"
+  options={[
+    "PKCE es más fácil de implementar que el flujo implícito; la seguridad es equivalente pero PKCE requiere menos código",
+    "El flujo implícito expone el Access Token en la URL (fragment), lo que lo hace vulnerable a robo via historial del navegador o referrer headers. PKCE usa un code verifier/challenge que solo el cliente legítimo puede completar",
+    "El flujo implícito está deprecado solo en aplicaciones móviles; para SPAs en navegador sigue siendo la opción recomendada por la especificación",
+    "PKCE requiere que el servidor de autorización soporte HTTPS; el flujo implícito funciona también en HTTP, por eso se prefería en desarrollo local"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. PKCE no es más simple; añade pasos criptográficos adicionales. Se recomienda por ser más seguro, no por simplicidad.",
+    "Correcto. Implicit Flow: el servidor redirige a https://app.com/callback#access_token=xyz. El token queda en la URL, visible en historial, logs del servidor, headers Referer si hay recursos de terceros. PKCE (Proof Key for Code Exchange): (1) El cliente genera un code_verifier aleatorio y su hash code_challenge. (2) Envía code_challenge al servidor de autorización. (3) Recibe un authorization code (no el token). (4) Intercambia el code + code_verifier original por el token. Un atacante que intercepte el authorization code no puede usarlo sin el code_verifier original. OAuth 2.1 directamente elimina el flujo implícito.",
+    "Incorrecto. El flujo implícito está desaconsejado para todos los tipos de cliente, incluyendo SPAs. La OAuth Security BCP (RFC 9700) y OAuth 2.1 lo consideran inseguro y lo eliminan.",
+    "Incorrecto. Tanto PKCE como el flujo implícito requieren HTTPS en producción para cualquier flujo OAuth. El argumento de HTTP en desarrollo local no es una razón válida para elegir entre estos flujos."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué es el Refresh Token Rotation y por qué mejora la seguridad frente a refresh tokens estáticos?"
+  options={[
+    "Refresh Token Rotation significa que los refresh tokens se renuevan periódicamente de forma automática sin intervención del usuario, similar a una sesión con sliding expiration",
+    "Cada vez que se usa un refresh token para obtener un nuevo access token, el servidor emite un NUEVO refresh token e invalida el anterior. Si el token robado se usa, el servidor detecta la reutilización e invalida toda la sesión",
+    "Es una técnica para rotar entre múltiples servidores de autenticación para mejorar la disponibilidad; no está relacionada con la seguridad de los tokens",
+    "Refresh Token Rotation requiere que el usuario inicie sesión de nuevo cada vez que el access token expira; es más seguro pero peor en experiencia de usuario"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Aunque se parece a sliding expiration en concepto, la clave de Refresh Token Rotation es la invalidación del token anterior y la detección de reutilización, no simplemente renovar el tiempo de vida.",
+    "Correcto. Sin rotación: el refresh token dura meses. Si es robado, el atacante lo usa indefinidamente. Con rotación: el cliente envía refresh_token_A, recibe access_token_nuevo + refresh_token_B, y refresh_token_A queda invalidado. Si un atacante robó refresh_token_A y lo usa DESPUÉS de que el cliente legítimo ya lo rotó, el servidor detecta que se está intentando usar un token ya invalidado (reuse detection) e invalida TODA la familia de tokens de esa sesión. Esto protege contra robo de tokens almacenados en localStorage o interceptados en tránsito. Implementado en Auth0, Keycloak, ASP.NET Core con refresh token families.",
+    "Incorrecto. Refresh Token Rotation es una técnica de seguridad para los tokens de sesión del usuario. No tiene relación con balanceo de carga o disponibilidad de servidores de autenticación.",
+    "Incorrecto. La rotación es transparente para el usuario. El cliente automáticamente usa el nuevo refresh token para obtener el siguiente access token cuando expira. El usuario no necesita volver a iniciar sesión."
+  ]}
+/>

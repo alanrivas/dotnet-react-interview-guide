@@ -1,0 +1,599 @@
+---
+id: simulacro
+title: 🧪 Simulacro de Entrevista — Junior
+sidebar_position: 101
+---
+
+import Quiz from '@site/src/components/Quiz';
+
+# 🧪 Simulacro de Entrevista — Junior
+
+Simula una entrevista técnica real. **30 preguntas**, temas mezclados, sin mirar las respuestas hasta contestar. Tiempo estimado: 45 minutos.
+
+:::tip Cómo usarlo
+Responde cada pregunta como lo harías en una entrevista real: piensa en voz alta y justifica tu elección antes de hacer clic.
+:::
+
+---
+
+## C# — Fundamentos
+
+<Quiz
+  question="¿Cuántos bytes ocupa un `int` en C# independientemente de la plataforma?"
+  options={[
+    "2 bytes",
+    "4 bytes",
+    "8 bytes",
+    "Depende de si la plataforma es 32 o 64 bits"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. 2 bytes corresponde a `short` (Int16), no a `int`.",
+    "Correcto. `int` es un alias de `System.Int32` y siempre ocupa 4 bytes en cualquier plataforma soportada por .NET. A diferencia de C/C++, C# garantiza tamaños fijos para sus tipos primitivos.",
+    "Incorrecto. 8 bytes corresponde a `long` (Int64).",
+    "Incorrecto. En C# el tamaño de `int` es fijo en 4 bytes. En C/C++ sí depende de la plataforma, pero no en C#."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué ocurre cuando se hace boxing de un valor de tipo `int` en C#?"
+  options={[
+    "El valor se convierte automáticamente a string",
+    "El tipo `int` se promueve a `long` para mayor precisión",
+    "El valor se copia al heap envuelto en un objeto",
+    "Se lanza una excepción si el valor es mayor que cero"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El boxing no convierte a string; eso lo hace `ToString()`. Son operaciones completamente distintas.",
+    "Incorrecto. El boxing no cambia el tipo numérico. El valor sigue siendo `int`, solo cambia su ubicación en memoria.",
+    "Correcto. El boxing copia el value type del stack al heap, envolviéndolo en una instancia de `object`. Ejemplo: `int n = 42; object o = n;`. Genera presión en el GC si se hace en bucles intensivos.",
+    "Incorrecto. El boxing no lanza excepciones y funciona con cualquier valor, incluido cero o negativos."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál es la diferencia práctica entre `string.Empty` y una cadena vacía literal?"
+  options={[
+    "`string.Empty` lanza excepción si la cadena fue declarada como null",
+    "Son funcionalmente equivalentes; `string.Empty` comunica la intención de forma más explícita y evita crear un objeto literal extra",
+    "`\"\"` no puede usarse en comparaciones con `==`",
+    "`string.Empty` retorna null cuando no hay contenido"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. `string.Empty` es solo el campo estático `\"\"` en la clase `String`; no tiene ningún comportamiento especial con null.",
+    "Correcto. Ambas expresiones representan una cadena vacía. `string.Empty` es una constante estática predefinida. El compilador y el runtime las tratan igual, pero `string.Empty` es más legible en código de producción.",
+    "Incorrecto. `\"\"` funciona perfectamente con `==`, `Equals` y todos los métodos de comparación.",
+    "Incorrecto. `string.Empty` nunca retorna null; retorna la cadena vacía `\"\"`."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué retorna el operador `??` cuando el operando izquierdo no es null?"
+  options={[
+    "Siempre retorna el operando derecho",
+    "Lanza `NullReferenceException`",
+    "Retorna el operando izquierdo tal cual",
+    "Convierte el resultado a nullable"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El operando derecho es el fallback; solo se evalúa y retorna si el izquierdo es null.",
+    "Incorrecto. El operador `??` no lanza excepciones; precisamente existe para evitar problemas con null.",
+    "Correcto. `??` es el operador de fusión de null. Ejemplo: `string nombre = input ?? \"Desconocido\";`. Si `input` no es null, retorna `input`; si es null, retorna `\"Desconocido\"`.",
+    "Incorrecto. `??` no modifica el tipo del resultado; el tipo lo determina el compilador en función de los operandos."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál de estos tipos es un reference type en C#?"
+  options={[
+    "`struct` personalizado",
+    "`enum`",
+    "`int`",
+    "`class` personalizada"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. `struct` es un value type; sus instancias se almacenan en el stack (o inline en el heap si son campo de una clase).",
+    "Incorrecto. `enum` es un value type basado en un tipo entero subyacente.",
+    "Incorrecto. `int` (alias de `System.Int32`) es un value type.",
+    "Correcto. Las clases son reference types: sus instancias se crean en el heap y las variables almacenan una referencia. Por eso dos variables pueden apuntar al mismo objeto."
+  ]}
+/>
+
+---
+
+## POO — Pilares y diseño
+
+<Quiz
+  question="¿Qué palabra clave se usa en C# para invocar el constructor de la clase base desde una clase derivada?"
+  options={[
+    "`super()`",
+    "`parent()`",
+    "`base()`",
+    "`this()`"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. `super()` es la sintaxis de Java y JavaScript/TypeScript, no de C#.",
+    "Incorrecto. `parent()` no existe en C#.",
+    "Correcto. En C# se usa `base()` en la firma del constructor: `public Derivada() : base(param) { }`. También se usa `base.Metodo()` para llamar métodos de la clase padre.",
+    "Incorrecto. `this()` se usa para llamar a otro constructor de la misma clase (constructor chaining), no al de la base."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué pilar de la POO permite que el mismo método se comporte diferente según el tipo real del objeto en tiempo de ejecución?"
+  options={[
+    "Encapsulamiento",
+    "Herencia",
+    "Abstracción",
+    "Polimorfismo"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. El encapsulamiento oculta la implementación interna exponiendo solo una interfaz pública.",
+    "Incorrecto. La herencia permite reutilizar código entre clases, pero por sí sola no garantiza el despacho dinámico de métodos.",
+    "Incorrecto. La abstracción permite modelar conceptos eliminando detalles irrelevantes, pero no describe el comportamiento en tiempo de ejecución.",
+    "Correcto. El polimorfismo (en particular el polimorfismo de subtipo con `virtual`/`override`) permite que una referencia de tipo base ejecute el método de la clase concreta en runtime. Ejemplo: una lista de `Animal` puede llamar a `HacerSonido()` y cada animal ejecuta su propia versión."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué ocurre si defines un método con `new` en una clase derivada en lugar de `override`?"
+  options={[
+    "El compilador lanza un error; solo se permite `override`",
+    "El comportamiento es idéntico a `override` en todos los casos",
+    "El método oculta al de la base: si la referencia es del tipo base, se llama el método de la base; si es del tipo derivado, el de la derivada",
+    "El método derivado reemplaza permanentemente al de la base en toda la jerarquía"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. El compilador solo emite una advertencia sugiriendo usar `new` explícitamente, pero no un error.",
+    "Incorrecto. Con `new` el método no participa en el despacho virtual, a diferencia de `override`.",
+    "Correcto. `new` oculta (method hiding) en vez de sobreescribir. Ejemplo: `Animal a = new Perro(); a.Hablar();` llama al método de `Animal`, no al de `Perro`. Con `override` sí llamaría al de `Perro`.",
+    "Incorrecto. `new` solo afecta a la clase donde se define; no altera la jerarquía completa."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál de estas afirmaciones sobre interfaces en C# es correcta?"
+  options={[
+    "Una clase solo puede implementar una interfaz a la vez",
+    "Las interfaces no pueden tener propiedades, solo métodos",
+    "Una interfaz puede heredar de múltiples interfaces",
+    "Las interfaces pueden declarar campos de instancia"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Una clase puede implementar múltiples interfaces simultáneamente, lo que es una de sus ventajas sobre la herencia simple.",
+    "Incorrecto. Las interfaces pueden tener propiedades, indexadores, eventos y desde C# 8 también métodos con implementación por defecto.",
+    "Correcto. Una interfaz puede heredar de varias interfaces a la vez. Ejemplo: `interface IRepositorio : ILectura, IEscritura { }`. Esto permite componer contratos sin las limitaciones de la herencia de clases.",
+    "Incorrecto. Las interfaces no pueden tener campos de instancia (estado). Solo pueden tener miembros de tipo que sean propiedades, métodos, eventos o indexadores."
+  ]}
+/>
+
+---
+
+## .NET / LINQ / async-await
+
+<Quiz
+  question="¿Qué retorna `FirstOrDefault()` de LINQ cuando la secuencia no contiene ningún elemento coincidente?"
+  options={[
+    "Lanza `InvalidOperationException`",
+    "Retorna siempre `null` sin importar el tipo",
+    "Retorna una colección vacía",
+    "Retorna `null` para reference types y el valor por defecto del tipo para value types"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. `First()` lanza `InvalidOperationException` cuando no hay elementos; `FirstOrDefault()` existe precisamente para evitar esa excepción.",
+    "Incorrecto. Para value types como `int`, `FirstOrDefault()` retorna `0`, no null (salvo que el tipo sea `int?`).",
+    "Incorrecto. `FirstOrDefault()` retorna un solo elemento (o el default), no una colección.",
+    "Correcto. Para una `List<string>` vacía retorna `null`; para `List<int>` vacía retorna `0`. Es el equivalente a `default(T)` del tipo de la colección."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál es la diferencia clave entre `IEnumerable` e `IQueryable` en el contexto de Entity Framework?"
+  options={[
+    "`IQueryable` solo funciona con listas en memoria",
+    "`IEnumerable` ejecuta la consulta en el servidor de base de datos",
+    "`IQueryable` traduce la consulta a SQL y la ejecuta en el servidor; `IEnumerable` la evalúa en memoria",
+    "No hay diferencia funcional entre ambos con EF Core"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Es al revés: `IEnumerable` trabaja con datos ya cargados en memoria; `IQueryable` puede delegar al servidor.",
+    "Incorrecto. `IEnumerable` ya tiene los datos en memoria y los filtra en el proceso .NET.",
+    "Correcto. Con `IQueryable`, los filtros `Where`, `Select`, etc. se convierten en SQL eficiente. Con `IEnumerable` EF carga toda la tabla y filtra en memoria, lo cual es ineficiente para grandes volúmenes.",
+    "Incorrecto. La diferencia es crítica para el rendimiento de consultas a base de datos."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué hace `ConfigureAwait(false)` en un método async?"
+  options={[
+    "Fuerza la ejecución sincrónica de la tarea",
+    "Evita capturar el contexto de sincronización actual, útil en código de librería para prevenir deadlocks",
+    "Cancela la tarea si supera un tiempo límite",
+    "Convierte la `Task` en `ValueTask` automáticamente"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. `ConfigureAwait(false)` no hace la ejecución sincrónica; la tarea sigue siendo async.",
+    "Correcto. En ASP.NET Framework y en WinForms/WPF existe un `SynchronizationContext` que fuerza la reanudación en el hilo original. `ConfigureAwait(false)` indica que no es necesario volver a ese contexto, mejorando el rendimiento y previniendo deadlocks en librerías de uso general.",
+    "Incorrecto. Para cancelación se usa `CancellationToken`.",
+    "Incorrecto. `ConfigureAwait` no cambia el tipo de retorno de la tarea."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué diferencia hay entre `async void` y `async Task` en C#?"
+  options={[
+    "Son equivalentes; `async void` es la forma abreviada de `async Task`",
+    "`async void` no puede usar `await` internamente",
+    "`async Task` solo se puede usar en controladores de ASP.NET",
+    "`async void` no puede ser esperado con `await` y las excepciones no son capturables desde el llamador"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Son construcciones distintas con comportamientos muy diferentes respecto a excepciones y composición.",
+    "Incorrecto. `async void` sí puede usar `await` internamente; el problema está en cómo el llamador puede interactuar con él.",
+    "Incorrecto. `async Task` se puede usar en cualquier contexto, no solo en ASP.NET.",
+    "Correcto. `async void` está diseñado solo para event handlers. Si lanza una excepción no capturada, crashea la aplicación. Con `async Task`, el llamador puede hacer `await` y capturar excepciones normalmente."
+  ]}
+/>
+
+---
+
+## JavaScript / TypeScript
+
+<Quiz
+  question="¿Qué imprime `console.log(typeof null)` en JavaScript?"
+  options={[
+    "`null`",
+    "`undefined`",
+    "`object`",
+    "`number`"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. `typeof null` no retorna la cadena `null`; esto sorprende a muchos desarrolladores.",
+    "Incorrecto. `typeof undefined` retorna `undefined`, no `null`.",
+    "Correcto. Es uno de los bugs históricos de JavaScript. `typeof null === 'object'` por razones de implementación del motor original. Para verificar null correctamente usa `valor === null`.",
+    "Incorrecto. `typeof 42` retorna `number`."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué diferencia hay entre `==` y `===` en JavaScript?"
+  options={[
+    "No hay diferencia; ambos comparan valor y tipo",
+    "`===` compara solo valor; `==` compara valor y tipo",
+    "`==` realiza coerción de tipos antes de comparar; `===` no realiza coerción",
+    "`==` solo funciona con números"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Solo `===` compara sin coerción. `==` aplica reglas de conversión implícita.",
+    "Incorrecto. Es al revés: `===` compara valor Y tipo sin coerción.",
+    "Correcto. Con `==`, `0 == false` es `true` y `null == undefined` es `true` por coerción. Con `===`, `0 === false` es `false`. En la práctica, casi siempre se prefiere `===` para evitar sorpresas.",
+    "Incorrecto. `==` funciona con cualquier tipo, no solo números."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué es un closure en JavaScript?"
+  options={[
+    "Una función que no puede acceder a variables fuera de su propio scope",
+    "Una función que se ejecuta inmediatamente al ser definida (IIFE)",
+    "Una función que solo puede ser llamada una vez",
+    "Una función que recuerda el ámbito léxico donde fue creada, incluso al ejecutarse fuera de él"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Es lo contrario: un closure accede a las variables del scope exterior donde fue definido.",
+    "Incorrecto. Una IIFE (Immediately Invoked Function Expression) no es lo mismo que un closure, aunque puede usarlos.",
+    "Incorrecto. Los closures no tienen restricción de llamadas; pueden invocarse tantas veces como se quiera.",
+    "Correcto. Ejemplo: `function contador() { let n = 0; return () => ++n; }`. La función retornada forma un closure sobre `n`, manteniendo acceso a esa variable incluso después de que `contador` haya terminado de ejecutarse."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="En TypeScript, ¿qué diferencia hay entre `any` y `unknown`?"
+  options={[
+    "Son exactamente iguales; `unknown` es un alias moderno de `any`",
+    "`unknown` permite todas las operaciones sin verificación de tipo previa",
+    "`unknown` requiere una verificación de tipo antes de usarlo en operaciones concretas, a diferencia de `any`",
+    "`unknown` es un alias de `undefined` en TypeScript"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Son conceptos diferentes: `any` desactiva el type checking; `unknown` lo mantiene.",
+    "Incorrecto. Eso describe a `any`. Con `unknown` TypeScript no permite operaciones sin verificación previa.",
+    "Correcto. Con `unknown` debes hacer type narrowing antes de operar: `if (typeof valor === 'string') { valor.toUpperCase(); }`. Con `any`, TypeScript confía ciegamente en ti. `unknown` es la alternativa type-safe a `any`.",
+    "Incorrecto. `unknown` es un tipo top que puede recibir cualquier valor, no relacionado con `undefined`."
+  ]}
+/>
+
+---
+
+## React
+
+<Quiz
+  question="¿Qué hook usas para ejecutar código de limpieza cuando un componente se desmonta?"
+  options={[
+    "`useRef` con un callback de cleanup",
+    "`useLayoutEffect` con una condición especial de desmontaje",
+    "`useEffect` con array de dependencias vacío retornando una función de limpieza",
+    "`useState` con un valor inicial que dispara el cleanup"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. `useRef` no tiene mecanismo de cleanup integrado.",
+    "Incorrecto. Aunque `useLayoutEffect` también soporta cleanup, no requiere condición especial y `useEffect` es el hook estándar para este caso.",
+    "Correcto. El patrón es: `useEffect(() => { /* setup */ return () => { /* cleanup */ }; }, [])`. La función retornada se ejecuta al desmontar el componente. Ideal para cancelar subscripciones, timers o peticiones.",
+    "Incorrecto. `useState` gestiona estado reactivo, no efectos secundarios ni ciclo de vida."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Por qué React requiere que los elementos de una lista tengan la prop `key`?"
+  options={[
+    "Para aplicar estilos CSS únicos a cada elemento",
+    "Para que el usuario pueda seleccionar elementos de la lista",
+    "Es solo una convención de estilo sin impacto en el rendimiento",
+    "Para que React identifique eficientemente qué elementos cambiaron, se agregaron o eliminaron al reconciliar el Virtual DOM"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. `key` no tiene ninguna relación con estilos CSS.",
+    "Incorrecto. `key` es un mecanismo interno de React, no una función de UI para el usuario.",
+    "Incorrecto. La ausencia de `key` o usar el índice del array como key causa bugs de reconciliación y pérdidas de rendimiento reales.",
+    "Correcto. Sin `key` estable, React no puede distinguir si un elemento cambió de posición o si es uno nuevo. Usar el ID del dato como key (no el índice) garantiza una reconciliación correcta y eficiente."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué ocurre al llamar a `setState` múltiples veces seguidas en React 18?"
+  options={[
+    "Cada llamada causa un re-render separado inmediatamente",
+    "Solo se aplica la última llamada y las anteriores se descartan",
+    "React realiza batching automático y agrupa todas las actualizaciones en un solo re-render",
+    "React lanza una advertencia en consola sobre actualizaciones simultáneas"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. React 18 introdujo batching automático en todos los contextos, no solo en event handlers síncronos.",
+    "Incorrecto. Todas las actualizaciones se aplican; lo que React agrupa es el re-render, no las actualizaciones en sí.",
+    "Correcto. React 18 introdujo batching automático incluso dentro de `setTimeout`, `fetch` o eventos nativos. Múltiples `setState` en la misma operación asíncrona producen un solo re-render optimizado.",
+    "Incorrecto. El batching es el comportamiento esperado y no genera advertencias."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál es la diferencia entre un componente controlado y uno no controlado en React?"
+  options={[
+    "Un componente controlado no puede recibir props",
+    "Un componente no controlado usa `useState` para manejar el estado del formulario",
+    "En un controlado, React gestiona el estado del input vía `useState`; en uno no controlado, lo gestiona el DOM directamente",
+    "Los componentes no controlados son siempre más eficientes"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Los componentes controlados sí reciben props; de hecho, reciben `value` y `onChange` como props.",
+    "Incorrecto. Es al revés: es el componente controlado el que usa `useState` para manejar el valor del input.",
+    "Correcto. Controlado: `<input value={nombre} onChange={e => setNombre(e.target.value)} />`. No controlado: `<input ref={inputRef} />`, el DOM gestiona el valor y se accede con `inputRef.current.value`.",
+    "Incorrecto. El rendimiento depende del caso de uso; los controlados son más predecibles y testeables."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué problema puede causar una dependencia faltante en el array de `useEffect`?"
+  options={[
+    "El efecto nunca se ejecutará",
+    "React lanzará un error en tiempo de ejecución al detectar la dependencia faltante",
+    "El componente se desmontará automáticamente",
+    "El efecto puede usar valores obsoletos (stale closure) del render anterior"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. El efecto sí se ejecuta; el problema es que captura valores desactualizados.",
+    "Incorrecto. React no lanza error por dependencias faltantes; lo advierte el linter (eslint-plugin-react-hooks).",
+    "Incorrecto. Las dependencias faltantes no causan desmontaje del componente.",
+    "Correcto. Si el efecto usa una variable del componente que no está en el array de deps, el efecto captura el valor del render en que fue creado y no se actualiza cuando esa variable cambia. Esto es el problema de stale closure."
+  ]}
+/>
+
+---
+
+## SQL
+
+<Quiz
+  question="¿Cuál es la diferencia entre `WHERE` y `HAVING` en SQL?"
+  options={[
+    "`WHERE` filtra grupos; `HAVING` filtra filas individuales",
+    "`HAVING` se escribe antes de `GROUP BY`; `WHERE` después",
+    "`WHERE` filtra filas antes de agrupar; `HAVING` filtra grupos después de aplicar `GROUP BY`",
+    "Son intercambiables; puedes usar cualquiera en cualquier posición"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Es al revés: `WHERE` filtra filas individuales antes de agrupar; `HAVING` filtra los grupos resultantes.",
+    "Incorrecto. `HAVING` siempre va después de `GROUP BY`, nunca antes.",
+    "Correcto. Ejemplo: `SELECT depto, COUNT(*) FROM empleados WHERE activo = 1 GROUP BY depto HAVING COUNT(*) > 5`. `WHERE` elimina empleados inactivos antes de agrupar; `HAVING` filtra departamentos con 5 o menos empleados del resultado agrupado.",
+    "Incorrecto. `HAVING` no puede usarse sin `GROUP BY` (en la mayoría de motores) y `WHERE` no puede referenciar funciones de agregado."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué tipo de JOIN retorna solo las filas con coincidencias en AMBAS tablas?"
+  options={[
+    "`LEFT JOIN`",
+    "`FULL OUTER JOIN`",
+    "`INNER JOIN`",
+    "`CROSS JOIN`"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. `LEFT JOIN` retorna todas las filas de la tabla izquierda y las coincidencias de la derecha; si no hay coincidencia, rellena con NULL.",
+    "Incorrecto. `FULL OUTER JOIN` retorna todas las filas de ambas tablas, con NULL donde no hay coincidencia.",
+    "Correcto. `INNER JOIN` es el más selectivo: solo retorna filas donde existe coincidencia en ambas tablas según la condición `ON`. Las filas sin pareja quedan excluidas.",
+    "Incorrecto. `CROSS JOIN` produce el producto cartesiano de ambas tablas, sin ninguna condición de coincidencia."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué hace la cláusula `DISTINCT` en una consulta SQL?"
+  options={[
+    "Ordena los resultados de forma ascendente",
+    "Filtra los valores NULL del resultado",
+    "Agrupa filas con el mismo valor (equivalente a `GROUP BY`)",
+    "Elimina filas duplicadas del conjunto de resultados"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Para ordenar se usa `ORDER BY`.",
+    "Incorrecto. Para filtrar NULLs se usa `WHERE columna IS NOT NULL`.",
+    "Incorrecto. `DISTINCT` no es equivalente a `GROUP BY`; `GROUP BY` permite usar funciones de agregado, `DISTINCT` no.",
+    "Correcto. `SELECT DISTINCT ciudad FROM clientes` retorna cada ciudad solo una vez, eliminando duplicados. Ten en cuenta que `DISTINCT` puede ser costoso en tablas grandes porque requiere ordenar o hashear los resultados."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuándo es más beneficioso crear un índice en una columna de base de datos?"
+  options={[
+    "Cuando la columna tiene muy pocos valores distintos (baja cardinalidad)",
+    "Cuando la columna se actualiza con mucha frecuencia",
+    "Cuando la columna se usa frecuentemente en `WHERE` o `JOIN` y tiene alta cardinalidad",
+    "Los índices siempre mejoran el rendimiento sin importar el contexto"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Columnas con baja cardinalidad (ej. `true/false`) no se benefician de índices B-Tree; el motor prefiere un table scan.",
+    "Incorrecto. Los índices ralentizan las operaciones de escritura (INSERT, UPDATE, DELETE) porque deben mantenerse actualizados.",
+    "Correcto. Un índice en `email` (alta cardinalidad, usado en `WHERE email = ?`) permite búsquedas en O(log n) en vez de O(n). El balance correcto es: columnas frecuentemente leídas, poco actualizadas y con muchos valores distintos.",
+    "Incorrecto. Demasiados índices degradan el rendimiento de escrituras y aumentan el uso de almacenamiento."
+  ]}
+/>
+
+---
+
+## HTTP / Git
+
+<Quiz
+  question="¿Qué código de estado HTTP indica que un recurso fue creado exitosamente?"
+  options={[
+    "200 OK",
+    "201 Created",
+    "204 No Content",
+    "202 Accepted"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. 200 OK indica que la operación fue exitosa, pero se usa para lecturas (GET) o actualizaciones, no específicamente para creación.",
+    "Correcto. 201 Created debe retornarse tras un POST exitoso que crea un recurso. Convencionalmente se incluye la cabecera `Location` apuntando al nuevo recurso y el cuerpo con la representación creada.",
+    "Incorrecto. 204 No Content indica éxito pero sin cuerpo en la respuesta; típico de DELETE o PUT sin respuesta.",
+    "Incorrecto. 202 Accepted indica que la petición fue aceptada para procesamiento asíncrono, pero aún no completada."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Cuál es la diferencia entre `git merge` y `git rebase`?"
+  options={[
+    "`git rebase` crea un commit de merge; `git merge` no crea commits",
+    "`git rebase` solo funciona con ramas remotas",
+    "No hay diferencia práctica entre los dos comandos",
+    "`git merge` preserva el historial con un commit de fusión; `git rebase` reescribe el historial para una línea lineal"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Es al revés: `git merge` crea el commit de fusión; `git rebase` no crea commits de merge.",
+    "Incorrecto. `git rebase` funciona igual con ramas locales y remotas.",
+    "Incorrecto. La diferencia en el historial resultante es significativa y afecta la legibilidad y la colaboración en equipo.",
+    "Correcto. `merge` preserva el contexto de las ramas con un commit de merge, mostrando que las ramas divergieron y convergieron. `rebase` mueve los commits de tu rama encima de la base, generando un historial lineal pero reescribiendo los SHAs. Nunca hagas rebase de ramas compartidas."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué método HTTP se debe usar para actualizar PARCIALMENTE un recurso existente?"
+  options={[
+    "`PUT`",
+    "`POST`",
+    "`PATCH`",
+    "`DELETE`"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. `PUT` reemplaza el recurso completo; si omites un campo, el servidor lo sobreescribe con null o el valor por defecto.",
+    "Incorrecto. `POST` se usa para crear recursos o acciones que no encajan en otro verbo, no para actualización parcial.",
+    "Correcto. `PATCH` envía solo los campos que deben modificarse. Ejemplo: `PATCH /usuarios/1` con body `{email: 'nuevo@mail.com'}` actualiza solo el email sin afectar el resto de propiedades.",
+    "Incorrecto. `DELETE` elimina el recurso; no lo actualiza."
+  ]}
+/>
+
+---
+
+<Quiz
+  question="¿Qué hace el comando `git stash`?"
+  options={[
+    "Elimina permanentemente todos los cambios no commiteados",
+    "Crea una nueva rama con los cambios actuales y limpia el working directory",
+    "Revierte el último commit manteniendo los cambios en staging",
+    "Guarda temporalmente los cambios no commiteados para dejar el working directory limpio"
+  ]}
+  correctIndex={3}
+  explanations={[
+    "Incorrecto. Los cambios no se eliminan; se guardan en una pila y pueden recuperarse con `git stash pop` o `git stash apply`.",
+    "Incorrecto. `git stash` no crea ramas; solo almacena los cambios en la pila de stash.",
+    "Incorrecto. Para deshacer el último commit manteniendo cambios usa `git reset --soft HEAD~1`.",
+    "Correcto. `git stash` es útil cuando necesitas cambiar de rama urgentemente sin hacer un commit intermedio. Los cambios se guardan en una pila. `git stash list` muestra todos los stashes; `git stash pop` recupera y elimina el más reciente."
+  ]}
+/>

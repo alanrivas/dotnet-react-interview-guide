@@ -26,16 +26,16 @@ No es solo conocer más tecnologías. Es la capacidad de ver el panorama complet
 
 | Tema | Descripción | Prioridad |
 |------|-------------|-----------|
-| [Arquitectura de Software](./arquitectura) | Estilos arquitectónicos, CQRS, Event-Driven, CAP Theorem | 🔥 Alta |
-| [Clean Architecture & DDD](./clean-architecture) | Capas, Domain Model, Aggregates, Value Objects | 🔥 Alta |
-| [Microservicios](./microservicios) | Comunicación, Saga, resiliencia, mensajería | 🔥 Alta |
-| [Performance](./performance) | Caching, profiling, query optimization, async | 🔥 Alta |
-| [Seguridad](./seguridad) | OWASP Top 10, JWT seguro, autorización avanzada | 🔥 Alta |
-| [Concurrencia & Paralelismo](./concurrencia) | Threading, async avanzado, race conditions, locks | 🟡 Media |
-| [DevOps & CI/CD](./devops) | GitHub Actions, K8s, Terraform, Observabilidad | 🟡 Media |
-| [Cloud (Azure)](./cloud) | Servicios principales, arquitecturas cloud-native | 🟡 Media |
-| [System Design](./system-design) | Framework, estimaciones, patrones de escalabilidad | 🔥 Alta |
-| [Liderazgo Técnico](./liderazgo-tecnico) | Code reviews, ADRs, deuda técnica, mentoring | 🔥 Alta |
+| [Arquitectura de Software](senior/arquitectura) | Estilos arquitectónicos, CQRS, Event-Driven, CAP Theorem | 🔥 Alta |
+| [Clean Architecture & DDD](senior/clean-architecture) | Capas, Domain Model, Aggregates, Value Objects | 🔥 Alta |
+| [Microservicios](senior/microservicios) | Comunicación, Saga, resiliencia, mensajería | 🔥 Alta |
+| [Performance](senior/performance) | Caching, profiling, query optimization, async | 🔥 Alta |
+| [Seguridad](senior/seguridad) | OWASP Top 10, JWT seguro, autorización avanzada | 🔥 Alta |
+| [Concurrencia & Paralelismo](senior/concurrencia) | Threading, async avanzado, race conditions, locks | 🟡 Media |
+| [DevOps & CI/CD](senior/devops) | GitHub Actions, K8s, Terraform, Observabilidad | 🟡 Media |
+| [Cloud (Azure)](senior/cloud) | Servicios principales, arquitecturas cloud-native | 🟡 Media |
+| [System Design](senior/system-design) | Framework, estimaciones, patrones de escalabilidad | 🔥 Alta |
+| [Liderazgo Técnico](senior/liderazgo-tecnico) | Code reviews, ADRs, deuda técnica, mentoring | 🔥 Alta |
 
 ## Señales de un candidato Senior excepcional
 

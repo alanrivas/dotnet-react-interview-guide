@@ -25,18 +25,18 @@ A este nivel, el entrevistador no busca solo que "funcione". Busca que expliques
 
 | Tema | Descripción | Prioridad |
 |------|-------------|-----------|
-| [C# Avanzado](./csharp-avanzado) | Generics, delegates, pattern matching, async avanzado | 🔥 Alta |
-| [ASP.NET Core](./aspnet-core) | Pipeline, middleware, DI, JWT, validación | 🔥 Alta |
-| [Entity Framework Core](./entity-framework) | Queries avanzados, migrations, performance | 🔥 Alta |
-| [APIs REST](./apis-rest) | Principios REST, versionado, paginación, documentación | 🔥 Alta |
-| [JavaScript Avanzado](./javascript-avanzado) | Closures, event loop, prototypes, módulos | 🔥 Alta |
-| [React Avanzado](./react-avanzado) | Hooks avanzados, Context, Custom Hooks, React Query | 🔥 Alta |
-| [Estado Global](./estado-global) | Redux Toolkit, Zustand, cuándo usar cada uno | 🟡 Media |
-| [Testing](./testing) | xUnit, Moq, Integration Testing, Testing Library | 🔥 Alta |
-| [Patrones de Diseño](./patrones-diseno) | SOLID, Repository, Strategy, Observer, MediatR | 🔥 Alta |
-| [SQL Avanzado](./sql-avanzado) | Window Functions, CTEs, índices, ejecución de queries | 🟡 Media |
-| [Autenticación & OAuth](./autenticacion-oauth) | OAuth 2.0, OpenID Connect, JWT, Refresh Tokens | 🟡 Media |
-| [Docker](./docker) | Contenedores, Dockerfile, docker-compose | 🟡 Media |
+| [C# Avanzado](semi-senior/csharp-avanzado) | Generics, delegates, pattern matching, async avanzado | 🔥 Alta |
+| [ASP.NET Core](semi-senior/aspnet-core) | Pipeline, middleware, DI, JWT, validación | 🔥 Alta |
+| [Entity Framework Core](semi-senior/entity-framework) | Queries avanzados, migrations, performance | 🔥 Alta |
+| [APIs REST](semi-senior/apis-rest) | Principios REST, versionado, paginación, documentación | 🔥 Alta |
+| [JavaScript Avanzado](semi-senior/javascript-avanzado) | Closures, event loop, prototypes, módulos | 🔥 Alta |
+| [React Avanzado](semi-senior/react-avanzado) | Hooks avanzados, Context, Custom Hooks, React Query | 🔥 Alta |
+| [Estado Global](semi-senior/estado-global) | Redux Toolkit, Zustand, cuándo usar cada uno | 🟡 Media |
+| [Testing](semi-senior/testing) | xUnit, Moq, Integration Testing, Testing Library | 🔥 Alta |
+| [Patrones de Diseño](semi-senior/patrones-diseno) | SOLID, Repository, Strategy, Observer, MediatR | 🔥 Alta |
+| [SQL Avanzado](semi-senior/sql-avanzado) | Window Functions, CTEs, índices, ejecución de queries | 🟡 Media |
+| [Autenticación & OAuth](semi-senior/autenticacion-oauth) | OAuth 2.0, OpenID Connect, JWT, Refresh Tokens | 🟡 Media |
+| [Docker](semi-senior/docker) | Contenedores, Dockerfile, docker-compose | 🟡 Media |
 
 ## Lo que diferencia a un Junior de un Semi-Senior
 

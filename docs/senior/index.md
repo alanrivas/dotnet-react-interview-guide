@@ -36,6 +36,17 @@ No es solo conocer más tecnologías. Es la capacidad de ver el panorama complet
 | [Cloud (Azure)](senior/cloud) | Servicios principales, arquitecturas cloud-native | 🟡 Media |
 | [System Design](senior/system-design) | Framework, estimaciones, patrones de escalabilidad | 🔥 Alta |
 | [Liderazgo Técnico](senior/liderazgo-tecnico) | Code reviews, ADRs, deuda técnica, mentoring | 🔥 Alta |
+| [Escalabilidad de BD](senior/escalabilidad-bd) | Sharding, replicación, particionamiento, read replicas | 🟡 Media |
+| [Event-Driven Architecture](senior/event-driven) | Eventos, mensajería, Kafka, outbox pattern | 🟡 Media |
+| [Observabilidad](senior/observabilidad) | Logging estructurado, métricas, trazas distribuidas | 🟡 Media |
+
+## Práctica y simulacros
+
+| Recurso | Descripción |
+|---------|-------------|
+| [Live Coding Senior](senior/live-coding) | Ejercicios de código en tiempo real: algoritmos y diseño |
+| [Preguntas frecuentes](senior/preguntas) | Banco de preguntas reales de entrevistas Senior |
+| [Simulacro de entrevista](senior/simulacro) | Entrevista completa simulada con feedback |
 
 ## Señales de un candidato Senior excepcional
 

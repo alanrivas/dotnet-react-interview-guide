@@ -37,6 +37,17 @@ A este nivel, el entrevistador no busca solo que "funcione". Busca que expliques
 | [SQL Avanzado](semi-senior/sql-avanzado) | Window Functions, CTEs, índices, ejecución de queries | 🟡 Media |
 | [Autenticación & OAuth](semi-senior/autenticacion-oauth) | OAuth 2.0, OpenID Connect, JWT, Refresh Tokens | 🟡 Media |
 | [Docker](semi-senior/docker) | Contenedores, Dockerfile, docker-compose | 🟡 Media |
+| [Caching & Redis](semi-senior/caching-redis) | Cache distribuida, invalidación, patrones de cache | 🟡 Media |
+| [Performance Frontend](semi-senior/performance-frontend) | Bundle size, lazy loading, memoización, Web Vitals | 🟡 Media |
+| [TypeScript Avanzado](semi-senior/typescript-avanzado) | Generics, utility types, decorators, type guards | 🟡 Media |
+
+## Práctica y simulacros
+
+| Recurso | Descripción |
+|---------|-------------|
+| [Live Coding Semi-Senior](semi-senior/live-coding) | Ejercicios de código en tiempo real: patrones y APIs |
+| [Preguntas frecuentes](semi-senior/preguntas) | Banco de preguntas reales de entrevistas Semi-Senior |
+| [Simulacro de entrevista](semi-senior/simulacro) | Entrevista completa simulada con feedback |
 
 ## Lo que diferencia a un Junior de un Semi-Senior
 

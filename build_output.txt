@@ -1,0 +1,72 @@
+
+> dotnet-react-interview-guide@0.0.0 build
+> docusaurus build
+
+[INFO] [es] Creating an optimized production build...
+[WARNING] Duplicate routes found!
+- Attempting to create page at /docs/senior/arquitectura, but a page already exists at this route.
+This could lead to non-deterministic routing behavior.
+[90m[[90mwebpackbar[90m][39m [36mÔä╣[39m Compiling Client
+[90m[[90mwebpackbar[90m][39m [36mÔä╣[39m Compiling Server
+[WARNING] Markdown link with URL `./layered-architecture.md` in source file "docs/senior/arquitectura/index.md" (17:5) couldn't be resolved.
+Make sure it references a local Markdown file that exists within the current plugin.
+[WARNING] Markdown link with URL `./clean-architecture.md` in source file "docs/senior/arquitectura/index.md" (21:5) couldn't be resolved.
+Make sure it references a local Markdown file that exists within the current plugin.
+[WARNING] Markdown link with URL `./adr.md` in source file "docs/senior/arquitectura/index.md" (28:5) couldn't be resolved.
+Make sure it references a local Markdown file that exists within the current plugin.
+[WARNING] Markdown link with URL `./clean-architecture.md` in source file "docs/senior/arquitectura/index.md" (46:11) couldn't be resolved.
+Make sure it references a local Markdown file that exists within the current plugin.
+[WARNING] Markdown link with URL `./adr.md` in source file "docs/senior/arquitectura/index.md" (54:8) couldn't be resolved.
+Make sure it references a local Markdown file that exists within the current plugin.
+[90m[[90mwebpackbar[90m][39m [32mÔ£ö[39m Server: Compiled with some errors in 1.68s
+<w> [webpack.cache.PackFileCacheStrategy] Skipped not serializable cache item 'Compilation/modules|C:\dev\pruebas-insiders\second\dotnet-react-interview-guide\node_modules\@docusaurus\mdx-loader\lib\index.js??ruleSet[1].rules[8].use[0]!C:\dev\pruebas-insiders\second\dotnet-react-interview-guide\docs\senior\arquitectura\trade-offs.md': No serializer registered for VFileMessage
+<w> while serializing webpack/lib/cache/PackFileCacheStrategy.PackContentItems -> webpack/lib/NormalModule -> webpack/lib/ModuleBuildError -> Error -> VFileMessage
+<w> [webpack.cache.PackFileCacheStrategy] Skipped not serializable cache item 'Compilation/modules|C:\dev\pruebas-insiders\second\dotnet-react-interview-guide\node_modules\@docusaurus\mdx-loader\lib\index.js??ruleSet[1].rules[8].use[0]!C:\dev\pruebas-insiders\second\dotnet-react-interview-guide\docs\senior\arquitectura\estilos-arquitectonicos.md': No serializer registered for VFileMessage
+<w> while serializing webpack/lib/cache/PackFileCacheStrategy.PackContentItems -> webpack/lib/NormalModule -> webpack/lib/ModuleBuildError -> Error -> VFileMessage
+[90m[[90mwebpackbar[90m][39m [32mÔ£ö[39m Client: Compiled with some errors in 4.93s
+[ERROR] Client bundle compiled with errors therefore further build is impossible.
+Error: MDX compilation failed for file "C:\dev\pruebas-insiders\second\dotnet-react-interview-guide\docs\senior\arquitectura\estilos-arquitectonicos.md"
+Cause: Unexpected character `1` (U+0031) before name, expected a character that can start a name, such as a letter, `$`, or `_`
+Details:
+{
+  "column": 30,
+  "file": "",
+  "message": "Unexpected character `1` (U+0031) before name, expected a character that can start a name, such as a letter, `$`, or `_`",
+  "line": 54,
+  "name": "54:30",
+  "place": {
+    "_bufferIndex": 27,
+    "_index": 0,
+    "line": 54,
+    "column": 30,
+    "offset": 1907
+  },
+  "reason": "Unexpected character `1` (U+0031) before name, expected a character that can start a name, such as a letter, `$`, or `_`",
+  "ruleId": "unexpected-character",
+  "source": "micromark-extension-mdx-jsx",
+  "url": "https://github.com/micromark/micromark-extension-mdx-jsx#unexpected-character-at-expected-expect"
+}
+
+--------------------------
+
+Error: MDX compilation failed for file "C:\dev\pruebas-insiders\second\dotnet-react-interview-guide\docs\senior\arquitectura\trade-offs.md"
+Cause: Unexpected character `1` (U+0031) before name, expected a character that can start a name, such as a letter, `$`, or `_`
+Details:
+{
+  "column": 15,
+  "file": "",
+  "message": "Unexpected character `1` (U+0031) before name, expected a character that can start a name, such as a letter, `$`, or `_`",
+  "line": 235,
+  "name": "235:15",
+  "place": {
+    "_bufferIndex": 10,
+    "_index": 0,
+    "line": 235,
+    "column": 15,
+    "offset": 6712
+  },
+  "reason": "Unexpected character `1` (U+0031) before name, expected a character that can start a name, such as a letter, `$`, or `_`",
+  "ruleId": "unexpected-character",
+  "source": "micromark-extension-mdx-jsx",
+  "url": "https://github.com/micromark/micromark-extension-mdx-jsx#unexpected-character-at-expected-expect"
+}

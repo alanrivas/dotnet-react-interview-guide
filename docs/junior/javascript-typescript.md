@@ -329,3 +329,185 @@ const ESTADO = {
 type EstadoType = typeof ESTADO[keyof typeof ESTADO];
 // EstadoType = "PENDIENTE" | "ACTIVO" | "INACTIVO"
 ```
+
+---
+
+## Preguntas frecuentes de entrevista 🎯
+
+**1. ¿Cuál es la diferencia entre `var`, `let` y `const`?**
+> - `var`: function-scoped, hoisted, mutable. **Evitar en código moderno.**
+> - `let`: block-scoped (if, for, {}), no hoisted, mutable. **Preferido para variables.**
+> - `const`: block-scoped, no hoisted, inmutable a nivel de referencia (pero el contenido de un objeto sí puede mutarse). **Preferido por defecto.**
+
+```javascript
+// var: hoisted
+console.log(x); // undefined (no error)
+var x = 5;
+
+// let/const: no hoisted
+console.log(y); // ReferenceError: Cannot access 'y' before initialization
+let y = 5;
+
+// const es inmutable a nivel de referencia
+const obj = { a: 1 };
+obj.a = 2;         // ✓ permitido (muta el objeto)
+obj = { a: 2 };    // ✗ error: asignación a una constante
+```
+
+**2. ¿Qué es una closure? ¿Por qué es importante?**
+> Una closure es una función que "recuerda" el scope léxico donde fue creada. Es importante porque permite encapsulación de variables privadas y es la base de patrones como callbacks, HOCs, Redux reducers.
+
+```javascript
+function crear Contador() {
+  let count = 0; // privada, solo accesible a través de la closure
+  
+  return {
+    incrementar: () => ++count,
+    obtener: () => count,
+  };
+}
+
+const contador = crearContador();
+contador.incrementar(); // 1
+// No existe forma de acceder a count directamente desde afuera
+```
+
+**3. ¿Cuál es el orden de ejecución en Event Loop?**
+> Call Stack → Microtask Queue → Macrotask Queue
+> 
+> Las microtasks (Promises, `queueMicrotask`, `MutationObserver`) se ejecutan ANTES que las macrotasks (setTimeout, setInterval, I/O).
+
+```javascript
+console.log("1");                      // sync: 1
+setTimeout(() => console.log("2"), 0); // macrotask
+Promise.resolve().then(() => console.log("3")); // microtask
+console.log("4");                      // sync: 4
+
+// Salida: 1, 4, 3, 2
+```
+
+**4. ¿Cuál es la diferencia entre promesas y async/await?**
+> Son equivalentes: `async/await` es sintaxis azúcar sobre promesas. La diferencia es que `async/await` es más legible y permite usar `try/catch` como en código síncrono.
+
+```javascript
+// Promesas
+function obtenerApi() {
+  return fetch('/api')
+    .then(res => res.json())
+    .then(data => data)
+    .catch(err => console.error(err));
+}
+
+// Async/Await (equivalente, más legible)
+async function obtenerApi() {
+  try {
+    const res = await fetch('/api');
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error(err);
+  }
+}
+```
+
+**5. ¿Qué es destructuring y para qué sirve?**
+> Destructuring es extraer valores de arrays u objetos en variables separadas. Sirve para hacer código más legible y conciso.
+
+```javascript
+// Array destructuring
+const [primero, segundo, ...resto] = [1, 2, 3, 4];
+
+// Object destructuring
+const { nombre, edad, ciudad = "Buenos Aires" } = persona;
+
+// En parámetros (muy usado en React)
+function mostrar({ nombre, edad }) { }
+
+// Renombrar (alias)
+const { nombreCompleto: nombre } = persona;
+```
+
+**6. ¿Qué pasa con `this` en arrow functions?**
+> Arrow functions NO tienen su propio `this`. Heredan el `this` del contexto léxico donde fueron creadas. Esto contrasta con funciones normales donde `this` se determina por cómo fueron llamadas.
+
+```javascript
+const obj = {
+  valor: 42,
+  normal: function() {
+    console.log(this.valor); // this es obj
+  },
+  flecha: () => {
+    console.log(this.valor); // this es el objeto global (undefined en módulos)
+  },
+};
+
+obj.normal();  // 42
+obj.flecha();  // undefined
+```
+
+**7. ¿Qué es `Promise.all()` vs `Promise.allSettled()` vs `Promise.race()`?**
+> - `Promise.all()`: Espera a que todas las promesas se resuelvan O que UNA falle (fail fast).
+> - `Promise.allSettled()`: Espera a que TODAS terminen (resueltas o rechazadas).
+> - `Promise.race()`: Devuelve la primera que termine (resuelva o rechace).
+
+```javascript
+// all: falla si alguna rechaza
+Promise.all([p1, p2, p3]) // rechaza si p2 falla
+
+// allSettled: siempre devuelve resultado
+Promise.allSettled([p1, p2, p3])
+// [{status: 'fulfilled', value: ...}, {status: 'rejected', reason: ...}]
+
+// race: la primera gana
+Promise.race([delayedPromise(1000), delayedPromise(500)])
+// resuelve en ~500ms
+```
+
+**8. ¿Cuál es la diferencia entre `interface` y `type` en TypeScript?**
+> - `interface`: para describir contratos de objetos. Extensible con `extends`, puede mergearse.
+> - `type`: más flexible, puede ser union, intersection. Mejor para alias de tipos.
+
+```typescript
+interface Animal { nombre: string; }
+interface Perro extends Animal { raza: string; }
+
+// vs
+
+type Animal = { nombre: string };
+type Perro = Animal & { raza: string };
+
+// Merge: solo Interface
+interface Usuario { name: string; }
+interface Usuario { age: number; } // se mergean
+// Usuario = { name: string; age: number }
+```
+
+**9. ¿Para qué sirven los Generics en TypeScript?**
+> Generics permiten escribir código reutilizable que trabaja con múltiples tipos. Son especialmente útiles en funciones y estructuras que no dependen de un tipo específico.
+
+```typescript
+function primero<T>(arr: T[]): T | undefined {
+  return arr[0];
+}
+
+const num = primero([1, 2, 3]);           // T = number
+const str = primero(["a", "b"]);          // T = string
+const usuario = primero([user1, user2]);  // T = Usuario
+```
+
+**10. ¿Qué diferencia hay entre `any` y `unknown` en TypeScript?**
+> - `any`: desactiva type checking completamente. ¡Evitar!
+> - `unknown`: es seguro. Requiere type narrowing (comprobar el tipo) antes de usar.
+
+```typescript
+let algo: any = "texto";
+algo.toUpperCase(); // ✓ permitido (pero unsafe)
+
+let desconocido: unknown = "texto";
+desconocido.toUpperCase(); // ✗ error: no sabemos que es string
+
+// Type narrowing
+if (typeof desconocido === "string") {
+  desconocido.toUpperCase(); // ✓ ahora es seguro
+}
+```

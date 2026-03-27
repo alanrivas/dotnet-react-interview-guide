@@ -277,6 +277,165 @@ function CrearProducto() {
 
 ---
 
+## Suspense y Error Boundaries
+
+### Suspense
+
+Suspense permite "pausar" el renderizado hasta que algún recurso (datos, código) esté listo.
+
+```tsx
+import { Suspense } from 'react';
+
+function App() {
+  return (
+    <Suspense fallback={<Cargando />}>
+      <ListaUsuarios /> {/* Mientras se cargan, muestra <Cargando/> */}
+    </Suspense>
+  );
+}
+
+function Cargando() {
+  return <div>Espera, estamos cargando...</div>;
+}
+
+// Componente que "suspende" (lanza una promesa)
+// Típicamente usado con React Query o Promise-based code splitting
+function ListaUsuarios() {
+  // Nota: no se puede usar async/await directamente en componentes
+  // Usar React Query que maneja Suspense automáticamente
+  const usuarios = useSuspenseQuery({
+    queryKey: ['usuarios'],
+    queryFn: () => fetch('/api/usuarios').then(r => r.json()),
+  });
+
+  return <div>{usuarios.data.map(u => <div key={u.id}>{u.nombre}</div>)}</div>;
+}
+
+// Code splitting con Suspense
+import { lazy } from 'react';
+
+const AdminPanel = lazy(() => import('./AdminPanel'));
+
+function App() {
+  return (
+    <Suspense fallback={<div>Cargando panel...</div>}>
+      <AdminPanel /> {/* Solo descarga cuando es necesario */}
+    </Suspense>
+  );
+}
+```
+
+### Error Boundary
+
+Error Boundary captura errores en componentes hijos y muestra una UI alternativa.
+
+```tsx
+import { Component } from 'react';
+
+class ErrorBoundary extends Component<{children: React.ReactNode}, {hasError: boolean; error: Error | null}> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Error capturado:', error, errorInfo);
+    // Aquí puedes enviar a un servicio de logging (Sentry, etc)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 20, color: 'red' }}>
+          <h1>Algo salió mal</h1>
+          <details>
+            {this.state.error?.message}
+          </details>
+          <button onClick={() => window.location.reload()}>Recargar</button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Usar Error Boundary
+function App() {
+  return (
+    <ErrorBoundary>
+      <ListaUsuarios />
+      <CrudProductos />
+    </ErrorBoundary>
+  );
+}
+
+// Nota: Error Boundary no captura:
+// - Errores en event handlers (usar try/catch)
+// - Errores async (promesas no resueltas)
+// - Errores del servidor-side rendering
+
+// Para errores async, usar un estado:
+function FormProducto() {
+  const [error, setError] = useState<string | null>(null);
+  
+  const guardar = async () => {
+    try {
+      await guardarProducto();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    }
+  };
+
+  if (error) return <div style={{color: 'red'}}>{error}</div>;
+  return <form onSubmit={guardar}>...</form>;
+}
+```
+
+---
+
+## useLayoutEffect
+
+`useLayoutEffect` es similar a `useEffect` pero se ejecuta **ANTES** de que React pinte el DOM (synchronous).
+
+```tsx
+import { useLayoutEffect, useState, useRef } from 'react';
+
+function MedirAltura() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [altura, setAltura] = useState(0);
+
+  useLayoutEffect(() => {
+    // Se ejecuta ANTES de que el navegador pinte
+    if (ref.current) {
+      setAltura(ref.current.offsetHeight);
+    }
+  }, []);
+
+  return (
+    <div ref={ref}>
+      <p>Contenido</p>
+      <p>Altura medida: {altura}px</p>
+    </div>
+  );
+}
+
+// Casos de uso:
+// - Medir elementos del DOM
+// - Leer valores de propiedades calculated del CSS
+// - Evitar "flashes" de contenido sin estilo
+// - Scrolling sincronizado
+
+// ⚠️ Usar con cuidado: bloquea el navegador
+// Si no necesitas bloquear el navegador, usa useEffect
+```
+
+---
+
 ## Preguntas frecuentes de entrevista 🎯
 
 **1. ¿Cuándo usar Context API vs Redux vs React Query?**

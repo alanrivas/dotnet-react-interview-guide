@@ -25,6 +25,9 @@ Esta sección está organizada en profundidad progresiva de temas:
 - **[Trade-offs Arquitectónicos](./trade-offs.md)** — Cómo evaluar y justificar decisiones
 - **[Anti-patrones](./anti-patrones.md)** — Errores comunes y cómo evitarlos
 
+### Implementación y Testing
+- **[Estrategias de Testing](./testing-strategies.md)** — Cómo testear cada arquitectura (Unit, Integration, E2E)
+
 ### Tópicos Relacionados
 
 También tenemos secciones complementarias en el sitio:

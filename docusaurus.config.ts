@@ -26,7 +26,7 @@ const config: Config = {
   projectName: 'dotnet-react-interview-guide', // Usually your repo name.
   trailingSlash: false,
 
-  onBrokenLinks: 'warn',
+  onBrokenLinks: 'throw',
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
@@ -71,7 +71,7 @@ const config: Config = {
           label: '📚 Guía',
         },
         {
-          href: 'https://github.com',
+          href: 'https://github.com/alanrivas/dotnet-react-interview-guide',
           label: 'GitHub',
           position: 'right',
         },

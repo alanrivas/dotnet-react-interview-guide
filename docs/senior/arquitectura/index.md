@@ -29,6 +29,7 @@ Esta sección está organizada en profundidad progresiva de temas:
 - **[Estrategias de Testing](./testing-strategies.md)** — Cómo testear cada arquitectura (Unit, Integration, E2E)
 - **[Patrones de Migración](./migration-patterns.md)** — Evolucionar arquitectura sin parar el servicio (Strangler Fig, ACL)
 - **[Case Studies](./case-studies.md)** — Decisiones reales de Netflix, Uber, Discord, Stripe, Airbnb, Amazon
+- **[Observabilidad](./observability.md)** — Logging, Tracing, Metrics por arquitectura
 
 ### Tópicos Relacionados
 

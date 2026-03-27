@@ -1,23 +1,398 @@
-/**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
- */
-
+/* ─── Hero Banner ─────────────────────────────────────────── */
 .heroBanner {
-  padding: 4rem 0;
+  padding: 5rem 0 4rem;
   text-align: center;
+  background: linear-gradient(
+    135deg,
+    var(--ifm-color-primary-darkest) 0%,
+    var(--ifm-color-primary-dark)    50%,
+    var(--ifm-color-primary)         100%
+  );
   position: relative;
   overflow: hidden;
 }
 
-@media screen and (max-width: 996px) {
-  .heroBanner {
-    padding: 2rem;
-  }
+.heroBanner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 40%);
 }
 
-.buttons {
+.heroContent {
+  position: relative;
+  z-index: 1;
+}
+
+.heroBadge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.3);
+  margin-bottom: 1.5rem;
+}
+
+.heroTitle {
+  font-size: 3.2rem !important;
+  font-weight: 900 !important;
+  color: #fff !important;
+  margin-bottom: 1rem !important;
+  line-height: 1.15 !important;
+}
+
+.heroSubtitle {
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.85);
+  max-width: 580px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.6;
+}
+
+.stackBadges {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.stackBadge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.95);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.heroButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btnPrimary {
+  background: #fff !important;
+  color: var(--ifm-color-primary-darkest) !important;
+  border: none !important;
+  font-weight: 700 !important;
+  transition: transform 0.15s, box-shadow 0.15s !important;
+}
+
+.btnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2) !important;
+  color: var(--ifm-color-primary-darkest) !important;
+}
+
+.btnSecondary {
+  background: transparent !important;
+  color: #fff !important;
+  border: 2px solid rgba(255,255,255,0.6) !important;
+  font-weight: 600 !important;
+  transition: background 0.15s, border-color 0.15s !important;
+}
+
+.btnSecondary:hover {
+  background: rgba(255,255,255,0.15) !important;
+  border-color: #fff !important;
+  color: #fff !important;
+}
+
+@media screen and (max-width: 996px) {
+  .heroTitle { font-size: 2.2rem !important; }
+  .heroBanner { padding: 3rem 1.5rem; }
+}
+
+/* ─── Stats Bar ───────────────────────────────────────────── */
+.statsBar {
+  background: var(--ifm-color-primary-darkest);
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--ifm-color-primary-dark);
+}
+
+.statsGrid {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+}
+
+.statValue {
+  font-size: 1.8rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ifm-color-primary-lightest);
+}
+
+.statLabel {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  margin-top: 0.2rem;
+  letter-spacing: 0.03em;
+}
+
+/* ─── Sections ────────────────────────────────────────────── */
+.section {
+  padding: 4rem 0;
+}
+
+.sectionAlt {
+  background: var(--ifm-color-emphasis-100);
+}
+
+[data-theme='dark'] .sectionAlt {
+  background: rgba(255,255,255,0.03);
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.sectionHeader h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.sectionHeader p {
+  color: var(--ifm-color-emphasis-600);
+  font-size: 1.05rem;
+}
+
+/* ─── Level Cards ─────────────────────────────────────────── */
+.levelsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.levelCard {
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem;
+  border-radius: 12px;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  background: var(--ifm-card-background-color);
+  text-decoration: none !important;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.levelCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+  border-color: var(--card-color, var(--ifm-color-primary));
+  text-decoration: none !important;
+}
+
+[data-theme='dark'] .levelCard:hover {
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+}
+
+.levelIcon {
+  font-size: 2rem;
+  width: 3.25rem;
+  height: 3.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--card-color, #6366f1) 12%, transparent);
+  margin-bottom: 1rem;
+}
+
+.levelTitle {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0 0 0.2rem;
+  color: var(--ifm-font-color-base);
+}
+
+.levelYears {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-600);
+  margin: 0 0 1rem;
+}
+
+.levelMeta {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.levelMetaBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card-color, #6366f1) 12%, transparent);
+  color: var(--card-color, var(--ifm-color-primary));
+}
+
+.levelTopics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: auto;
+  margin-bottom: 1.5rem;
+}
+
+.levelTopic {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--ifm-color-emphasis-200);
+  color: var(--ifm-color-emphasis-700);
+  white-space: nowrap;
+}
+
+.levelCta {
+  display: block;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card-color, #6366f1) 10%, transparent);
+  color: var(--card-color, var(--ifm-color-primary)) !important;
+  border: 1.5px solid color-mix(in srgb, var(--card-color, #6366f1) 30%, transparent);
+  transition: background 0.15s, border-color 0.15s;
+  text-decoration: none !important;
+}
+
+.levelCta:hover {
+  background: color-mix(in srgb, var(--card-color, #6366f1) 18%, transparent);
+  border-color: var(--card-color, var(--ifm-color-primary));
+  text-decoration: none !important;
+}
+
+@media screen and (max-width: 996px) {
+  .levelsGrid { grid-template-columns: 1fr; }
+}
+
+/* ─── Resource Cards ──────────────────────────────────────── */
+.resourceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.resourceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  background: var(--ifm-card-background-color);
+  text-decoration: none !important;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.resourceCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  border-color: var(--card-color, var(--ifm-color-primary));
+  text-decoration: none !important;
+}
+
+[data-theme='dark'] .resourceCard:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.resourceEmoji {
+  font-size: 1.8rem;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--card-color, #6366f1) 12%, transparent);
+}
+
+.resourceTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ifm-font-color-base);
+}
+
+.resourceDesc {
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-600);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.resourceLink {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--card-color, var(--ifm-color-primary));
+  margin-top: auto;
+}
+
+/* ─── Path Section ────────────────────────────────────────── */
+.pathSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.pathText h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.pathText p {
+  color: var(--ifm-color-emphasis-700);
+  margin-bottom: 1.5rem;
+  line-height: 1.7;
+}
+
+.pathCode {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+}
+
+.codeBlock {
+  margin: 0;
+  padding: 1.75rem !important;
+  background: #1e1e2e !important;
+  color: #cdd6f4 !important;
+  font-size: 0.88rem !important;
+  line-height: 2 !important;
+  border-radius: 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+}
+
+@media screen and (max-width: 768px) {
+  .pathSection { grid-template-columns: 1fr; }
+  .statsGrid { gap: 1.5rem; }
+  .resourceGrid { grid-template-columns: 1fr 1fr; }
+}
+
+@media screen and (max-width: 480px) {
+  .resourceGrid { grid-template-columns: 1fr; }
 }

@@ -1,33 +1,53 @@
 /**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
+ * Infima CSS framework overrides.
+ * Paleta: Índigo/Violeta — consistente con free-hosting-guide.alanrivas.me
  */
 
-/* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-color-primary: #4f46e5;
+  --ifm-color-primary-dark: #4338ca;
+  --ifm-color-primary-darker: #3730a3;
+  --ifm-color-primary-darkest: #312e81;
+  --ifm-color-primary-light: #6366f1;
+  --ifm-color-primary-lighter: #818cf8;
+  --ifm-color-primary-lightest: #a5b4fc;
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
-  --level-junior-color: #2e8b57;
-  --level-semi-color: #b8860b;
-  --level-senior-color: #8b0000;
+  --ifm-font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.08);
+
+  /* Colores por nivel */
+  --level-junior-color: #10b981;
+  --level-semi-color: #f59e0b;
+  --level-senior-color: #ef4444;
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary: #818cf8;
+  --ifm-color-primary-dark: #6366f1;
+  --ifm-color-primary-darker: #4f46e5;
+  --ifm-color-primary-darkest: #4338ca;
+  --ifm-color-primary-light: #a5b4fc;
+  --ifm-color-primary-lighter: #c7d2fe;
+  --ifm-color-primary-lightest: #e0e7ff;
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.08);
+
+  /* Colores por nivel — más claros en dark mode */
+  --level-junior-color: #34d399;
+  --level-semi-color: #fbbf24;
+  --level-senior-color: #f87171;
+}
+
+/* Smooth theme transition */
+html {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Code blocks */
+.prism-code {
+  border-radius: 8px !important;
+}
+
+/* Admonitions */
+.alert {
+  border-radius: 8px !important;
 }

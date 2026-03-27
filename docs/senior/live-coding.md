@@ -14,6 +14,138 @@ En este nivel, el entrevistador espera que **anticipes los problemas** antes de 
 
 ---
 
+## Metodología de Approach para Live Coding
+
+Antes de escribir una sola línea de código, sigue este framework. El entrevistador evalúa **cómo piensas**, no solo si llegas a la solución.
+
+### Framework UREQ-CA
+
+| Paso | Qué hacer | Tiempo |
+|---|---|---|
+| **U**nderstand | Leer el problema 2 veces. Reformular en tus palabras. | 1-2 min |
+| **R**equirements | Preguntar sobre casos no especificados | 2-3 min |
+| **E**dge Cases | Listar inputs extremos antes de codear | 1-2 min |
+| **Q**uerys (API) | Definir la firma de la función/clase | 1 min |
+| **C**ode | Implementar la solución básica primero | 15-20 min |
+| **A**nalyze | Complejidad, mejoras, variantes | 3-5 min |
+
+### Preguntas de Clarificación a Hacer Siempre
+
+```text
+¿Cuál es el rango de valores de entrada? (¿puede ser negativo, nulo, vacío?)
+¿Cuántos elementos esperamos? (¿cabe en memoria? ¿necesito streaming?)
+¿Es single-threaded o multi-threaded? (¿necesito thread-safety?)
+¿Optimizamos para lecturas o escrituras?
+¿Hay restricciones de memoria?
+```
+
+### Cómo Hablar Mientras Codeas
+
+En entrevistas senior el silencio es tu enemigo. Usa este patrón:
+
+- **Antes de escribir**: "Voy a usar un `Dictionary` para O(1) lookup y una `LinkedList` para mantener el orden. Podría también usar un array pero penaliza las inserciones…"
+- **Mientras escribes**: "Aquí el `lock` es necesario porque si dos hilos llegan simultáneamente al check, ambos podrían pasar la condición…"
+- **Al terminar**: "Esta solución es O(n) tiempo y O(n) espacio. Podría optimizarse a O(log n) con un heap si el caso de uso lo requiere…"
+
+### Cuando No Sabes la Respuesta
+
+```text
+"No conozco la API exacta de memoria, pero lo implementaría de esta forma general…"
+"No recuerdo si Task.WhenAll propaga CancellationToken, déjame asumir que sí y lo verifico."
+"Conozco el concepto pero no la implementación en C# específicamente.
+ En Python lo haría con X. En C# sería análogo usando Y…"
+```
+
+**Lo que nunca debes hacer**: decir "No sé" y quedarte en silencio. Siempre muestra tu razonamiento incluso con información incompleta.
+
+### Trade-offs que Siempre Debes Mencionar Proactivamente
+
+```
+Consistency vs Availability    → ¿qué pasa si esto falla a mitad?
+Latencia vs Throughput         → ¿optimizamos p99 o requests/s?
+Simplicidad vs Escalabilidad   → ¿cuándo esto deja de funcionar?
+Memory vs CPU                  → ¿cuál es el cuello de botella?
+```
+
+---
+
+## Whiteboarding y Capacity Estimation
+
+Para ejercicios de diseño de sistemas en pizarra, usa estas herramientas base.
+
+### Template de 8 Pasos
+
+```
+1. CLARIFY     → ¿Qué features incluimos? ¿Cuántos usuarios? ¿Geo distribuido?
+2. ESTIMATE    → Tráfico (QPS), storage, ancho de banda
+3. API DESIGN  → Endpoints y contratos
+4. DATA MODEL  → Entidades, relaciones, índices clave
+5. HIGH LEVEL  → Diagrama de componentes
+6. DEEP DIVE   → El componente más crítico o el que el entrevistador elige
+7. SCALE       → ¿Qué falla primero? ¿Cómo lo escalamos?
+8. TRADE-OFFS  → ¿Qué sacrificamos? (Consistency vs Availability, etc.)
+```
+
+### Fórmulas de Estimación Rápida
+
+```
+DAU (usuarios activos diarios) = MAU × 0.3  (30% de mensuales son diarios)
+QPS                            = DAU × acciones_por_día / 86,400
+Peak QPS                       = QPS × 2–3x (factor de pico)
+Storage/año                    = DAU × tamaño_objeto × acciones/día × 365
+
+Tamaños típicos:
+  Tweet / mensaje corto  ≈  300 bytes
+  Foto comprimida        ≈  300 KB
+  Video 1 min (360p)     ≈  50 MB
+  Metadata de usuario    ≈  1 KB
+
+Conversiones útiles:
+  1 día   = 86,400 s  (≈ 10^5)
+  1 TB    = 10^12 bytes
+  1 PB    = 10^15 bytes
+```
+
+### Ejemplo: URL Shortener en 5 minutos
+
+```
+CLARIFY
+  - 100M URLs acortados por día
+  - Ratio lectura:escritura = 100:1
+  - URLs viven 5 años
+
+ESTIMATE
+  - Writes: 100M / 86400 ≈ 1,160 QPS  → Peak ~3,500 QPS
+  - Reads:  10B  / 86400 ≈ 115,740 QPS → Peak ~350,000 QPS
+  - Storage: 100M × 365 × 5 × 500B = ~90 TB en 5 años
+  - Bandwidth write: 3,500 × 500B = 1.75 MB/s
+  - Bandwidth read:  350,000 × 500B = 175 MB/s
+
+KEY DECISIONS
+  - Short code: Base62, 7 chars = 62^7 ≈ 3.5 trillones de combinaciones
+  - Generación: hash(URL)[0:7] con retry en colisión, o ID auto-incremental en Base62
+  - 350K QPS en lectura → cache agresivo (20% de URLs = 80% del tráfico → hit rate ~99%)
+
+ARQUITECTURA
+  ┌──────────┐  write   ┌─────────────┐    ┌──────────────┐
+  │  Client  │─────────►│  API Server │───►│   DB (SQL)   │
+  │          │  redirect│             │    │ shortId→url  │
+  │          │◄─────────│  + Redis    │◄───│              │
+  └──────────┘          └──────┬──────┘    └──────────────┘
+                               │
+                          ┌────▼────┐
+                          │   CDN   │ ← absorbe 80%+ del tráfico read
+                          └─────────┘
+
+TRADE-OFFS
+  - NoSQL vs SQL: NoSQL (DynamoDB) para sharding fácil. No necesitamos
+    transacciones aquí → vale la pena el scale horizontal.
+  - Eventual consistency en cache: si Redis devuelve URL desactualizada,
+    el redirect es incorrecto. Aceptable porque los URLs no cambian.
+```
+
+---
+
 ## Ejercicio 1: Circuit Breaker
 
 **Dificultad**: 🔴 Difícil  
@@ -1696,5 +1828,607 @@ public async Task<List<PedidoDto>> ObtenerConDapperAsync()
 - ¿Cómo detectarías N+1 en producción? (EF Core logging, MiniProfiler, Application Insights)
 - ¿Qué es lazy loading y por qué está deshabilitado por defecto en EF Core?
 - ¿Cómo cargarías datos paginados evitando traer todos los registros? (`Skip().Take()` antes del `ToListAsync()`)
+
+</details>
+
+---
+
+## Ejercicio 9: LRU Cache
+
+**Dificultad**: 🔴 Difícil
+**Tiempo estimado**: 25 minutos
+**Temas**: estructuras de datos, LinkedList, Dictionary, O(1) operations, thread-safety
+
+### Enunciado
+
+Implementa una caché **LRU (Least Recently Used)** genérica con:
+- `Get(key)`: retorna el valor si existe y actualiza su posición como "más reciente". Retorna `default` si no existe.
+- `Put(key, value)`: agrega o actualiza. Si la caché está llena, **evicta el elemento menos recientemente usado**
+- Ambas operaciones deben ser **O(1)**
+- Thread-safe
+
+**Ejemplo:**
+```csharp
+var cache = new LruCache<int, string>(capacity: 3);
+cache.Put(1, "uno");
+cache.Put(2, "dos");
+cache.Put(3, "tres");
+cache.Get(1);           // "uno" — 1 se vuelve el más reciente
+cache.Put(4, "cuatro"); // capacidad llena → evicta 2 (el menos reciente)
+cache.Get(2);           // null — fue evictado
+```
+
+### Pistas
+
+<details>
+<summary>Ver pista 1</summary>
+
+Para O(1) en ambas operaciones necesitas **dos estructuras combinadas**:
+- `Dictionary<TKey, LinkedListNode<...>>`: acceso O(1) por clave al nodo de la lista
+- `LinkedList<...>`: mantiene el orden de uso (head = más reciente, tail = menos reciente)
+
+Al hacer `Get`, mueves el nodo al head. Al hacer `Put` con capacidad llena, eliminas el nodo del tail.
+
+</details>
+
+<details>
+<summary>Ver pista 2</summary>
+
+Guarda en cada nodo de la LinkedList **tanto la clave como el valor**: `LinkedListNode<(TKey Key, TValue Value)>`. Necesitas la clave al evictar para poder eliminarla también del Dictionary en O(1).
+
+</details>
+
+### Solución
+
+<details>
+<summary>Ver solución completa</summary>
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+/// <summary>
+/// LRU Cache genérico con operaciones O(1).
+/// Internamente: Dictionary (lookup O(1)) + LinkedList (orden de uso O(1) insert/remove)
+/// Head = más reciente, Tail = candidato a evicción
+/// </summary>
+public class LruCache<TKey, TValue> where TKey : notnull
+{
+    private readonly int _capacidad;
+    private readonly Dictionary<TKey, LinkedListNode<(TKey Key, TValue Value)>> _mapa;
+    private readonly LinkedList<(TKey Key, TValue Value)> _lista;
+    private readonly object _lock = new();
+
+    public int Count    => _mapa.Count;
+    public int Capacity => _capacidad;
+
+    public LruCache(int capacity)
+    {
+        if (capacity <= 0) throw new ArgumentOutOfRangeException(nameof(capacity));
+        _capacidad = capacity;
+        _mapa  = new Dictionary<TKey, LinkedListNode<(TKey, TValue)>>(capacity);
+        _lista = new LinkedList<(TKey, TValue)>();
+    }
+
+    /// <summary>
+    /// Obtiene el valor. Marca el elemento como el más recientemente usado. O(1).
+    /// </summary>
+    public bool TryGet(TKey key, out TValue value)
+    {
+        lock (_lock)
+        {
+            if (!_mapa.TryGetValue(key, out var nodo))
+            {
+                value = default!;
+                return false;
+            }
+
+            // Mover al frente: accedido recientemente
+            _lista.Remove(nodo);
+            _lista.AddFirst(nodo);
+
+            value = nodo.Value.Value;
+            return true;
+        }
+    }
+
+    /// <summary>Acceso por método — retorna default si no existe.</summary>
+    public TValue? Get(TKey key) => TryGet(key, out var v) ? v : default;
+
+    /// <summary>
+    /// Inserta o actualiza. Si supera capacidad, evicta el LRU (tail). O(1).
+    /// </summary>
+    public void Put(TKey key, TValue value)
+    {
+        lock (_lock)
+        {
+            if (_mapa.TryGetValue(key, out var nodoExistente))
+            {
+                // Actualizar valor y mover al frente
+                _lista.Remove(nodoExistente);
+                _lista.AddFirst((key, value));
+                _mapa[key] = _lista.First!;
+                return;
+            }
+
+            // Evictar el menos reciente si se alcanzó la capacidad
+            if (_mapa.Count >= _capacidad)
+            {
+                var lru = _lista.Last!;       // Tail = LRU
+                _mapa.Remove(lru.Value.Key);  // Eliminar del mapa por la clave guardada en el nodo
+                _lista.RemoveLast();
+            }
+
+            // Insertar al frente (más reciente)
+            var nuevoNodo = _lista.AddFirst((key, value));
+            _mapa[key] = nuevoNodo;
+        }
+    }
+
+    /// <summary>Elimina una entrada explícitamente. O(1).</summary>
+    public bool Remove(TKey key)
+    {
+        lock (_lock)
+        {
+            if (!_mapa.TryGetValue(key, out var nodo)) return false;
+            _lista.Remove(nodo);
+            _mapa.Remove(key);
+            return true;
+        }
+    }
+
+    /// <summary>Retorna las claves en orden: más reciente primero.</summary>
+    public IEnumerable<TKey> GetKeysInOrder()
+    {
+        lock (_lock)
+        {
+            var snapshot = new List<TKey>(_lista.Count);
+            foreach (var item in _lista) snapshot.Add(item.Key);
+            return snapshot;
+        }
+    }
+}
+
+// ============================================================
+// Uso
+// ============================================================
+/*
+var cache = new LruCache<int, string>(capacity: 3);
+cache.Put(1, "uno");
+cache.Put(2, "dos");
+cache.Put(3, "tres");
+
+cache.Get(1);             // "uno" — 1 es ahora el más reciente
+cache.Put(4, "cuatro");   // evicta 2 (era el menos reciente)
+
+Console.WriteLine(cache.Get(2));  // null
+Console.WriteLine(cache.Get(3));  // "tres"
+Console.WriteLine(cache.Get(4));  // "cuatro"
+// Orden actual (más→menos reciente): 4 → 3 → 1
+*/
+```
+
+**Complejidad**: Get O(1), Put O(1), Remove O(1), Espacio O(capacidad)
+
+**Variantes a considerar en la entrevista:**
+- ¿Cómo implementarías **LFU** (Least Frequently Used)? (más complejo: mapa de frecuencias + lista de listas agrupadas por frecuencia — sigue siendo O(1) con la estructura correcta)
+- ¿Cómo agregarías **TTL por entrada**? (guardar `ExpiresAt` en el nodo; verificar en `Get`; una tarea de fondo limpia expirados)
+- ¿Por qué guardar la clave dentro del nodo de la LinkedList? (para poder eliminarla del Dictionary al evictar, sin una búsqueda inversa)
+- ¿Qué pasaría si usaras `SortedDictionary` en vez de LinkedList? (operaciones O(log n) en vez de O(1) para reordenar)
+- ¿Cuándo usarías `IMemoryCache` de ASP.NET Core vs implementación propia? (casi siempre `IMemoryCache` — la implementación propia solo para lógica de evicción muy específica)
+
+</details>
+
+---
+
+## Ejercicio 10: Retry con Exponential Backoff y Jitter
+
+**Dificultad**: 🔴 Difícil
+**Tiempo estimado**: 20 minutos
+**Temas**: resiliencia, patrones de distribución, async/await, distributed systems
+
+### Enunciado
+
+Implementa una política de **retry con exponential backoff + jitter** que:
+- Reintente hasta N veces cuando la operación lanza una excepción
+- El tiempo de espera sigue una progresión exponencial: `base × 2^intento`
+- Agrega **jitter** aleatorio para evitar el **thundering herd** (muchos clientes reintentando al mismo tiempo)
+- Solo reintente para excepciones "transitorias" (configurable por el caller)
+- Soporte `CancellationToken`
+- Invoque un callback opcional al reintentar (para logging)
+
+**Progresión esperada (DelayBase = 1s, JitterMax = 500ms):**
+```
+Intento 1 falla → espera ~1.0s + jitter aleatorio [0-500ms]
+Intento 2 falla → espera ~2.0s + jitter aleatorio [0-500ms]
+Intento 3 falla → espera ~4.0s + jitter aleatorio [0-500ms]
+Intento 4 falla → lanzar RetryExhaustedException
+```
+
+### Pistas
+
+<details>
+<summary>Ver pista 1</summary>
+
+La fórmula del backoff es: `delay = min(base * 2^intento, maxDelay)`.
+
+Para el **full jitter** (la estrategia más efectiva para distribuir la carga): en vez de agregar jitter al backoff, hazlo aleatorio entre `0` y el backoff calculado: `delay = random(0, min(base * 2^intento, maxDelay))`. Esto reduce la carga en el servidor de forma más uniforme que añadir jitter fijo.
+
+</details>
+
+<details>
+<summary>Ver pista 2</summary>
+
+Para filtrar excepciones retriables, acepta un `Func<Exception, bool> esTransitoria` en la configuración. El caller decide: `ex => ex is HttpRequestException or TimeoutException`. Importante: nunca reintentar `OperationCanceledException`.
+
+</details>
+
+### Solución
+
+<details>
+<summary>Ver solución completa</summary>
+
+```csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class RetryOptions
+{
+    /// <summary>Número máximo de intentos (incluyendo el primero).</summary>
+    public int MaxIntentos { get; init; } = 3;
+
+    /// <summary>Delay base para el backoff exponencial.</summary>
+    public TimeSpan DelayBase { get; init; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>Cap máximo del delay entre reintentos.</summary>
+    public TimeSpan DelayMaximo { get; init; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// Determina si una excepción es transitoria y merece retry.
+    /// Por defecto, todas las excepciones son retriables (salvo OperationCanceled).
+    /// </summary>
+    public Func<Exception, bool> EsTransitoria { get; init; } = _ => true;
+
+    /// <summary>Callback al reintentar: (excepción, número de intento, delay calculado).</summary>
+    public Func<Exception, int, TimeSpan, Task>? OnReintento { get; init; }
+}
+
+public class RetryExhaustedException : Exception
+{
+    public int TotalIntentos { get; }
+
+    public RetryExhaustedException(int intentos, Exception inner)
+        : base($"Operación falló después de {intentos} intentos: {inner.Message}", inner)
+        => TotalIntentos = intentos;
+}
+
+public static class RetryPolicy
+{
+    // Thread-safe: Random.Shared es seguro en .NET 6+
+    private static readonly Random _rng = Random.Shared;
+
+    /// <summary>
+    /// Ejecuta la operación con reintentos exponenciales + full jitter.
+    /// </summary>
+    public static async Task<T> EjecutarAsync<T>(
+        Func<CancellationToken, Task<T>> operacion,
+        RetryOptions? opciones = null,
+        CancellationToken ct = default)
+    {
+        var opts = opciones ?? new RetryOptions();
+        Exception? ultimaEx = null;
+
+        for (int intento = 0; intento < opts.MaxIntentos; intento++)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            try
+            {
+                return await operacion(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                throw; // Nunca reintentar cancelaciones
+            }
+            catch (Exception ex) when (opts.EsTransitoria(ex))
+            {
+                ultimaEx = ex;
+
+                // En el último intento no esperar, lanzar directamente
+                if (intento == opts.MaxIntentos - 1) break;
+
+                var delay = CalcularDelay(intento, opts);
+
+                if (opts.OnReintento != null)
+                    await opts.OnReintento(ex, intento + 1, delay);
+
+                await Task.Delay(delay, ct);
+            }
+        }
+
+        throw new RetryExhaustedException(opts.MaxIntentos, ultimaEx!);
+    }
+
+    /// <summary>Sobrecarga sin valor de retorno.</summary>
+    public static Task EjecutarAsync(
+        Func<CancellationToken, Task> operacion,
+        RetryOptions? opciones = null,
+        CancellationToken ct = default)
+        => EjecutarAsync(async c => { await operacion(c); return 0; }, opciones, ct);
+
+    // Full jitter: aleatorio entre 0 y el backoff exponencial con cap
+    // Distribuye mejor la carga que jitter fijo (ver paper AWS "Exponential Backoff and Jitter")
+    private static TimeSpan CalcularDelay(int intento, RetryOptions opts)
+    {
+        double maxMs = Math.Min(
+            opts.DelayBase.TotalMilliseconds * Math.Pow(2, intento),
+            opts.DelayMaximo.TotalMilliseconds
+        );
+        return TimeSpan.FromMilliseconds(_rng.NextDouble() * maxMs);
+    }
+}
+
+// ============================================================
+// Uso
+// ============================================================
+/*
+var resultado = await RetryPolicy.EjecutarAsync(
+    async ct => await httpClient.GetStringAsync("https://api.externa.com/datos", ct),
+    new RetryOptions
+    {
+        MaxIntentos = 4,
+        DelayBase   = TimeSpan.FromSeconds(1),
+        DelayMaximo = TimeSpan.FromSeconds(15),
+        EsTransitoria = ex => ex is HttpRequestException or TaskCanceledException,
+        OnReintento = async (ex, intento, delay) =>
+        {
+            logger.LogWarning(ex, "Intento {N} fallido. Reintentando en {Ms}ms",
+                intento, delay.TotalMilliseconds);
+            await Task.CompletedTask;
+        }
+    },
+    cancellationToken
+);
+
+// En producción: Polly v8 / Microsoft.Extensions.Resilience
+// hace todo esto con una línea + integración con DI y métricas:
+services.AddResiliencePipeline("http-retry", builder =>
+    builder.AddRetry(new RetryStrategyOptions
+    {
+        MaxRetryAttempts = 4,
+        BackoffType      = DelayBackoffType.Exponential,
+        UseJitter        = true,
+        Delay            = TimeSpan.FromSeconds(1),
+    })
+);
+*/
+```
+
+**Complejidad**: O(1) por intento. Tiempo total worst-case: suma de backoffs ≈ O(2^n × base)
+
+**Variantes a considerar en la entrevista:**
+- ¿Cuál es la diferencia entre **full jitter** y **equal jitter**? (full: `random(0, delay)` — mejor distribución; equal: `delay/2 + random(0, delay/2)` — garantiza un mínimo de espera)
+- ¿Por qué el jitter es crítico en sistemas distribuidos? (**thundering herd**: sin jitter, 1000 clientes que fallaron al mismo tiempo reintentan al mismo segundo cuando el servidor se recupera, volviendo a colapsarlo)
+- ¿Cuándo **no** debes reintentar? (errores 4xx excepto 429, errores de validación, operaciones no idempotentes como `POST /pagar` sin idempotency key)
+- ¿Cómo combinas Retry con Circuit Breaker? (Retry dentro, Circuit Breaker por fuera — el CB evita intentar cuando el servicio claramente está caído)
+- ¿`Random.Shared` vs `new Random()`? (`.Shared` es thread-safe desde .NET 6 — `new Random()` sin semilla podría generar la misma secuencia en hilos que arrancan al mismo tiempo)
+
+</details>
+
+---
+
+## Ejercicio 11: Custom Hook — useAsync
+
+**Dificultad**: 🟡 Media
+**Tiempo estimado**: 20 minutos
+**Temas**: React hooks, TypeScript generics, useReducer, AbortController, lifecycle
+
+### Enunciado
+
+Implementa un hook `useAsync<T>` que encapsule el patrón de **llamadas asíncronas** en React con:
+- Estado tipado: `'idle' | 'loading' | 'success' | 'error'`
+- Cancelación al desmontar el componente con `AbortController`
+- Sin `setState` sobre componentes ya desmontados
+- Modo **automático** (se ejecuta al montar y al cambiar dependencias)
+- Modo **lazy** (se ejecuta solo al llamar a `execute()` manualmente)
+
+**API esperada:**
+```typescript
+// Modo automático
+const { data, isLoading, isError } = useAsync(
+  (signal) => fetchUser(userId, signal),
+  [userId]
+);
+
+// Modo lazy (submit de formulario)
+const { execute, isLoading, isSuccess } = useAsync(
+  (signal) => submitForm(data, signal),
+  [],
+  { lazy: true }
+);
+```
+
+### Pistas
+
+<details>
+<summary>Ver pista 1</summary>
+
+Usa `useReducer` en vez de múltiples `useState` para los estados de la llamada. Si usas tres `useState` separados (`loading`, `data`, `error`), React puede renderizar estados intermedios inconsistentes (ej: `loading=false, data=undefined` durante la transición). Un reducer garantiza que el estado cambia de forma atómica.
+
+</details>
+
+<details>
+<summary>Ver pista 2</summary>
+
+Crea un `AbortController` **dentro** del `useEffect`. En el cleanup (`return () => controller.abort()`), cancela la llamada cuando el componente se desmonta o cuando cambian las dependencias. En la promesa, atrapa el `AbortError` y no lo trates como error real.
+
+</details>
+
+### Solución
+
+<details>
+<summary>Ver solución completa</summary>
+
+```typescript
+import { useReducer, useEffect, useCallback, useRef } from 'react';
+
+// ============================================================
+// TIPOS
+// ============================================================
+type AsyncStatus = 'idle' | 'loading' | 'success' | 'error';
+
+interface AsyncState<T> {
+  status: AsyncStatus;
+  data: T | undefined;
+  error: Error | undefined;
+}
+
+type AsyncAction<T> =
+  | { type: 'LOADING' }
+  | { type: 'SUCCESS'; payload: T }
+  | { type: 'ERROR'; payload: Error }
+  | { type: 'RESET' };
+
+interface UseAsyncOptions {
+  lazy?: boolean;
+}
+
+interface UseAsyncResult<T> extends AsyncState<T> {
+  execute: () => void;
+  reset: () => void;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+}
+
+// ============================================================
+// REDUCER — transiciones atómicas de estado
+// ============================================================
+function asyncReducer<T>(state: AsyncState<T>, action: AsyncAction<T>): AsyncState<T> {
+  switch (action.type) {
+    case 'LOADING': return { status: 'loading', data: undefined, error: undefined };
+    case 'SUCCESS': return { status: 'success', data: action.payload, error: undefined };
+    case 'ERROR':   return { status: 'error',   data: undefined, error: action.payload };
+    case 'RESET':   return { status: 'idle',    data: undefined, error: undefined };
+    default:        return state;
+  }
+}
+
+const initialState = { status: 'idle' as AsyncStatus, data: undefined, error: undefined };
+
+// ============================================================
+// HOOK
+// ============================================================
+export function useAsync<T>(
+  asyncFn: (signal: AbortSignal) => Promise<T>,
+  deps: React.DependencyList = [],
+  options: UseAsyncOptions = {}
+): UseAsyncResult<T> {
+  const { lazy = false } = options;
+
+  const [state, dispatch] = useReducer(
+    asyncReducer as React.Reducer<AsyncState<T>, AsyncAction<T>>,
+    initialState as AsyncState<T>
+  );
+
+  // Ref para saber si el componente sigue montado
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  // Función de ejecución — retorna el controller para que useEffect pueda cancelar
+  const execute = useCallback((): AbortController => {
+    const controller = new AbortController();
+    dispatch({ type: 'LOADING' });
+
+    asyncFn(controller.signal)
+      .then((data) => {
+        if (mountedRef.current && !controller.signal.aborted)
+          dispatch({ type: 'SUCCESS', payload: data });
+      })
+      .catch((error: Error) => {
+        if (error.name === 'AbortError') return; // Cancelación intencional — no es error
+        if (mountedRef.current)
+          dispatch({ type: 'ERROR', payload: error });
+      });
+
+    return controller;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
+  // Ejecución automática al montar / cambiar deps (si no es lazy)
+  useEffect(() => {
+    if (lazy) return;
+    const controller = execute();
+    return () => controller.abort(); // Cancelar si el componente desmonta o deps cambian
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lazy, ...deps]);
+
+  const reset = useCallback(() => dispatch({ type: 'RESET' }), []);
+
+  return {
+    ...state,
+    execute: () => execute(),
+    reset,
+    isLoading: state.status === 'loading',
+    isSuccess: state.status === 'success',
+    isError:   state.status === 'error',
+  };
+}
+
+// ============================================================
+// Uso — Modo automático
+// ============================================================
+/*
+function PerfilUsuario({ userId }: { userId: number }) {
+  const { data: user, isLoading, isError, error } = useAsync(
+    (signal) => fetch(`/api/usuarios/${userId}`, { signal }).then(r => r.json()),
+    [userId]
+  );
+
+  if (isLoading) return <Spinner />;
+  if (isError)   return <p>Error: {error?.message}</p>;
+  return <div>{user?.nombre}</div>;
+}
+
+// ============================================================
+// Uso — Modo lazy (submit)
+// ============================================================
+function FormularioPedido() {
+  const [formData, setFormData] = useState({ ... });
+
+  const { execute: enviar, isLoading, isSuccess } = useAsync(
+    (signal) => fetch('/api/pedidos', {
+      method: 'POST',
+      body: JSON.stringify(formData),
+      signal,
+    }).then(r => r.json()),
+    [],
+    { lazy: true }
+  );
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); enviar(); }}>
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Enviando...' : 'Crear Pedido'}
+      </button>
+      {isSuccess && <p>¡Pedido creado exitosamente!</p>}
+    </form>
+  );
+}
+*/
+```
+
+**Complejidad**: O(1) por render, el estado se actualiza en transiciones atómicas
+
+**Variantes a considerar en la entrevista:**
+- ¿Por qué `useReducer` en vez de múltiples `useState`? (evita renders con estado inconsistente: con useState separados puedes renderizar `data=undefined, loading=false` entre el `setLoading(false)` y el `setData(result)`)
+- ¿Qué problema resuelve el `AbortController`? (en React 18 Strict Mode, los effects se montan/desmontan dos veces en desarrollo — sin cancelación, la segunda llamada sobreescribe la primera; en producción evita memory leaks y setState sobre componentes desmontados)
+- ¿Por qué pasar `AbortSignal` a `asyncFn` en vez de cancelar internamente? (el hook no sabe si la función usa fetch, axios, o algo custom — el caller decide cómo propagar la señal)
+- ¿Cuándo usarías React Query en vez de este hook? (cuando necesitas caché entre componentes, deduplicación de requests, revalidación en foco, optimistic updates, o sincronización entre pestañas)
+- ¿Cómo agregarías soporte para reintentos automáticos? (contador de reintentos en el reducer; en el catch, si no es `AbortError` y `intentos < maxReintentos`, volver a llamar `asyncFn`)
 
 </details>

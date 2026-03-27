@@ -285,6 +285,298 @@ app.UseExceptionHandler(errorApp =>
 
 ---
 
+## Structured Logging con Serilog
+
+Serilog es superior al logging por defecto: propiedades contextuales, múltiples sinks, estructura JSON.
+
+```csharp
+// appsettings.json
+{
+  "Serilog": {
+    "MinimumLevel": "Information",
+    "WriteTo": [
+      {
+        "Name": "Console"
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "logs/api-.txt",
+          "rollingInterval": "Day",
+          "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+        }
+      },
+      {
+        "Name": "Seq",
+        "Args": {
+          "serverUrl": "http://localhost:5341"
+        }
+      }
+    ],
+    "Enrich": [
+      "FromLogContext",
+      "WithMachineName",
+      "WithThreadId",
+      "WithProperty"
+    ]
+  }
+}
+
+// Program.cs
+builder.Host.UseSerilog((context, config) =>
+{
+    config
+        .MinimumLevel.Is(LogEventLevel.Information)
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+        .MinimumLevel.Override("System", LogEventLevel.Warning)
+        .WriteTo.Console()
+        .WriteTo.File("logs/app-.txt", rollingInterval: RollingInterval.Day)
+        .Enrich.FromLogContext()
+        .Enrich.WithMachineName()
+        .Enrich.WithProperty("Application", "MiApi")
+        .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
+});
+
+// En servicios: context variables
+public class ProductoService
+{
+    private readonly ILogger<ProductoService> _logger;
+    
+    public async Task<Producto> CrearAsync(CrearProductoDto dto)
+    {
+        using (_logger.BeginScope(new Dictionary<string, object>
+        {
+            { "UsuarioId", usuarioId },
+            { "OperationType", "CrearProducto" },
+            { "Timestamp", DateTime.UtcNow }
+        }))
+        {
+            _logger.LogInformation("Creando producto: {@Producto}", dto);
+            
+            try
+            {
+                var producto = new Producto { /* ... */ };
+                await _db.Productos.AddAsync(producto);
+                await _db.SaveChangesAsync();
+                
+                _logger.LogInformation("Producto creado: {ProductoId}", producto.Id);
+                return producto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al crear producto. {@Dto}", dto);
+                throw;
+            }
+        }
+    }
+}
+
+// Resultado JSON en Seq:
+// {
+//   "Timestamp": "2024-03-27T10:30:45.123Z",
+//   "Level": "Information",
+//   "MessageTemplate": "Creando producto: {@Producto}",
+//   "Properties": {
+//     "Producto": { "nombre": "Laptop", "precio": 1000 },
+//     "UsuarioId": 5,
+//     "OperationType": "CrearProducto",
+//     "Application": "MiApi"
+//   }
+// }
+```
+
+---
+
+## Filtros (Filters)
+
+Los filtros interceptan requests/responses en puntos específicos del pipeline.
+
+### ActionFilter
+
+```csharp
+// Ejecuta antes y después de la acción
+
+public class ValidarModeloFilter : IAsyncActionFilter
+{
+    private readonly ILogger<ValidarModeloFilter> _logger;
+    
+    public ValidarModeloFilter(ILogger<ValidarModeloFilter> logger)
+    {
+        _logger = logger;
+    }
+    
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    {
+        // ANTES de la acción
+        if (!context.ModelState.IsValid)
+        {
+            _logger.LogWarning("Modelo inválido: {@Errors}", context.ModelState);
+            context.Result = new BadRequestObjectResult(new
+            {
+                errors = context.ModelState.Values.SelectMany(v => v.Errors)
+            });
+            return;
+        }
+        
+        // DURANTE: ejecutar la acción
+        var resultContext = await next();
+        
+        // DESPUÉS de la acción
+        if (resultContext.Exception == null)
+        {
+            _logger.LogInformation("Acción completada exitosamente");
+        }
+    }
+}
+
+// Registrar en Program.cs
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidarModeloFilter>();
+});
+
+// O aplicar a controlador/acción específica
+[ServiceFilter(typeof(ValidarModeloFilter))]
+[HttpPost("productos")]
+public async Task<IActionResult> CrearProducto(CrearProductoDto dto) { }
+```
+
+### ExceptionFilter
+
+```csharp
+// Captura excepciones específicas
+
+public class ApiExceptionFilter : IAsyncExceptionFilter
+{
+    private readonly ILogger<ApiExceptionFilter> _logger;
+    
+    public ApiExceptionFilter(ILogger<ApiExceptionFilter> logger)
+    {
+        _logger = logger;
+    }
+    
+    public Task OnExceptionAsync(ExceptionContext context)
+    {
+        var exception = context.Exception;
+        
+        var (statusCode, mensaje) = exception switch
+        {
+            NotFoundException notFound => (StatusCodes.Status404NotFound, notFound.Message),
+            ValidationException validation => (StatusCodes.Status400BadRequest, validation.Message),
+            UnauthorizedException unauthorized => (StatusCodes.Status401Unauthorized, unauthorized.Message),
+            ConflictException conflict => (StatusCodes.Status409Conflict, conflict.Message),
+            _ => (StatusCodes.Status500InternalServerError, "Error interno del servidor")
+        };
+        
+        _logger.LogError(exception, "Exception: {@Exception}", new
+        {
+            Type = exception.GetType().Name,
+            Message = exception.Message,
+            StatusCode = statusCode
+        });
+        
+        context.Result = new ObjectResult(new
+        {
+            error = mensaje,
+            traceId = context.HttpContext.TraceIdentifier
+        })
+        {
+            StatusCode = statusCode
+        };
+        
+        context.ExceptionHandled = true;
+        return Task.CompletedTask;
+    }
+}
+
+// Registrar
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ApiExceptionFilter>();
+});
+```
+
+### ResourceFilter
+
+```csharp
+// Ejecuta ANTES de binding y DESPUÉS de result execution
+
+public class LogRequestResponseFilter : IAsyncResourceFilter
+{
+    private readonly ILogger<LogRequestResponseFilter> _logger;
+    
+    public async Task OnResourceExecutionAsync(ResourceExecutingContext context, ResourceExecutionDelegate next)
+    {
+        var request = context.HttpContext.Request;
+        
+        // ANTES
+        var body = "";
+        if (request.Method != "GET")
+        {
+            request.EnableBuffering();
+            body = await new StreamReader(request.Body).ReadToEndAsync();
+            request.Body.Position = 0;
+        }
+        
+        _logger.LogInformation("Request: {Method} {Path}\nBody: {Body}",
+            request.Method, request.Path, body);
+        
+        // DURANTE
+        var resultContext = await next();
+        
+        // DESPUÉS
+        _logger.LogInformation("Response: {StatusCode}", resultContext.HttpContext.Response.StatusCode);
+    }
+}
+```
+
+---
+
+## Validación FluentValidation
+
+```csharp
+// Más flexible que DataAnnotations
+
+public class CrearProductoValidator : AbstractValidator<CrearProductoDto>
+{
+    private readonly AppDbContext _db;
+    
+    public CrearProductoValidator(AppDbContext db)
+    {
+        _db = db;
+        
+        RuleFor(p => p.Nombre)
+            .NotEmpty().WithMessage("El nombre es requerido")
+            .Length(3, 100).WithMessage("El nombre debe tener 3-100 caracteres");
+        
+        RuleFor(p => p.Precio)
+            .GreaterThan(0).WithMessage("El precio debe ser mayor a 0");
+        
+        RuleFor(p => p.CategoriaId)
+            .NotEmpty()
+            .MustAsync(async (id, ct) =>
+            {
+                return await _db.Categorias.AnyAsync(c => c.Id == id, ct);
+            }).WithMessage("La categoría no existe");
+    }
+}
+
+// Registrar
+builder.Services.AddFluentValidation(fv =>
+    fv.RegisterValidatorsFromAssemblyContaining<Program>());
+
+// En controlador: ASP.NET Core valida automáticamente
+[HttpPost]
+public async Task<IActionResult> Crear([FromBody] CrearProductoDto dto)
+{
+    // dto ya fue validado, ModelState.IsValid == true
+    var producto = await _service.CrearAsync(dto);
+    return CreatedAtAction(nameof(GetById), new { id = producto.Id }, producto);
+}
+```
+
+---
+
 ## Preguntas frecuentes de entrevista 🎯
 
 **1. ¿Qué es el middleware y cómo funciona el pipeline?**

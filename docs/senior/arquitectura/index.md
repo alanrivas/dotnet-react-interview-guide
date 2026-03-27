@@ -34,12 +34,12 @@ Esta sección está organizada en profundidad progresiva de temas:
 ### Tópicos Relacionados
 
 También tenemos secciones complementarias en el sitio:
-- 📊 [System Design](../system-design/) — Diseño de sistemas escalables
-- 🔌 [Event-Driven Architecture](../event-driven/) — Arquitectura basada en eventos
-- 🐳 [Microservicios](../microservicios/) — Arquitectura de microservicios profunda
-- 🔒 [Seguridad](../seguridad/) — Principios de seguridad arquitectónica
-- ⚡ [Performance](../performance/) — Optimización y rendimiento
-- 📈 [Escalabilidad BD](../escalabilidad-bd/) — Escalado de datos
+- 📊 [System Design](../system-design/index.md) — Diseño de sistemas escalables
+- 🔌 [Event-Driven Architecture](../event-driven/index.md) — Arquitectura basada en eventos
+- 🐳 [Microservicios](../microservicios/index.md) — Arquitectura de microservicios profunda
+- 🔒 [Seguridad](../seguridad/index.md) — Principios de seguridad arquitectónica
+- ⚡ [Performance](../performance/index.md) — Optimización y rendimiento
+- 📈 [Escalabilidad BD](../escalabilidad-bd/index.md) — Escalado de datos
 
 ---
 

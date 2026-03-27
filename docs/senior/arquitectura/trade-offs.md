@@ -327,6 +327,324 @@ Necesitábamos elegir base de datos para nuevo servicio de reportes.
 
 ---
 
+## Decisiones Difíciles: Cuando No Hay Respuesta Clara
+
+### Caso 1: ¿Esperar o Reescribir?
+
+```
+SITUACIÓN:
+Sistema en producción, 2M usuarios.
+Performance degrada (500ms → 2s).
+Equipo discute: ¿Optimizar actual o reescribir?
+
+OPCIÓN A: OPTIMIZAR (Quick wins)
+├─ Tiempo: 2-4 semanas
+├─ Riesgo: Bajo
+├─ Resultado: Maybe 30% improvement
+├─ Costo: $50K
+└─ Futuro: Problema vuelve en 6 meses
+
+OPCIÓN B: REFACTOR GRADUAL (Strangler Fig)
+├─ Tiempo: 3-6 meses
+├─ Riesgo: Medio
+├─ Resultado: 70% improvement + mantenible
+├─ Costo: $150K
+└─ Futuro: Problema resuelto por años
+
+OPCIÓN C: REESCRIBIR (Full rewrite)
+├─ Tiempo: 6-12 meses
+├─ Riesgo: Alto (downtime posible)
+├─ Resultado: 95% improvement
+├─ Costo: $500K+
+└─ Futuro: Tech debt reset
+
+DECISIÓN FRAMEWORK:
+├─ Timeline crítico? (< 3 meses)
+│  └─ SÍ: Opción A (optimizar rápido)
+├─ Hay recursos? (3-6 meses disponibles)
+│  └─ SÍ: Opción B (refactor gradual) ← MEJOR
+├─ Equipo nuevo + presupuesto ilimitado?
+│  └─ SÍ: Opción C (rewrite)
+└─ Else: Opción A + plan B en roadmap
+```
+
+### Caso 2: ¿Monolito Creciente o Microservicios?
+
+```
+SITUACIÓN:
+Startup con $5M Serie A.
+Monolito está a 200 RPS (limit ~500 RPS).
+CTO dice: "Hagamos microservicios"
+CFO dice: "Demasiado operacional, monolito cuesta menos"
+
+MATRIZ DECISIÓN:
+
+                   Monolito Modular    Microservicios
+Velocidad dev      ✅ Rápido           ⚠️ Medio
+Escalabilidad      ⚠️ 1000 RPS max     ✅ Ilimitado
+Costo infra        ✅ $5K/mes          ⚠️ $50K+/mes
+Complejidad ops    ✅ Simple           ❌ Compleja
+Equipos autónomos  ⚠️ Difícil          ✅ Fácil
+Time to market     ✅ Breve            ❌ Largo
+
+SCORE MONOLITO MODULAR: 4/5
+SCORE MICROSERVICIOS:  2.5/5 (operacional es problema)
+
+DECISIÓN: MONOLITO MODULAR
+├─ Equipo <30 personas? Modular suficiente
+├─ Llega a 1000 RPS? Plan B para microservicios
+├─ Si Series B cambia requisitos, refactor
+└─ Reavalu anualmente
+```
+
+### Caso 3: ¿Esperar a la BD "CORRECTA" o Pragmático?
+
+```
+SITUACIÓN:
+Necesitas store documents (user profiles, settings).
+Opciones:
+1. PostgreSQL JSONB (pragmático)
+2. MongoDB (flexible)
+3. Elasticsearch (searchable)
+
+ANÁLISIS:
+Size: 10M documents, queries simple
+Performance: < 100ms SLA
+
+├─ PostgreSQL JSONB
+│  ├─ Familiar al team
+│  ├─ ACID transactions
+│  ├─ JSONB indexing
+│  ├─ Suficiente para queries
+│  └─ ✅ GANADOR (pragmático)
+
+├─ MongoDB
+│  ├─ Flexible schema
+│  ├─ Pero team no know ops
+│  ├─ Eventual consistency adds complexity
+│  └─ ❌ Overhead innecesario
+
+└─ Elasticsearch
+   ├─ Full-text search = overkill
+   ├─ Costo operacional alto
+   └─ ❌ Premature optimization
+
+PRINCIPIO: "Elige la tecnología más SIMPLE que resuelve"
+           PostgreSQL JSONB es suficiente hoy.
+           Si necesitas ES search, agrega después.
+```
+
+---
+
+## Framework de Evaluación: RICE Scoring
+
+Para elegir entre múltiples opciones arquitectónicas:
+
+```
+RICE = (Reach × Impact × Confidence) / Effort
+
+REACH:      Cuántos usuarios afectados (1-10 scale)
+IMPACT:     Beneficio por usuario (1-10 scale)
+CONFIDENCE: Qué tan seguro estás (10-100%)
+EFFORT:    Meses de desarrollo (1-100)
+
+EJEMPLO: Elegir entre 3 arquitecturas
+
+OPCIÓN A: Monolito modular
+├─ Reach: 8 (afecta a todo)
+├─ Impact: 7 (mejora dev speed)
+├─ Confidence: 95%
+├─ Effort: 3 meses
+└─ RICE = (8 × 7 × 0.95) / 3 = 17.7
+
+OPCIÓN B: Microservicios
+├─ Reach: 10 (todo puede escalar)
+├─ Impact: 9 (escalabilidad ilimitada)
+├─ Confidence: 60% (riesgo operators)
+├─ Effort: 12 meses
+└─ RICE = (10 × 9 × 0.60) / 12 = 4.5
+
+OPCIÓN C: Refactor gradual + cache
+├─ Reach: 9 (performance global)
+├─ Impact: 8 (rápido + sostenible)
+├─ Confidence: 90%
+├─ Effort: 6 meses
+└─ RICE = (9 × 8 × 0.90) / 6 = 10.8
+
+RANKING: A (17.7) > C (10.8) > B (4.5)
+DECISIÓN: Opción A (Monolito modular)
+          Reevalúa B en 6 meses si escala lo requiere
+```
+
+---
+
+## Matriz: Compatibilidad de Decisiones
+
+Cuando cambias 1 decisión, afecta otras:
+
+```
+Si eliges:        Implica:
+───────────────────────────────────────────
+MICROSERVICIOS  → ✅ Asincrónico vs Sincrónico
+                → ✅ Múltiples DBs posible
+                → ✅ Message broker (Kafka/RabbitMQ)
+                → ✅ Distributed tracing
+                → ✅ Circuit breakers + resilience
+                → ❌ Monolito puro
+
+EVENT-DRIVEN    → ✅ Eventual consistency
+                → ✅ CQRS (si read models needed)
+                → ✅ Asincrónico
+                → ✅ Event log/sourcing
+                → ✅ Multiple subscribers
+
+CONSISTENCIA    → ✅ Sincrónico
+FUERTE          → ✅ Transacciones ACID
+                → ✅ SQL databases
+                → ❌ Alta escalabilidad horizontal
+                → ❌ Event-driven simple
+
+CACHE HEAVY     → ✅ Multi-tier (CDN → Redis → L1)
+                → ✅ Invalidation strategy
+                → ✅ Monitoring stale data
+                → ❌ Código sencillo (complejidad de invalidación)
+
+SERVERLESS      → ✅ Asincrónico
+                → ✅ Stateless
+                → ✅ Económico para spiky traffic
+                → ❌ Cold starts (latency)
+                → ❌ Debugging complejo
+```
+
+---
+
+## Análisis de Riesgo: 2x2 Matrix
+
+Evalúa opciones por impacto vs probabilidad:
+
+```
+                HIGH IMPACT
+                    ↑
+        │           │           │
+        │  MITIGATE │ AVOID     │
+        │           │           │
+────────┼───────────┼───────────┼────→ PROBABILITY
+        │ ACCEPT    │ MONITOR   │
+        │           │           │
+        │           ↓           │
+                LOW IMPACT
+
+EJEMPLOS:
+
+OPCIÓN A: Monolito modular
+├─ Risk: Escalabilidad limitada en 2 años
+├─ Impact: High (need rewrite)
+├─ Probability: Medium (may not scale that much)
+├─ Position: "MONITOR + Plan B"
+└─ Mitigation: Anual review, DDD limits
+
+
+OPCIÓN B: Premature microservicios
+├─ Risk: Operational complexity
+├─ Impact: High (team productivity ↓)
+├─ Probability: High (proven con small teams)
+├─ Position: "AVOID"
+└─ Reason: Not needed yet
+
+
+OPCIÓN C: No cache
+├─ Risk: Performance degradation
+├─ Impact: High (users leave)
+├─ Probability: High (at 100K+ users)
+├─ Position: "MITIGATE"
+└─ Action: Implement Redis now
+
+
+OPCIÓN D: Synchronous everywhere
+├─ Risk: Cascading failures
+├─ Impact: High (whole system down)
+├─ Probability: High (network happens)
+├─ Position: "MITIGATE + AVOID"
+├─ Action: Circuit breakers, timeouts, retries
+└─ Alternative: Async critical paths
+```
+
+---
+
+## Revisión Periódica de Decisiones
+
+Arquitectura NO es set-and-forget:
+
+```
+Q1: "Está funcionando como esperado?"
+├─ Métrica 1: Performance (p95 latency)
+├─ Métrica 2: Throughput (RPS)
+├─ Métrica 3: Errors (error rate)
+├─ Métrica 4: Team velocity (features/sprint)
+└─ Métrica 5: Operational load (incidents/week)
+
+Q2: "Cambiaron los requisitos?"
+├─ Usuario count: 10K → 100K? (10x)
+├─ Traffic pattern: Steady → Spiky?
+├─ Dominio: Más complejo?
+├─ Equipo: Creció?
+└─ Si sí a alguno: Reevalúa
+
+Q3: "Qué salió mal vs plan?"
+├─ Performance worse than expected?
+├─ Operacional más complex?
+├─ Costs higher?
+├─ Team struggling?
+└─ Aprender + documento ADR por qué
+
+Q4: "Estamos listos para next step?"
+├─ Escala actual: 
+
+Próximo nivel?
+├─ Complejidad: Monolito → Modular?
+├─ Datos: SQL → SQL + NoSQL?
+├─ Async: Agregar mensajes?
+└─ Plan: 6-12 meses forward roadmap
+```
+
+### Revisión Template
+
+```markdown
+# Revisión Arquitectónica - Q2 2026
+
+## Summary
+- Current architecture: Monolito modular
+- Status: ✅ Performing well
+- Issue: P95 latency creeping up (45ms → 120ms)
+
+## Metrics
+| Métrica | Target | Actual | Status |
+|---------|--------|--------|--------|
+| P95 Latency | <100ms | 120ms | ⚠️ MISS |
+| Error Rate | <1% | 0.8% | ✅ OK |
+| Team velocity | 15 pts | 14 pts | ✅ OK |
+| Incidents | <1/week | 0 | ✅ OK |
+
+## Root Cause (P95 Latency)
+- Users: 50K → 150K (3x growth)
+- DB queries not indexed properly
+- Cache not utilized
+
+## Solution
+1. Add 3 compound indexes (1 week)
+2. Add Redis layer (2 weeks)
+3. Monitor (ongoing)
+
+## Decision
+Continue with monolito modular.
+Reevaluate microservicios if scales to 500K+
+
+## Next Review
+Q4 2026
+```
+
+---
+
 ## Resumen: Matriz de decisión rápida
 
 | Escala | Monolito | Async | DB | Cache | Microservicios |
@@ -336,4 +654,32 @@ Necesitábamos elegir base de datos para nuevo servicio de reportes.
 | **Scale** | CQRS | ✅ | SQL + NoSQL | ✅ | ✅ Evaluar |
 | **Enterprise** | Modular | ✅ | Múltiples | ✅ | ✅ |
 
-**Última actualización:** 2026-03-27
+---
+
+## Preguntas Entrevista: Trade-offs Complejos
+
+1. **"Tienes 1M usuarios, la latencia es 2s. ¿Qué haces?"**
+   - Framework: Analizar, buscar bottleneck (DB? API?)
+   - Opciones: Cache, índices, refactor, microservicios
+   - Justificar: Por qué eliges una solución
+
+2. **"Tu startup tiene presupuesto $100K pero 10M de potencial. ¿Arquitectura?"**
+   - Startup: Monolito modular
+   - Cash: Simple infra, 1 DB
+   - Plan: Crecimiento sin rewrite
+
+3. **"¿Cuándo cambiarias SQL a NoSQL?"**
+   - Respuesta: Cuando JOINs sean problema OR escalabilidad crítica
+   - Ejemplo: Analytics → Elasticsearch
+   - Ejemplo: Documents → MongoDB
+
+4. **"Heredas monolito en 3M usuarios. Performance degrada. Opciones?"**
+   - Monitorea (antes de actuar)
+   - Rápidas: Query optimization, índices, caché
+   - Medium: Refactor hot paths
+   - Largo: Microservicios (si realmente necesario)
+
+---
+
+**Última actualización:** 2026-03-27  
+**Dificultad:** 🔴 Senior

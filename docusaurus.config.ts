@@ -97,7 +97,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Full Stack .NET + React Interview Guide`,
+      copyright: `Copyright © ${new Date().getFullYear()} Full Stack .NET + React Interview Guide | <a href="https://github.com/alanrivas/dotnet-react-interview-guide" target="_blank">GitHub</a>`,
     },
     prism: {
       theme: prismThemes.github,

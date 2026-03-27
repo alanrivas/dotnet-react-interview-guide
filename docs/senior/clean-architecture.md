@@ -224,3 +224,204 @@ var productos = await _repo.ListarAsync(spec);
 
 **4. ¿Cómo manejas la consistencia entre Aggregates?**
 > Los Aggregates no se modifican juntos en una transacción. Se usa **eventual consistency** mediante Domain Events. El Aggregate A publica un evento, y el handler actualiza el Aggregate B en una transacción separada.
+
+---
+
+## Application Layer — Use Cases con MediatR
+
+La Application Layer orquesta los Use Cases (Commands y Queries). No contiene lógica de negocio — eso es del Domain. No habla directamente con infraestructura — usa las interfaces definidas en Domain/Application.
+
+```csharp
+// Command — modifica estado
+public record ConfirmarPedidoCommand(PedidoId PedidoId) : ICommand<PedidoDto>;
+
+// Command Handler — orquesta el use case
+public class ConfirmarPedidoHandler : ICommandHandler<ConfirmarPedidoCommand, PedidoDto>
+{
+    private readonly IPedidoRepository _pedidos;
+    private readonly IInventarioService _inventario; // Interface definida en Application
+
+    public ConfirmarPedidoHandler(IPedidoRepository pedidos, IInventarioService inventario)
+    {
+        _pedidos = pedidos;
+        _inventario = inventario;
+    }
+
+    public async Task<PedidoDto> Handle(ConfirmarPedidoCommand cmd, CancellationToken ct)
+    {
+        // 1. Cargar el aggregate
+        var pedido = await _pedidos.ObtenerPorIdAsync(cmd.PedidoId)
+            ?? throw new PedidoNotFoundException(cmd.PedidoId);
+
+        // 2. Ejecutar la lógica de dominio (en el aggregate, no aquí)
+        pedido.Confirmar();
+
+        // 3. Verificar disponibilidad de inventario (servicio de aplicación)
+        await _inventario.ReservarItemsAsync(pedido.Items, ct);
+
+        // 4. Persistir (los Domain Events se publican dentro de GuardarAsync)
+        await _pedidos.GuardarAsync(pedido);
+
+        // 5. Retornar DTO (nunca exponer el aggregate fuera de Application)
+        return PedidoDto.From(pedido);
+    }
+}
+
+// Query — solo lectura, puede ir directo a DB sin pasar por domain
+public record ObtenerPedidoQuery(PedidoId PedidoId) : IQuery<PedidoDto>;
+
+public class ObtenerPedidoHandler : IQueryHandler<ObtenerPedidoQuery, PedidoDto>
+{
+    // Para queries, es común "shortcircuit" y leer directo del DbContext
+    // El domain model es para escrituras; para lecturas, optimiza con proyecciones
+    private readonly AppDbContext _context;
+
+    public async Task<PedidoDto> Handle(ObtenerPedidoQuery query, CancellationToken ct)
+    {
+        return await _context.Pedidos
+            .AsNoTracking()
+            .Where(p => p.Id == query.PedidoId)
+            .Select(p => new PedidoDto
+            {
+                Id = p.Id.Value,
+                Estado = p.Estado.ToString(),
+                Total = p.Items.Sum(i => i.Precio.Monto * i.Cantidad)
+            })
+            .FirstOrDefaultAsync(ct)
+            ?? throw new PedidoNotFoundException(query.PedidoId);
+    }
+}
+```
+
+---
+
+## Testing en Clean Architecture
+
+La separación de capas facilita el testing: el Domain se testea con unit tests puros (sin mocks), la Application Layer se testea mockeando los repositories.
+
+```csharp
+// Unit test del Domain — CERO mocks, CERO infraestructura
+public class PedidoTests
+{
+    [Fact]
+    public void Confirmar_PedidoConItems_CambiaEstadoAConfirmado()
+    {
+        // Arrange
+        var pedido = Pedido.Crear(new ClienteId(Guid.NewGuid()));
+        pedido.AgregarItem(
+            new ProductoId(1),
+            cantidad: 2,
+            precio: new Dinero(50, "ARS"));
+
+        // Act
+        pedido.Confirmar();
+
+        // Assert
+        Assert.Equal(EstadoPedido.Confirmado, pedido.Estado);
+        Assert.Single(pedido.DomainEvents.OfType<PedidoConfirmadoEvent>());
+    }
+
+    [Fact]
+    public void Confirmar_PedidoSinItems_LanzaDomainException()
+    {
+        var pedido = Pedido.Crear(new ClienteId(Guid.NewGuid()));
+
+        Assert.Throws<DomainException>(() => pedido.Confirmar());
+    }
+}
+
+// Integration test del Handler — mock de repositories
+public class ConfirmarPedidoHandlerTests
+{
+    [Fact]
+    public async Task Handle_PedidoValido_PublicaEventoYRetornaDto()
+    {
+        // Arrange
+        var pedido = Pedido.Crear(new ClienteId(Guid.NewGuid()));
+        pedido.AgregarItem(new ProductoId(1), 1, new Dinero(100, "ARS"));
+
+        var mockRepo = new Mock<IPedidoRepository>();
+        mockRepo.Setup(r => r.ObtenerPorIdAsync(pedido.Id)).ReturnsAsync(pedido);
+
+        var mockInventario = new Mock<IInventarioService>();
+        mockInventario.Setup(i => i.ReservarItemsAsync(It.IsAny<IEnumerable<PedidoItem>>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var handler = new ConfirmarPedidoHandler(mockRepo.Object, mockInventario.Object);
+
+        // Act
+        var result = await handler.Handle(new ConfirmarPedidoCommand(pedido.Id), CancellationToken.None);
+
+        // Assert
+        Assert.Equal(EstadoPedido.Confirmado.ToString(), result.Estado);
+        mockRepo.Verify(r => r.GuardarAsync(pedido), Times.Once);
+    }
+}
+```
+
+---
+
+## Anti-Patrones en Clean Architecture
+
+```
+❌ Anemic Domain Model
+  El domain model solo tiene propiedades y getters/setters.
+  Toda la lógica de negocio está en los Services/Handlers.
+  Síntoma: Entities con solo { get; set; } y un PedidoService
+           de 500 líneas con métodos ConfirmarPedido, CancelarPedido, etc.
+
+❌ Dependencias inversas en el Domain
+  El Domain referencia un paquete de NuGet externo (como MediatR o EF Core).
+  El Domain debe ser CERO dependencias externas — solo BCL y otros proyectos del domain.
+
+❌ Repository que retorna IQueryable
+  interface IPedidoRepository { IQueryable<Pedido> GetAll(); }
+  Esto filtra la abstracción — el llamador puede componer queries EF Core
+  desde fuera de Infrastructure, acoplando la Application Layer a EF Core.
+
+❌ Lógica en DTOs o Controllers
+  Un Controller que contiene reglas de negocio (validaciones complejas, cálculos).
+  Los Controllers solo coordinan: deserializar, llamar al Handler, serializar.
+
+❌ Un Repository por tabla (no por Aggregate)
+  IPedidoItemRepository — los PedidoItems se acceden SIEMPRE a través del Aggregate Root.
+  Tener su propio repository viola el patrón Aggregate.
+```
+
+---
+
+## ¿Cuándo NO usar Clean Architecture / DDD?
+
+```
+Clean Architecture / DDD completo AGREGA complejidad.
+Solo vale la pena cuando el dominio justifica esa inversión.
+
+Usar CA/DDD cuando:
+  ✅ El dominio es complejo con muchas reglas de negocio
+  ✅ El sistema vivirá y evolucionará por años
+  ✅ Hay múltiples equipos trabajando en distintas capas
+  ✅ Se necesita testear el dominio de forma aislada
+
+No usar CA/DDD cuando:
+  ❌ Es un CRUD simple sin lógica de negocio compleja
+  ❌ Es un MVP o prototipo donde la velocidad es prioritaria
+  ❌ El equipo no conoce los patrones (genera confusión, no claridad)
+  ❌ Es un proyecto pequeño/personal (overengineering)
+
+Alternativa pragmática para proyectos medianos:
+  Vertical Slice Architecture:
+  - Una carpeta por feature: /Features/Orders/CreateOrder/
+  - Dentro: Command.cs, Handler.cs, Endpoint.cs, Validator.cs
+  - Sin capas horizontales, con cohesión vertical
+  - Más simple, igualmente testeable
+```
+
+---
+
+## Preguntas adicionales de entrevista 🎯
+
+**5. ¿Cómo mapeas entre el Domain Model y los DTOs de la API?**
+> En la Application Layer, los Handlers proyectan el aggregate a DTOs antes de retornarlo al Controller. Nunca expongo el aggregate directamente en la API (violaría el encapsulamiento del domain). Uso métodos factory estáticos en el DTO (`PedidoDto.From(pedido)`) o AutoMapper para proyecciones complejas. Para queries de solo lectura, suelo leer directamente con proyecciones de EF Core sin pasar por el aggregate.
+
+**6. ¿Qué haces cuando la lógica de un Use Case requiere coordinar dos Aggregates?**
+> Los Aggregates no deben modificarse en la misma transacción. El Handler confirma el Aggregate A y guarda. El Domain Event que emite A dispara un segundo Handler que modifica el Aggregate B en su propia transacción. Esto garantiza eventual consistency sin transacciones distribuidas. Si la consistencia inmediata es crítica, revisar si ambas entidades deberían ser el mismo Aggregate.

@@ -146,3 +146,241 @@ TRADE-OFFS
 
 ---
 
+## Ejercicios Clásicos Senior
+
+### LRU Cache — O(1) get y put
+
+**Enunciado:** Implementar una caché LRU con capacidad fija. `get(key)` retorna el valor o -1. `put(key, value)` inserta; si supera capacidad, desaloja el menos recientemente usado.
+
+```csharp
+// Solución: Dictionary + LinkedList doblemente enlazada
+// Dictionary → O(1) lookup
+// LinkedList → O(1) move-to-front y remove-last
+
+public class LRUCache
+{
+    private readonly int _capacity;
+    private readonly Dictionary<int, LinkedListNode<(int key, int value)>> _map;
+    private readonly LinkedList<(int key, int value)> _list;
+
+    public LRUCache(int capacity)
+    {
+        _capacity = capacity;
+        _map = new Dictionary<int, LinkedListNode<(int, int)>>(capacity);
+        _list = new LinkedList<(int, int)>();
+    }
+
+    public int Get(int key)
+    {
+        if (!_map.TryGetValue(key, out var node)) return -1;
+        // Mover al frente (más recientemente usado)
+        _list.Remove(node);
+        _list.AddFirst(node);
+        return node.Value.value;
+    }
+
+    public void Put(int key, int value)
+    {
+        if (_map.TryGetValue(key, out var existing))
+        {
+            _list.Remove(existing);
+            _map.Remove(key);
+        }
+        else if (_map.Count >= _capacity)
+        {
+            // Desalojar el menos recientemente usado (último)
+            var lru = _list.Last!;
+            _list.RemoveLast();
+            _map.Remove(lru.Value.key);
+        }
+
+        var node = new LinkedListNode<(int, int)>((key, value));
+        _list.AddFirst(node);
+        _map[key] = node;
+    }
+}
+
+// Complejidad: Get O(1), Put O(1), Space O(n)
+```
+
+**Puntos de discusión:**
+- Thread-safety: añadir `lock (_syncRoot)` o usar `ConcurrentDictionary` + `ReaderWriterLockSlim`
+- Variante: LFU Cache (Least Frequently Used) — más complejo, requiere contadores de frecuencia
+- En producción: Redis ya implementa LRU; esta implementación es para caches en proceso
+
+---
+
+### Rate Limiter — Token Bucket
+
+**Enunciado:** Implementar un rate limiter que permita hasta N requests por segundo. Thread-safe.
+
+```csharp
+public class TokenBucketRateLimiter
+{
+    private readonly int _maxTokens;
+    private readonly double _refillRatePerSecond;
+    private double _tokens;
+    private DateTime _lastRefill;
+    private readonly object _lock = new();
+
+    public TokenBucketRateLimiter(int maxTokens, double refillRatePerSecond)
+    {
+        _maxTokens = maxTokens;
+        _refillRatePerSecond = refillRatePerSecond;
+        _tokens = maxTokens;
+        _lastRefill = DateTime.UtcNow;
+    }
+
+    public bool TryConsume(int tokens = 1)
+    {
+        lock (_lock)
+        {
+            Refill();
+            if (_tokens < tokens) return false;
+            _tokens -= tokens;
+            return true;
+        }
+    }
+
+    private void Refill()
+    {
+        var now = DateTime.UtcNow;
+        var elapsed = (now - _lastRefill).TotalSeconds;
+        _tokens = Math.Min(_maxTokens, _tokens + elapsed * _refillRatePerSecond);
+        _lastRefill = now;
+    }
+}
+
+// Uso en middleware ASP.NET Core
+public class RateLimitMiddleware
+{
+    private static readonly ConcurrentDictionary<string, TokenBucketRateLimiter>
+        _limiters = new();
+
+    public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
+    {
+        var key = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var limiter = _limiters.GetOrAdd(key,
+            _ => new TokenBucketRateLimiter(maxTokens: 100, refillRatePerSecond: 10));
+
+        if (!limiter.TryConsume())
+        {
+            ctx.Response.StatusCode = 429; // Too Many Requests
+            await ctx.Response.WriteAsync("Rate limit exceeded");
+            return;
+        }
+
+        await next(ctx);
+    }
+}
+
+// En producción: usar ASP.NET Core Rate Limiting (System.Threading.RateLimiting)
+// o Redis con sliding window para distribuido
+```
+
+**Trade-offs a mencionar:**
+- Token Bucket vs Sliding Window vs Fixed Window: TB permite bursts, SW es más justo, FW es más simple
+- Distribuido: Redis con `INCRBY` + `EXPIRE` o Lua scripts para atomicidad
+- Sliding Window distribuida: `ZADD` (sorted set) + `ZREMRANGEBYSCORE`
+
+---
+
+### Productor-Consumidor con Channel
+
+**Enunciado:** Implementar un sistema donde múltiples productores escriben y múltiples consumidores leen, de forma thread-safe y eficiente.
+
+```csharp
+// System.Threading.Channels — la forma moderna en .NET
+public class PipelineProcessor
+{
+    private readonly Channel<string> _channel;
+    private readonly int _consumerCount;
+
+    public PipelineProcessor(int capacity = 1000, int consumerCount = 4)
+    {
+        _channel = Channel.CreateBounded<string>(new BoundedChannelOptions(capacity)
+        {
+            FullMode = BoundedChannelFullMode.Wait, // Backpressure: el productor espera
+            SingleWriter = false,
+            SingleReader = false
+        });
+        _consumerCount = consumerCount;
+    }
+
+    public async Task ProduceAsync(IEnumerable<string> items, CancellationToken ct)
+    {
+        foreach (var item in items)
+        {
+            await _channel.Writer.WriteAsync(item, ct);
+        }
+        _channel.Writer.Complete();
+    }
+
+    public async Task StartConsumersAsync(CancellationToken ct)
+    {
+        var tasks = Enumerable.Range(0, _consumerCount)
+            .Select(id => ConsumeAsync(id, ct));
+        await Task.WhenAll(tasks);
+    }
+
+    private async Task ConsumeAsync(int consumerId, CancellationToken ct)
+    {
+        await foreach (var item in _channel.Reader.ReadAllAsync(ct))
+        {
+            await ProcessAsync(consumerId, item);
+        }
+    }
+
+    private async Task ProcessAsync(int consumerId, string item)
+    {
+        // Simular trabajo
+        await Task.Delay(10);
+        Console.WriteLine($"[Consumer {consumerId}] Procesado: {item}");
+    }
+}
+```
+
+---
+
+## Checklist de Code Review para Live Coding
+
+Cuando el entrevistador te pida revisar código ajeno, evalúa en este orden:
+
+```
+1. CORRECTITUD
+   □ ¿El algoritmo produce el resultado esperado?
+   □ ¿Maneja todos los edge cases? (null, vacío, un elemento, INT_MAX)
+   □ ¿Hay off-by-one errors?
+
+2. COMPLEJIDAD
+   □ ¿Cuál es la complejidad temporal y espacial?
+   □ ¿Hay operaciones O(n²) que podrían ser O(n log n)?
+   □ ¿Hay alocaciones innecesarias en el hot path?
+
+3. CONCURRENCIA
+   □ ¿Hay acceso a estado compartido sin sincronización?
+   □ ¿Puede haber deadlock? (locks en orden diferente)
+   □ ¿Los campos son volátiles si se acceden desde múltiples threads?
+
+4. ERRORES Y RECURSOS
+   □ ¿Los IDisposable se liberan? (using statement)
+   □ ¿Las excepciones se manejan o propagan correctamente?
+   □ ¿Hay swallow de excepciones (catch sin rethrow)?
+
+5. DISEÑO
+   □ ¿Las responsabilidades están bien separadas?
+   □ ¿Los nombres comunican la intención?
+   □ ¿Hay código duplicado que podría extraerse?
+```
+
+---
+
+## Subtemas de Live Coding
+
+- [Base de Datos](live-coding/base-de-datos) — Queries complejas, optimización, índices
+- [Resiliencia](live-coding/resiliencia) — Circuit breaker, retry, timeout, bulkhead
+- [Patrones](live-coding/patrones) — Diseño de sistemas, patrones de concurrencia
+- [Frontend](live-coding/frontend) — React hooks avanzados, optimización, arquitectura
+
+---
+

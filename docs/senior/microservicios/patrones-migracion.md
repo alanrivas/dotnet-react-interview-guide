@@ -203,3 +203,186 @@ builder.Services.AddOpenTelemetry()
 
 **8. ¿Cómo garantizas que un mensaje de RabbitMQ/Kafka no se procese dos veces?**
 > Con el **Inbox Pattern**: antes de procesar el mensaje, verificar si su `MessageId` ya está en la tabla `processed_messages`. Si está, retornar OK sin procesar (idempotente). Si no está, insertar el `MessageId` y procesar en la misma transacción DB. Esto garantiza exactly-once processing a nivel de base de datos aunque el broker entregue at-least-once.
+
+---
+
+## Branch by Abstraction
+
+Cuando no puedes usar Strangler Fig (el módulo está demasiado acoplado internamente), Branch by Abstraction permite reemplazar una implementación gradualmente sin ramificar en git.
+
+```
+PASO 1: Crear una abstracción sobre el código existente
+  // Antes:
+  class OrderService {
+    void Process(Order o) { _oldPaymentProcessor.Charge(o.Total); }
+  }
+
+  // Después:
+  interface IPaymentProcessor { Task ChargeAsync(decimal amount); }
+  class LegacyPaymentProcessor : IPaymentProcessor { ... }  // código viejo
+
+PASO 2: Hacer que todo el código use la abstracción
+  class OrderService {
+    OrderService(IPaymentProcessor processor) { ... }  // DI
+  }
+
+PASO 3: Crear la nueva implementación en paralelo
+  class StripePaymentProcessor : IPaymentProcessor { ... }  // nueva
+
+PASO 4: Feature flag para elegir la implementación
+  // appsettings.json
+  { "Features": { "UseStripePayments": false } }
+
+  // DI
+  if (config["Features:UseStripePayments"] == "true")
+    services.AddScoped<IPaymentProcessor, StripePaymentProcessor>();
+  else
+    services.AddScoped<IPaymentProcessor, LegacyPaymentProcessor>();
+
+PASO 5: Cuando la nueva implementación está validada → eliminar la vieja y el flag
+```
+
+---
+
+## Backend for Frontend (BFF)
+
+En lugar de un único API Gateway genérico, el patrón BFF crea un backend dedicado por tipo de cliente.
+
+```
+Sin BFF (API Gateway genérico):
+  Mobile App  ─────────┐
+  Web SPA     ──────── API Gateway ──── Microservicios
+  Smart TV    ─────────┘
+  (Un gateway sirve a todos — difícil optimizar para cada cliente)
+
+Con BFF:
+  Mobile App  ──── BFF Mobile ───┐
+  Web SPA     ──── BFF Web   ────┼──── Microservicios
+  Smart TV    ──── BFF TV    ───┘
+  (Cada BFF agrega y formatea los datos según las necesidades de su cliente)
+```
+
+```csharp
+// BFF Web — agrega datos de múltiples servicios para la UI
+[ApiController]
+[Route("api/dashboard")]
+public class DashboardBffController : ControllerBase
+{
+    private readonly IHttpClientFactory _http;
+
+    [HttpGet("{userId}")]
+    public async Task<DashboardViewModel> GetDashboard(Guid userId)
+    {
+        // Llamadas en paralelo a múltiples microservicios
+        var pedidosTask    = GetPedidosAsync(userId);
+        var perfilTask     = GetPerfilAsync(userId);
+        var notifTask      = GetNotificacionesAsync(userId);
+
+        await Task.WhenAll(pedidosTask, perfilTask, notifTask);
+
+        // Agrega y formatea exactamente lo que necesita la UI
+        return new DashboardViewModel
+        {
+            NombreUsuario     = (await perfilTask).Nombre,
+            UltimosPedidos    = (await pedidosTask).Take(5),
+            NotificacionesNuevas = (await notifTask).Count(n => !n.Leida)
+        };
+    }
+}
+```
+
+**Cuándo usar BFF:**
+- Clientes con necesidades muy diferentes (mobile vs web vs third-party API)
+- Quieres que cada equipo de frontend sea dueño de su BFF
+- Necesitas autenticación o autorización diferente por tipo de cliente
+
+---
+
+## Database per Service — Migración
+
+Uno de los principios más importantes de microservicios: cada servicio tiene su propia base de datos. Pero ¿cómo llegamos ahí si arrancamos con una DB compartida?
+
+```
+Estado inicial (monolito):
+  Servicio Pedidos  ───┐
+  Servicio Catálogo ───┼──── DB única (esquema compartido)
+  Servicio Usuarios ───┘
+
+Estado objetivo:
+  Servicio Pedidos  ──── DB Pedidos  (SQL Server)
+  Servicio Catálogo ──── DB Catálogo (PostgreSQL)
+  Servicio Usuarios ──── DB Usuarios (SQL Server)
+```
+
+```
+Estrategia de migración (paso a paso):
+
+1. IDENTIFICAR LÍMITES
+   ¿Qué tablas pertenecen a cada servicio?
+   ¿Qué JOINs entre ellas son cross-service?
+   Esos JOINs son los puntos de dolor → deben convertirse en llamadas API o eventos.
+
+2. SEPARAR LÓGICAMENTE PRIMERO
+   Antes de separar la DB, separar el código.
+   El Servicio Pedidos solo toca las tablas de Pedidos.
+   Prohibir JOINs cross-service en code review.
+
+3. CREAR LA DB SEPARADA CON REPLICACIÓN
+   La nueva DB del servicio empieza recibiendo un feed de cambios desde la DB original.
+   Cambiar la config del servicio para leer de la nueva DB.
+   Validar que los datos son correctos.
+
+4. CUTOVER
+   Dirigir el tráfico de escritura a la nueva DB.
+   Mantener la replicación inversa durante el período de seguridad.
+   Una vez confirmado, cortar la replicación y limpiar la DB original.
+
+Herramientas:
+  - SQL Server: Change Data Capture (CDC) + replicación
+  - Debezium: CDC open-source para cualquier DB
+  - Azure Data Migration Service: para migraciones a Azure
+```
+
+---
+
+## Service Mesh — Istio / Linkerd
+
+Un Service Mesh desplaza la lógica de comunicación entre servicios (retry, circuit breaker, mTLS, observabilidad) fuera del código y a la infraestructura.
+
+```
+Sin Service Mesh:
+  Servicio A (código con Polly retry + logging manual + mTLS manual)
+      ──────→ Servicio B
+
+Con Service Mesh (Istio/Linkerd):
+  Servicio A (código limpio, sin retry ni TLS)
+      ──→ Sidecar Proxy (Envoy) ──────→ Sidecar Proxy ──→ Servicio B
+           ↑ retry, circuit breaker,      ↑ mTLS automático
+             rate limiting, tracing
+```
+
+```
+¿Qué hace el Service Mesh automáticamente?
+  ✅ mTLS entre servicios (encriptación + autenticación mutua)
+  ✅ Circuit breaker configurable sin código
+  ✅ Retry con backoff exponencial
+  ✅ Traffic splitting (canary deployments: 10% → nuevo, 90% → viejo)
+  ✅ Distributed tracing automático (sin instrumentar el código)
+  ✅ Métricas de RED entre servicios (latencia, error rate, throughput)
+
+¿Cuándo NO usar Service Mesh?
+  ❌ Equipos pequeños sin expertise en Kubernetes
+  ❌ Cuando la complejidad operacional supera el beneficio
+  ❌ Si ya tienes Polly para resiliencia y OpenTelemetry para observabilidad
+  → Empieza simple; agrega Service Mesh cuando el pain lo justifique
+```
+
+---
+
+## Preguntas adicionales de entrevista 🎯
+
+**9. ¿Cómo diseñarías el manejo de autenticación en microservicios?**
+> API Gateway valida el JWT en el borde — los microservicios internos confían en el gateway y reciben el token ya validado (o los claims vía header). Esto evita que cada microservicio valide el JWT independientemente. Los microservicios internos pueden comunicarse con mTLS (Service Mesh) sin JWT. Para comunicación servicio-a-servicio fuera del Service Mesh, uso Client Credentials flow de OAuth 2.0.
+
+**10. ¿Qué es el patrón Sidecar y para qué sirve?**
+> El Sidecar es un proceso secundario que corre junto al servicio principal (en el mismo pod en Kubernetes) y maneja concerns transversales: proxy de red, colección de métricas, gestión de configuración, autenticación. Ejemplos: Envoy proxy en Istio (red), Datadog Agent (métricas), Vault Agent (secrets). El servicio principal no sabe que el sidecar existe — habla con localhost y el sidecar intercepta el tráfico.

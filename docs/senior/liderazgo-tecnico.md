@@ -188,3 +188,171 @@ En entrevistas Senior, esperan preguntas conductuales. Responder con **STAR**:
 
 **3. ¿Cuánto código es "suficiente" testear?**
 > El 100% de cobertura no significa 0 bugs. Priorizar: lógica de negocio crítica, edge cases conocidos, regresiones de bugs previos. No testear: código trivial (getters/setters), código generado. El objetivo es confianza para hacer cambios, no un número.
+
+---
+
+## Onboarding Técnico — Primeros 90 días
+
+Como Tech Lead, eres responsable de que los nuevos integrantes sean productivos rápido y se integren bien.
+
+```
+Semana 1: Orientación
+  □ Setup del entorno de desarrollo (documentado, idealmente automatizado)
+  □ Primera PR pequeña el día 2-3 (aunque sea de docs o un bug trivial)
+  □ Explicar el "por qué" de las decisiones de arquitectura, no solo el "qué"
+  □ Presentar a las personas clave del equipo y sus áreas
+
+Mes 1: Exploración
+  □ Pair programming en al menos 2 features
+  □ Que el nuevo revise PRs de otros (aprende leyendo código real)
+  □ Primera 1:1 formal para detectar bloqueos o dudas
+  □ Asignar un "buddy" del equipo (no el Tech Lead)
+
+Mes 2-3: Contribución creciente
+  □ Features completas con autonomía, Tech Lead disponible para preguntas
+  □ Que el nuevo presente algo técnico al equipo (fuerza a aprender)
+  □ Evaluación informal: ¿en qué está atascado? ¿qué le resulta confuso?
+```
+
+---
+
+## 1:1s Efectivos con Desarrolladores
+
+Las 1:1s no son status updates (eso es para los stand-ups). Son para la persona.
+
+```
+Lo que NO es una 1:1:
+  ❌ "¿Cómo va el ticket JIRA-123?"
+  ❌ Un monólogo del Tech Lead
+  ❌ Solo cuando hay un problema
+
+Lo que SÍ es una 1:1:
+  ✅ "¿Qué te está bloqueando? ¿Qué te está frustrando?"
+  ✅ "¿En qué área quieres crecer en los próximos 6 meses?"
+  ✅ "¿Hay algo en el equipo que podría mejorar?"
+  ✅ Feedback bidireccional (también pide feedback sobre ti)
+```
+
+### Preguntas poderosas para 1:1s
+
+```
+Sobre el trabajo actual:
+  - "¿Cuál fue el momento más frustrante de la última semana?"
+  - "¿Hay algo en lo que necesitas más contexto o apoyo?"
+
+Sobre el crecimiento:
+  - "¿Qué tipo de tarea te gustaría tener más en los próximos meses?"
+  - "¿Hay alguna tecnología o área que quieras explorar?"
+
+Sobre el equipo:
+  - "¿Hay algo en la forma en que trabajamos que mejorarías?"
+  - "¿Sientes que tus contribuciones son reconocidas?"
+```
+
+---
+
+## Roadmap Técnico — Cómo construirlo
+
+Un roadmap técnico comunica hacia dónde va la arquitectura y por qué.
+
+```
+Estructura de un roadmap técnico:
+
+NOW (0-3 meses)
+  ├── Migrar autenticación a OAuth 2.0 + PKCE
+  │   Por qué: vulnerabilidad en el flujo actual (issue SEC-045)
+  │   Por quién: Equipo Backend
+  │   Métrica de éxito: 0 endpoints con auth por cookie de sesión
+  │
+  └── Instrumentar OpenTelemetry en todos los servicios
+      Por qué: sin trazabilidad distribuida, cada outage tarda 4h en diagnosticar
+      Por quién: Plataforma
+      Métrica: p99 de tiempo de diagnóstico < 30 min
+
+NEXT (3-6 meses)
+  ├── Extraer servicio de Notificaciones del monolito (Strangler Fig)
+  └── Migrar tests de integración a TestContainers
+
+LATER (6-12 meses)
+  ├── Evaluar migración a .NET 9 (cuando salga LTS)
+  └── Implementar feature flags para deploys sin riesgo
+```
+
+**Cómo presentarlo a stakeholders no técnicos:**
+
+```
+❌ "Vamos a implementar OpenTelemetry con Jaeger para distributed tracing"
+✅ "Actualmente cuando el sistema falla, tardamos un promedio de 4 horas en
+   encontrar la causa. Con esta inversión de 3 semanas, bajaremos eso a
+   menos de 30 minutos, reduciendo el impacto en usuarios."
+```
+
+---
+
+## Manejo de Conflictos Técnicos en el Equipo
+
+Dos desarrolladores tienen opiniones técnicas opuestas. ¿Cómo lo manejas?
+
+```
+Proceso recomendado:
+
+1. ESCUCHAR AMBAS POSICIONES
+   Cada posición probablemente tiene mérito.
+   "Cuéntame más sobre por qué propones X..."
+
+2. EXTERNALIZAR EL DEBATE
+   Escribir ambas opciones con pros/cons en un doc compartido.
+   Esto despersonaliza el conflicto — ya no es A vs B, sino Opción 1 vs Opción 2.
+
+3. APLICAR CRITERIOS OBJETIVOS
+   - ¿Cuál opción es más fácil de revertir si nos equivocamos?
+   - ¿Cuál opción está mejor probada en nuestro tipo de sistema?
+   - ¿Cuál opción el equipo puede mantener en 2 años?
+
+4. SPIKE SI HAY INCERTIDUMBRE TÉCNICA
+   Timeboxed (1-2 días): cada posición prueba su solución.
+   Los datos hablan más que las opiniones.
+
+5. DECIDIR Y DOCUMENTAR
+   Usar un ADR para registrar la decisión y el contexto.
+   Una vez decidido, todos ejecutan en la misma dirección.
+```
+
+---
+
+## Métricas de Salud del Equipo y Código
+
+Un Tech Lead no solo mira el código — mira las señales del sistema más amplio.
+
+```
+Métricas de código (DORA):
+  Deployment Frequency   → ¿Cada cuánto desplegamos?
+  Lead Time for Changes  → ¿Cuánto desde commit hasta producción?
+  Change Failure Rate    → ¿Qué % de deploys requiere rollback?
+  Time to Restore        → ¿Cuánto tardamos en recuperarnos de un incidente?
+
+Señales de deuda técnica acumulándose:
+  ⚠️  Las estimaciones son cada vez más imprecisas
+  ⚠️  Los bugs regresionan (arreglamos algo y rompe otra cosa)
+  ⚠️  Las onboardings son lentas (nadie entiende bien el sistema)
+  ⚠️  Miedo a tocar ciertos módulos ("ese código no lo toca nadie")
+
+Señales de problemas en el equipo:
+  ⚠️  PRs que tardan días en ser revisadas
+  ⚠️  Desarrolladores que rara vez piden ayuda
+  ⚠️  Silencio en las retrospectivas
+  ⚠️  Estimaciones siempre conservadoras o siempre optimistas
+```
+
+---
+
+## Preguntas adicionales de entrevista 🎯
+
+**4. ¿Cómo construirías un roadmap técnico alineado con el negocio?**
+> Primero entiendo las prioridades del negocio para los próximos 6-12 meses. Luego mapeo qué limitaciones técnicas actuales bloquean o ralentizan esas prioridades. El roadmap técnico resulta de conectar esas dos perspectivas — no es una lista de deseos tecnológicos, sino inversiones técnicas con ROI de negocio claro. Cada ítem del roadmap debe responder: "¿Qué problema de negocio resuelve esto?"
+
+**5. ¿Cómo manejarías a un desarrollador que consistentemente entrega tarde?**
+> Primero en una 1:1 privada, sin asumir intención maliciosa. Podría ser falta de claridad en los requerimientos, bloqueos técnicos que no escaló, o problemas personales. Identifico la causa raíz antes de actuar. Si es capacidad técnica, pair programming y mentoring. Si es comunicación, trabajamos en dividir tareas más pequeñas y pedir ayuda antes. Si persiste después de apoyo y claridad de expectativas, escalo a management.
+
+**6. ¿Cuál es la diferencia entre un Tech Lead y un Engineering Manager?**
+> El Tech Lead es principalmente técnico: diseña arquitecturas, hace code reviews, establece estándares de ingeniería, es el referente técnico del equipo. El Engineering Manager es principalmente de personas y procesos: gestiona carreras, contrata, maneja conflictos interpersonales, planifica capacidad. Muchas empresas tienen ambos roles; en equipos pequeños una persona puede cubrir ambos, pero hay que ser consciente de cuándo priorizas cada hat.

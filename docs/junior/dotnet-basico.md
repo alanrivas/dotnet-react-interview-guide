@@ -19,7 +19,7 @@ sidebar_position: 3
 | .NET 5+ | Unificado | Multiplataforma (usar este) |
 | .NET 8 | LTS actual | ✅ Recomendado |
 
-:::tip
+:::tip Nota para entrevistas
 En entrevistas, si mencionan "**.NET Framework**" vs "**.NET Core/.NET 5+**", recuerda que son plataformas distintas. El moderno se llama simplemente ".NET".
 :::
 
@@ -147,8 +147,8 @@ foreach (var p in query) { ... }  // Se ejecuta aquí
 var lista = query.ToList();        // O aquí
 ```
 
-:::warning
-`Where`, `Select`, `OrderBy` usan **ejecución diferida**.  
+:::warning Ejecución diferida vs inmediata
+`Where`, `Select`, `OrderBy` usan **ejecución diferida**.
 `ToList()`, `Count()`, `First()`, `Sum()` **fuerzan la ejecución**.
 :::
 

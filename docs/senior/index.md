@@ -40,6 +40,29 @@ No es solo conocer más tecnologías. Es la capacidad de ver el panorama complet
 | [Event-Driven Architecture](senior/event-driven) | Eventos, mensajería, Kafka, outbox pattern | 🟡 Media |
 | [Observabilidad](senior/observabilidad) | Logging estructurado, métricas, trazas distribuidas | 🟡 Media |
 
+## Horas de estudio recomendadas
+
+| Tema | Horas estimadas | Prioridad |
+|------|----------------|-----------|
+| Arquitectura de Software | 10-12h | 🔥 Alta |
+| Clean Architecture & DDD | 10-12h | 🔥 Alta |
+| Microservicios | 10-12h | 🔥 Alta |
+| System Design | 10-12h | 🔥 Alta |
+| Performance | 8-10h | 🔥 Alta |
+| Seguridad | 6-8h | 🔥 Alta |
+| Liderazgo Técnico | 6-8h | 🔥 Alta |
+| Concurrencia & Paralelismo | 6-8h | 🟡 Media |
+| DevOps & CI/CD | 6-8h | 🟡 Media |
+| Escalabilidad de BD | 6-8h | 🟡 Media |
+| Event-Driven Architecture | 6-8h | 🟡 Media |
+| Observabilidad | 5-6h | 🟡 Media |
+| Cloud (Azure) | 5-6h | 🟡 Media |
+| **Total** | **~100-130h** | |
+
+:::tip Plan sugerido
+A nivel Senior, el estudio debe combinarse con práctica real. Dedica 3-4 horas diarias durante 6-8 semanas. Prioriza Arquitectura, System Design y Clean Architecture — son los temas centrales de cualquier entrevista Senior.
+:::
+
 ## Práctica y simulacros
 
 | Recurso | Descripción |

@@ -639,4 +639,54 @@ Al final, no te levantes sin hacer esto:
 
 ---
 
+## 8. Ejemplos STAR completos por nivel
+
+Estos ejemplos muestran cómo varía la profundidad esperada según el nivel.
+
+---
+
+### 🟢 Junior — "Cuéntame de un error que cometiste y qué aprendiste"
+
+**Situación:** En mi primer proyecto real, estaba trabajando en una app de gestión de tareas con ASP.NET Core. Era mi primer mes en la empresa.
+
+**Tarea:** Tenía que hacer un endpoint de búsqueda de tareas por nombre. Era la primera feature que hacía yo solo.
+
+**Acción:** Implementé el filtro con `Where(t => t.Name.Contains(searchTerm))`. Funcionó en desarrollo, hice el pull request, lo revisaron rápido y se mergeó. A los dos días, el equipo notó que la búsqueda hacía una query sin índice y lentísima en producción con los datos reales.
+
+Lo que hice cuando lo detectamos: revisé el query generado por EF Core con el log de SQL, aprendí qué era un índice de base de datos, agregué `HasIndex(t => t.Name)` en la configuración de EF, y ayudé a deployar el hotfix.
+
+**Resultado:** El endpoint bajó de ~1200ms a ~45ms. Lo más importante fue que aprendí a revisar el SQL generado en código review y a pensar en performance desde el diseño, no solo cuando hay un problema. Desde entonces, en cada PR que toco base de datos reviso el query generado.
+
+---
+
+### 🟡 Semi-Senior — "Describe una situación donde tomaste la iniciativa sin que te lo pidieran"
+
+**Situación:** Estaba en un equipo de 5 personas construyendo una API REST en .NET 6. Nuestros deploys a staging tardaban 25-30 minutos manualmente porque no teníamos CI/CD automatizado — cada deploy era un proceso manual con scripts.
+
+**Tarea:** Nadie me asignó esto. Era mi responsabilidad técnica principal entregar features de la API, pero vi el problema y decidí proponerlo.
+
+**Acción:** Primero hice un análisis de cuánto tiempo perdíamos: ~4 deploys por semana × 30 min = 2 horas de trabajo manual por semana. Propuse al tech lead implementar GitHub Actions. Me asignaron un sprint para hacerlo sin afectar la entrega normal.
+
+Implementé un workflow con 3 stages: build + tests (xUnit), analysis (SonarQube), y deploy a staging con `dotnet publish` y Azure App Service. Documenté el proceso y capacité al equipo en 30 minutos.
+
+**Resultado:** Los deploys bajaron de 30 minutos manuales a 6 minutos automatizados. Eliminamos 2 horas de trabajo manual por semana. Más importante: detectamos 3 bugs en tests antes de llegar a staging en las primeras dos semanas. El tech lead lo presentó al área como mejora de proceso.
+
+---
+
+### 🔴 Senior — "Cuéntame de una decisión técnica difícil que tomaste con información incompleta"
+
+**Situación:** Era tech lead en una startup de logística. Teníamos un monolito .NET con 300K requests/día, y empezamos a ver degradación de performance en picos (p95 de 800ms, target era 200ms). El CTO quería migrar a microservicios porque "escala mejor". El equipo eran 8 personas.
+
+**Tarea:** Mi responsabilidad era proponer y defender la decisión de arquitectura correcta con un deadline de 2 semanas para presentar al board, sin datos completos de cuál era el bottleneck real.
+
+**Acción:** Lo primero que hice fue rechazar la hipótesis de microservicios sin evidencia. Implementé Application Insights y distributed tracing en 3 días para tener datos reales. Encontré que el 80% de la latencia venía de 3 queries sin índices óptimos y un proceso batch que corría en el mismo thread pool que las requests.
+
+Con datos en mano, propuse un plan en 3 fases: (1) optimizar las queries y mover el batch a un hosted service separado — estimé 60% de mejora en 2 semanas, (2) si no era suficiente, extraer solo el módulo de tracking (el de más carga) como servicio separado en 2 meses, (3) microservicios completos solo si escalábamos a 10x usuarios, con un equipo mayor.
+
+Tuve que defender esto ante el CTO que quería ir directo a microservicios. Usé el análisis de datos y un RICE scoring comparando las opciones, mostrando el riesgo operacional con 8 personas.
+
+**Resultado:** Implementamos fase 1 en 10 días. El p95 bajó a 95ms — mejor que el target. No fue necesario ir a microservicios. Ahorramos ~3 meses de rewrite y mantuvimos la velocidad de entrega de features. Lo que aprendí: las decisiones de arquitectura deben basarse en datos, no en tendencias. Y que saber decir "no todavía" es parte del liderazgo técnico.
+
+---
+
 > 💡 **Recuerda:** Una entrevista es una conversación entre dos partes que están evaluando si hay un buen match. No es un examen donde la empresa tiene todo el poder. Tú también estás decidiendo si quieres trabajar ahí.

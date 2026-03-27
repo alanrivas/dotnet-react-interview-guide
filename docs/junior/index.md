@@ -36,6 +36,25 @@ No finjas saber algo que no sabes. Los entrevistadores prefieren "No lo sé, per
 | [HTTP & Web](junior/http-web) | HTTP, REST básico, cookies, seguridad básica | 🟡 Media |
 | [Git](junior/git) | Comandos básicos, branching, flujo de trabajo | 🟡 Media |
 
+## Horas de estudio recomendadas
+
+| Tema | Horas estimadas | Prioridad |
+|------|----------------|-----------|
+| C# Fundamentos | 8-10h | 🔥 Alta |
+| POO | 6-8h | 🔥 Alta |
+| .NET Básico | 6-8h | 🔥 Alta |
+| JavaScript & TypeScript | 8-10h | 🔥 Alta |
+| React Básico | 8-10h | 🔥 Alta |
+| SQL Básico | 6-8h | 🔥 Alta |
+| HTML & CSS | 4-6h | 🟡 Media |
+| HTTP & Web | 3-4h | 🟡 Media |
+| Git | 2-3h | 🟡 Media |
+| **Total** | **~55-70h** | |
+
+:::tip Plan sugerido
+Dedica 2-3 horas diarias durante 3-4 semanas. Prioriza C#, POO y React primero — son los temas más preguntados.
+:::
+
 ## Tips para la entrevista técnica
 
 ### Antes

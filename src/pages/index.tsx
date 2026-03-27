@@ -36,7 +36,7 @@ function NivelesSection() {
       subtitulo: '0 - 2 años',
       temas: ['C# Fundamentos', 'POO', '.NET Básico', 'SQL Básico', 'React Básico', 'HTML & CSS', 'Git'],
       link: '/docs/junior/csharp-fundamentos',
-      color: '#2e8b57',
+      color: 'var(--level-junior-color)',
     },
     {
       emoji: '🟡',
@@ -44,7 +44,7 @@ function NivelesSection() {
       subtitulo: '2 - 5 años',
       temas: ['C# Avanzado', 'ASP.NET Core', 'Entity Framework', 'APIs REST', 'React Avanzado', 'Testing', 'Patrones de Diseño', 'SQL Avanzado'],
       link: '/docs/semi-senior/csharp-avanzado',
-      color: '#b8860b',
+      color: 'var(--level-semi-color)',
     },
     {
       emoji: '🔴',
@@ -52,7 +52,7 @@ function NivelesSection() {
       subtitulo: '5+ años',
       temas: ['Arquitectura', 'Clean Architecture & DDD', 'Microservicios', 'Performance', 'Seguridad', 'DevOps & CI/CD', 'System Design', 'Liderazgo Técnico'],
       link: '/docs/senior/arquitectura',
-      color: '#8b0000',
+      color: 'var(--level-senior-color)',
     },
   ];
 

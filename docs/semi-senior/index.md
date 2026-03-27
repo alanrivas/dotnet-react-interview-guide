@@ -41,6 +41,31 @@ A este nivel, el entrevistador no busca solo que "funcione". Busca que expliques
 | [Performance Frontend](semi-senior/performance-frontend) | Bundle size, lazy loading, memoización, Web Vitals | 🟡 Media |
 | [TypeScript Avanzado](semi-senior/typescript-avanzado) | Generics, utility types, decorators, type guards | 🟡 Media |
 
+## Horas de estudio recomendadas
+
+| Tema | Horas estimadas | Prioridad |
+|------|----------------|-----------|
+| C# Avanzado | 8-10h | 🔥 Alta |
+| ASP.NET Core | 8-10h | 🔥 Alta |
+| Entity Framework Core | 6-8h | 🔥 Alta |
+| APIs REST | 5-6h | 🔥 Alta |
+| JavaScript Avanzado | 6-8h | 🔥 Alta |
+| React Avanzado | 8-10h | 🔥 Alta |
+| Testing | 6-8h | 🔥 Alta |
+| Patrones de Diseño | 8-10h | 🔥 Alta |
+| SQL Avanzado | 5-6h | 🟡 Media |
+| Autenticación & OAuth | 4-5h | 🟡 Media |
+| Docker | 4-5h | 🟡 Media |
+| Caching & Redis | 4-5h | 🟡 Media |
+| Estado Global | 3-4h | 🟡 Media |
+| Performance Frontend | 3-4h | 🟡 Media |
+| TypeScript Avanzado | 4-5h | 🟡 Media |
+| **Total** | **~85-110h** | |
+
+:::tip Plan sugerido
+Dedica 2-3 horas diarias durante 5-6 semanas. Empieza con C# Avanzado, Patrones de Diseño y Testing — son los más preguntados en entrevistas Semi-Senior.
+:::
+
 ## Práctica y simulacros
 
 | Recurso | Descripción |

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dotnet-react-interview-guide.alanrivas.me/sitemap.xml

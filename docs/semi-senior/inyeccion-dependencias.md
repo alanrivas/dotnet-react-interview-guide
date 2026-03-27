@@ -1,0 +1,475 @@
+---
+id: inyeccion-dependencias
+title: Dependency Injection
+sidebar_position: 15
+---
+
+# Dependency Injection 🟡
+
+## ¿Por qué DI?
+
+```
+Sin DI:
+public class ProductoService
+{
+    private readonly ProductoRepository _repo = new();  // ← Acoplado
+    private readonly EmailService _email = new();
+}
+
+Con DI:
+public class ProductoService
+{
+    private readonly IProductoRepository _repo;        // ← Inyectado
+    private readonly IEmailService _email;
+
+    public ProductoService(IProductoRepository repo, IEmailService email)
+    {
+        _repo = repo;
+        _email = email;
+    }
+}
+
+✅ Beneficios:
+- Testeable: Inyectar mocks en tests
+- Flexible: Cambiar implementación sin modificar código
+- Separación de responsabilidades
+- Configuración centralizada
+```
+
+---
+
+## DI Container en .NET (Registro de servicios)
+
+```csharp
+// ✅ Registrar servicios en Program.cs
+builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IProductoService, ProductoService>();
+
+// Tres ciclos de vida principales:
+
+// 1. TRANSIENT: Nueva instancia cada vez que se inyecta
+builder.Services.AddTransient<IEmailService, EmailService>();
+var email1 = serviceProvider.GetRequiredService<IEmailService>();
+var email2 = serviceProvider.GetRequiredService<IEmailService>();
+// email1 != email2 (diferentes instancias)
+
+// ✅ Usar TRANSIENT para:
+// - Servicios stateless (logging, email)
+// - Cada request necesita instancia nueva
+// - Bajo costo de creación
+
+// 2. SCOPED: Una instancia por request (o por scope)
+builder.Services.AddScoped<AppDbContext>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// En un request HTTP:
+var uow1 = serviceProvider.GetRequiredService<IUnitOfWork>();
+var uow2 = serviceProvider.GetRequiredService<IUnitOfWork>();
+// uow1 == uow2 (misma instancia dentro del request)
+
+// En otro request:
+// uow3 = nueva instancia
+
+// ✅ Usar SCOPED para:
+// - DbContext (SIEMPRE)
+// - UnitOfWork, repositories
+// - Services que manejan datos del request
+
+// 3. SINGLETON: Una instancia para toda la aplicación
+builder.Services.AddSingleton<ICache, MemoryCache>();
+builder.Services.AddSingleton<IConfiguration>();
+
+// ✅ Usar SINGLETON para:
+// - Cache (compartir entre requests)
+// - Configuration
+// - Servicios stateless pesados (conexión pool)
+
+// ❌ NUNCA SINGLETON para: DbContext (thread-unsafe)
+```
+
+---
+
+## Patrón Factory para creación compleja
+
+```csharp
+// ✅ Cuándo el constructor es demasiado complejo, usar Factory
+public interface IEmailServiceFactory
+{
+    IEmailService Create(EmailProvider provider);
+}
+
+public class EmailServiceFactory : IEmailServiceFactory
+{
+    private readonly IConfiguration _config;
+
+    public IEmailService Create(EmailProvider provider)
+    {
+        return provider switch
+        {
+            EmailProvider.SendGrid => new SendGridEmailService(
+                _config["SendGrid:ApiKey"]),
+
+            EmailProvider.Mailgun => new MailgunEmailService(
+                _config["Mailgun:Domain"],
+                _config["Mailgun:ApiKey"]),
+
+            _ => throw new NotSupportedException($"Provider {provider} not supported")
+        };
+    }
+}
+
+// Registrar factory
+builder.Services.AddSingleton<IEmailServiceFactory, EmailServiceFactory>();
+
+// Uso
+public class NotificacionService
+{
+    private readonly IEmailServiceFactory _emailFactory;
+
+    public async Task NotificarAsync(string email)
+    {
+        var emailService = _emailFactory.Create(EmailProvider.SendGrid);
+        await emailService.EnviarAsync(email, "Hola");
+    }
+}
+```
+
+---
+
+## Service Locator (❌ Anti-patrón)
+
+```csharp
+// ❌ NO HACER ESTO: Service Locator
+public class ProductoService
+{
+    private readonly IServiceProvider _serviceProvider;
+
+    public ProductoService(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;  // ← Service Locator — malo
+    }
+
+    public async Task<Producto> ObtenerAsync(int id)
+    {
+        // Obtener dependencias dinámicamente
+        var repo = _serviceProvider.GetService<IProductoRepository>();
+        var cache = _serviceProvider.GetService<ICache>();
+
+        var cached = await cache.GetAsync($"product-{id}");
+        if (cached != null) return cached;
+
+        var producto = await repo.ObtenerAsync(id);
+        return producto;
+    }
+}
+
+// ❌ Problemas:
+// - No se ve qué dependencias necesita (oculto en el código)
+// - Difícil de testear (necesitas mockear IServiceProvider)
+// - Difícil de rastrear dependencias
+
+// ✅ CORRECTO: Inyectar explícitamente
+public class ProductoService
+{
+    private readonly IProductoRepository _repo;
+    private readonly ICache _cache;
+
+    public ProductoService(IProductoRepository repo, ICache cache)
+    {
+        _repo = repo;
+        _cache = cache;
+    }
+
+    public async Task<Producto> ObtenerAsync(int id)
+    {
+        var cached = await _cache.GetAsync($"product-{id}");
+        if (cached != null) return cached;
+
+        return await _repo.ObtenerAsync(id);
+    }
+}
+```
+
+---
+
+## Inyectar configuración
+
+```csharp
+// ✅ Inyectar IOptions<T> para configuración tipada
+public class EmailSettings
+{
+    public string SmtpServer { get; set; } = null!;
+    public int SmtpPort { get; set; }
+    public string Username { get; set; } = null!;
+    public string Password { get; set; } = null!;
+}
+
+// appsettings.json
+{
+  "Email": {
+    "SmtpServer": "smtp.gmail.com",
+    "SmtpPort": 587,
+    "Username": "noreply@example.com",
+    "Password": "${SECRET_EMAIL_PASSWORD}"
+  }
+}
+
+// Program.cs
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("Email"));
+
+// Usar en servicio
+public class EmailService
+{
+    private readonly IOptions<EmailSettings> _options;
+
+    public EmailService(IOptions<EmailSettings> options)
+    {
+        _options = options;
+    }
+
+    public async Task EnviarAsync(string destinatario, string asunto, string cuerpo)
+    {
+        var settings = _options.Value;  // ← Acceder a configuración
+
+        using var client = new SmtpClient(settings.SmtpServer, settings.SmtpPort);
+        client.Credentials = new NetworkCredential(settings.Username, settings.Password);
+        // ...
+    }
+}
+
+// ✅ IOptionsSnapshot<T> si la configuración puede cambiar en runtime
+public class DynamicFeatureService
+{
+    private readonly IOptionsSnapshot<FeatureFlags> _flags;
+
+    public DynamicFeatureService(IOptionsSnapshot<FeatureFlags> flags)
+    {
+        _flags = flags;  // Re-evalúa cada acceso
+    }
+
+    public bool IsFeatureEnabled(string feature)
+    {
+        return _flags.Value.Features.Contains(feature);  // Al día
+    }
+}
+```
+
+---
+
+## Lifetime issues (Captive Dependency)
+
+```csharp
+// ❌ PROBLEMA: TRANSIENT dentro de SCOPED
+builder.Services.AddScoped<IBuscar, BuscadorService>();
+builder.Services.AddTransient<ICache, MemoryCache>();
+
+public class BuscadorService : IBuscar
+{
+    private readonly ICache _cache;  // ← TRANSIENT inyectado en SCOPED
+
+    public BuscadorService(ICache cache)
+    {
+        _cache = cache;
+    }
+}
+
+// Problema: ICache es TRANSIENT, pero se crea con SCOPED
+// Si BuscadorService se reutiliza en el mismo scope, pero ICache es nueva cada vez
+// Resultado: Datos duplicados, comportamiento errático
+
+// ✅ CORRECTO: SCOPED dentro de SCOPED, SINGLETON puede inyectar SCOPED
+builder.Services.AddScoped<IBuscar, BuscadorService>();
+builder.Services.AddScoped<ICache, ScopedCache>();  // ← SCOPED
+
+// ✅ O TRANSIENT dentro de TRANSIENT
+builder.Services.AddTransient<IBuscar, BuscadorService>();
+builder.Services.AddTransient<ICache, MemoryCache>();  // ← TRANSIENT
+
+// ❌ NUNCA: SINGLETON inyectando SCOPED (captive dependency)
+builder.Services.AddScoped<AppDbContext>();
+builder.Services.AddSingleton<CacheService>();
+
+public class CacheService
+{
+    private readonly AppDbContext _db;  // ← SCOPED en SINGLETON — ¡NUNCA!
+    // _db nunca se dispose correctamente
+}
+
+// ✅ Pasar service provider para crear scope si necesitas SCOPED en SINGLETON
+builder.Services.AddSingleton<CacheService>(sp =>
+{
+    var serviceProvider = sp;  // guarda service provider
+    return new CacheService(serviceProvider);
+});
+
+public class CacheService
+{
+    private readonly IServiceProvider _serviceProvider;
+
+    public CacheService(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    public async Task<T> GetAsync<T>(string key, Func<Task<T>> factory)
+    {
+        // ...
+
+        // Crear scope temporal para acceder a SCOPED services
+        using var scope = _serviceProvider.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        // ...
+    }
+}
+```
+
+---
+
+## Inyectar múltiples implementaciones
+
+```csharp
+// ✅ Registrar múltiples versiones del mismo interfaz
+builder.Services.AddScoped<INotificador, EmailNotificador>();
+builder.Services.AddScoped<INotificador, SmsNotificador>();
+builder.Services.AddScoped<INotificador, PushNotificador>();
+
+// Obtendrás la última registrada por defecto
+var notificador = serviceProvider.GetRequiredService<INotificador>();  // PushNotificador
+
+// Obtener todas las implementaciones
+var todosLosNotificadores = serviceProvider.GetRequiredService<IEnumerable<INotificador>>();
+// [EmailNotificador, SmsNotificador, PushNotificador]
+
+// Usar para notificar por todos los canales
+public class NotificadorUnificado
+{
+    private readonly IEnumerable<INotificador> _notificadores;
+
+    public NotificadorUnificado(IEnumerable<INotificador> notificadores)
+    {
+        _notificadores = notificadores;
+    }
+
+    public async Task NotificarAsync(string mensaje)
+    {
+        var tareas = _notificadores.Select(n => n.NotificarAsync(mensaje));
+        await Task.WhenAll(tareas);  // Notificar por todos los canales
+    }
+}
+
+// ✅ También útil para plugins/estrategias
+builder.Services.AddScoped<IPagador, PagadorStripe>();
+builder.Services.AddScoped<IPagador, PagadorPayPal>();
+builder.Services.AddScoped<IPagador, PagadorTransferencia>();
+
+public class ServicioPagos
+{
+    private readonly IEnumerable<IPagador> _pagadores;
+
+    public async Task ProcesarAsync(Pedido pedido, string metodoPago)
+    {
+        var pagador = _pagadores.FirstOrDefault(p => p.Soporta(metodoPago))
+            ?? throw new NotSupportedException($"Método {metodoPago} no soportado");
+
+        await pagador.ProcesarAsync(pedido);
+    }
+}
+```
+
+---
+
+## DI en Tests
+
+```csharp
+// ✅ Usar WebApplicationFactory para tests de integración
+public class ProductosControllerTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly HttpClient _client;
+
+    public ProductosControllerTests(WebApplicationFactory<Program> factory)
+    {
+        _client = factory
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    // Reemplazar repositorio real con mock
+                    var descriptor = services.SingleOrDefault(
+                        d => d.ServiceType == typeof(IProductoRepository));
+                    if (descriptor != null) services.Remove(descriptor);
+
+                    services.AddScoped(_ => new Mock<IProductoRepository>()
+                        .Setup(r => r.ObtenerAsync(It.IsAny<int>()))
+                        .ReturnsAsync(new Producto { Id = 1, Nombre = "Test" })
+                        .Object);
+                });
+            })
+            .CreateClient();
+    }
+
+    [Fact]
+    public async Task GET_Producto_RetornaOk()
+    {
+        var response = await _client.GetAsync("/api/productos/1");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+}
+
+// ✅ Tests unitarios: inyectar mocks directamente
+[TestClass]
+public class ProductoServiceTests
+{
+    private readonly Mock<IProductoRepository> _repoMock;
+    private readonly Mock<IEmailService> _emailMock;
+    private readonly ProductoService _service;
+
+    public ProductoServiceTests()
+    {
+        _repoMock = new Mock<IProductoRepository>();
+        _emailMock = new Mock<IEmailService>();
+        _service = new ProductoService(_repoMock.Object, _emailMock.Object);
+    }
+
+    [TestMethod]
+    public async Task CrearProducto_EnviaEmail()
+    {
+        var dto = new CreateProductoDto("Laptop", 999);
+
+        await _service.CrearAsync(dto);
+
+        _emailMock.Verify(
+            e => e.EnviarAsync(It.IsAny<string>(), It.IsAny<string>()),
+            Times.Once
+        );
+    }
+}
+```
+
+---
+
+## Preguntas frecuentes de entrevista 🎯
+
+**1. ¿Transient vs Scoped vs Singleton?**
+> **Transient**: Nueva instancia siempre (logging, email). **Scoped**: Una por request HTTP (DbContext, repositories). **Singleton**: Una para toda la app (cache, config). Regla de oro: DbContext = SCOPED siempre.
+
+**2. ¿Qué es captive dependency?**
+> Cuando un SINGLETON inyecta un servicio SCOPED/TRANSIENT. El SCOPED nunca se dispose correctamente. Resultado: Memory leaks, datos compartidos entre requests. Evitalo: respeta el lifetime hierarchy.
+
+**3. ¿Service Locator — good or bad?**
+> **Bad**. Oculta dependencias (no se ve qué necesita), difícil de testear, antipólo de loose coupling. Siempre inyecta directamente en el constructor, no uses IServiceProvider.
+
+**4. ¿Cómo inyectas configuración?**
+> Usa `IOptions<T>` o `IOptionsSnapshot<T>`. Registra en Program.cs con `builder.Services.Configure<Settings>()`. Accede con `_options.Value`. IOptionsSnapshot re-evalúa cada acceso (para cambios en runtime).
+
+**5. ¿Database context lifetime?**
+> **SIEMPRE Scoped**. Una instancia por request HTTP. Si usas TRANSIENT o SINGLETON, causas memory leaks y cambios inesperados de estado entre requests. Entity Framework Core se encarga de dispose automáticamente al final del scope.
+
+**6. ¿Cómo manejas dependencias opcionales?**
+> No inyectes nada que sea opcional. Si realmente lo necesitas: Factory pattern o `IOptionsSnapshot<T>` con valor por defecto. Mejor: diseña para que todo sea requerido o inyecta un null object.
+
+**7. ¿Registrar múltiples implementaciones del mismo interfaz?**
+> Registra todas en orden. La última registrada es la "default" cuando haces `GetRequiredService<T>()`. Pero puedes obtener todas con `GetRequiredService<IEnumerable<T>>()` — útil para plugins.
+
+**8. ¿DI en background services?**
+> Background services son Singletons. Para acceder a Scoped (como DbContext), crea un scope: `using var scope = _serviceProvider.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AppDbContext>()`. Así cada procesamiento tiene su propio DbContext.

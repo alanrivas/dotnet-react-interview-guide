@@ -9,7 +9,7 @@ interface QuizProps {
   explanations: string[];
 }
 
-export default function Quiz({ question, options, correctIndex, explanations }: QuizProps): JSX.Element {
+export default function Quiz({ question, options, correctIndex, explanations }: QuizProps): React.ReactElement {
   const [selected, setSelected] = useState<number | null>(null);
   const answered = selected !== null;
   const isCorrect = selected === correctIndex;

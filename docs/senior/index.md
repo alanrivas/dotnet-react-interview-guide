@@ -36,6 +36,7 @@ No es solo conocer más tecnologías. Es la capacidad de ver el panorama complet
 | [Kubernetes a fondo](senior/kubernetes) | Workloads, networking, scaling, probes, secrets, ops | 🔥 Alta |
 | [API Gateway — YARP y Azure APIM](senior/api-gateway) | YARP, BFF pattern, APIM policies, decisiones arq. | 🟡 Media |
 | [Multi-tenancy — SaaS Architecture](senior/multi-tenancy) | Isolation models, EF Core, provisioning, feature flags | 🔥 Alta |
+| [Source Generators en C#](senior/source-generators) | IIncrementalGenerator, AOT, mappers, testing | 🟡 Media |
 | [Cloud (Azure)](senior/cloud) | Servicios principales, arquitecturas cloud-native | 🟡 Media |
 | [System Design](senior/system-design) | Framework, estimaciones, patrones de escalabilidad | 🔥 Alta |
 | [Liderazgo Técnico](senior/liderazgo-tecnico) | Code reviews, ADRs, deuda técnica, mentoring | 🔥 Alta |
@@ -63,7 +64,8 @@ No es solo conocer más tecnologías. Es la capacidad de ver el panorama complet
 | Cloud (Azure) | 5-6h | 🟡 Media |
 | API Gateway (YARP & APIM) | 5-6h | 🟡 Media |
 | Multi-tenancy (SaaS) | 6-8h | 🔥 Alta |
-| **Total** | **~124-160h** | |
+| Source Generators | 4-5h | 🟡 Media |
+| **Total** | **~128-165h** | |
 
 :::tip Plan sugerido
 A nivel Senior, el estudio debe combinarse con práctica real. Dedica 3-4 horas diarias durante 6-8 semanas. Prioriza Arquitectura, System Design y Clean Architecture — son los temas centrales de cualquier entrevista Senior.

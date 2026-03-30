@@ -49,6 +49,7 @@ No es solo conocer más tecnologías. Es la capacidad de ver el panorama complet
 | [Distributed Tracing & Observability](senior/distributed-tracing-observability) | OpenTelemetry, Jaeger, correlación de trazas | 🔥 Alta |
 | [Incident Response & Post-Mortems](senior/incident-response) | On-call, runbooks, blameless post-mortems, RCA | 🟡 Media |
 | [AI e Integración con LLMs](senior/semantic-kernel-ai) | Semantic Kernel, RAG, plugins, streaming, seguridad AI | 🔥 Alta |
+| [.NET Aspire](senior/dotnet-aspire) | AppHost, ServiceDefaults, service discovery, dashboard, azd | 🔥 Alta |
 
 ## Horas de estudio recomendadas
 
@@ -77,7 +78,8 @@ No es solo conocer más tecnologías. Es la capacidad de ver el panorama complet
 | Distributed Tracing & Observability | 5-6h | 🔥 Alta |
 | Incident Response & Post-Mortems | 3-4h | 🟡 Media |
 | AI e Integración con LLMs | 6-8h | 🔥 Alta |
-| **Total** | **~155-205h** | |
+| .NET Aspire | 5-6h | 🔥 Alta |
+| **Total** | **~160-211h** | |
 
 :::tip Plan sugerido
 A nivel Senior, el estudio debe combinarse con práctica real. Dedica 3-4 horas diarias durante 6-8 semanas. Prioriza Arquitectura, System Design y Clean Architecture — son los temas centrales de cualquier entrevista Senior.

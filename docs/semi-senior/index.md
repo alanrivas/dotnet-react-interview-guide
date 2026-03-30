@@ -44,8 +44,24 @@ A este nivel, el entrevistador no busca solo que "funcione". Busca que expliques
 | [Testing Frontend — Vitest & MSW](semi-senior/testing-frontend) | Configuración profesional, MSW, providers, React Query | 🔥 Alta |
 | [Rate Limiting en .NET 8](semi-senior/rate-limiting) | Fixed Window, Sliding Window, Token Bucket, Concurrency | 🟡 Media |
 | [GraphQL con .NET y React](semi-senior/graphql) | Hot Chocolate, DataLoader, Apollo Client, N+1 | 🟡 Media |
+| [gRPC con .NET](semi-senior/grpc) | Protobuf, 4 tipos de comunicación, interceptores, testing | 🟡 Media |
 | [Accesibilidad Web (a11y)](semi-senior/accesibilidad) | ARIA, foco, live regions, testing con jest-axe | 🟡 Media |
 | [Blazor](semi-senior/blazor) | Blazor Server/WASM/Hybrid, componentes, lifecycle, JS Interop | 🟡 Media |
+| [SignalR & WebSockets](semi-senior/signalr-websockets) | Real-time en .NET, hubs, grupos, reconexión | 🟡 Media |
+| [Transacciones en BD](semi-senior/transacciones-base-datos) | ACID, IsolationLevel, savepoints, distributed tx | 🟡 Media |
+| [Message Queues](semi-senior/message-queues) | RabbitMQ, Azure Service Bus, patrones async | 🟡 Media |
+| [Inyección de Dependencias](semi-senior/inyeccion-dependencias) | Scopes, lifetimes, keyed services, factory | 🔥 Alta |
+| [Manejo de Errores](semi-senior/manejo-errores) | ProblemDetails, middleware, Result pattern | 🔥 Alta |
+| [Seguridad en APIs](semi-senior/seguridad-api) | OWASP, CORS, CSRF, input validation | 🔥 Alta |
+| [Caching — Estrategias](semi-senior/caching-estrategias) | Cache-aside, write-through, read-through, TTL | 🟡 Media |
+| [Performance & Profiling](semi-senior/performance-profiling) | BenchmarkDotNet, dotnet-trace, memory leaks | 🟡 Media |
+| [EF Core — Performance & N+1](semi-senior/ef-core-performance) | Include, proyecciones, AsNoTracking, split queries | 🔥 Alta |
+| [Integration Testing](semi-senior/integration-testing) | WebApplicationFactory, TestContainers, mocks | 🔥 Alta |
+| [Minimal API vs Controllers](semi-senior/minimal-api-vs-controllers) | Trade-offs, endpoint filters, grupos | 🟡 Media |
+| [Polly & Resiliencia](semi-senior/polly-resiliencia) | Retry, circuit breaker, timeout, bulkhead | 🟡 Media |
+| [CI/CD con GitHub Actions](semi-senior/ci-cd-github-actions) | Workflows, matrix, secrets, deploy automático | 🟡 Media |
+| [Background Services](semi-senior/background-services) | IHostedService, Worker, Channels, Quartz | 🟡 Media |
+| [Serilog & Structured Logging](semi-senior/serilog-logging) | Enrichers, sinks, correlation ID, context | 🟡 Media |
 
 ## Horas de estudio recomendadas
 
@@ -72,7 +88,23 @@ A este nivel, el entrevistador no busca solo que "funcione". Busca que expliques
 | GraphQL con .NET y React | 4-5h | 🟡 Media |
 | Accesibilidad Web (a11y) | 3-4h | 🟡 Media |
 | Blazor | 4-5h | 🟡 Media |
-| **Total** | **~110-142h** | |
+| SignalR & WebSockets | 3-4h | 🟡 Media |
+| Transacciones en BD | 3-4h | 🟡 Media |
+| Message Queues | 4-5h | 🟡 Media |
+| Inyección de Dependencias | 4-5h | 🔥 Alta |
+| Manejo de Errores | 3-4h | 🔥 Alta |
+| Seguridad en APIs | 4-5h | 🔥 Alta |
+| Caching — Estrategias | 3-4h | 🟡 Media |
+| Performance & Profiling | 4-5h | 🟡 Media |
+| EF Core — Performance & N+1 | 4-5h | 🔥 Alta |
+| Integration Testing | 5-6h | 🔥 Alta |
+| Minimal API vs Controllers | 2-3h | 🟡 Media |
+| Polly & Resiliencia | 3-4h | 🟡 Media |
+| CI/CD con GitHub Actions | 3-4h | 🟡 Media |
+| Background Services | 3-4h | 🟡 Media |
+| Serilog & Structured Logging | 2-3h | 🟡 Media |
+| gRPC con .NET | 4-5h | 🟡 Media |
+| **Total** | **~167-210h** | |
 
 :::tip Plan sugerido
 Dedica 2-3 horas diarias durante 5-6 semanas. Empieza con C# Avanzado, Patrones de Diseño y Testing — son los más preguntados en entrevistas Semi-Senior.

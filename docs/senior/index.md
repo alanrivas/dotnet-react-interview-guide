@@ -43,6 +43,11 @@ No es solo conocer más tecnologías. Es la capacidad de ver el panorama complet
 | [Escalabilidad de BD](senior/escalabilidad-bd) | Sharding, replicación, particionamiento, read replicas | 🟡 Media |
 | [Event-Driven Architecture](senior/event-driven) | Eventos, mensajería, Kafka, outbox pattern | 🟡 Media |
 | [Observabilidad](senior/observabilidad) | Logging estructurado, métricas, trazas distribuidas | 🟡 Media |
+| [System Design Patterns Avanzados](senior/system-design-patterns-advanced) | CQRS+ES, Saga, Two-Phase Commit, Idempotency | 🔥 Alta |
+| [Microservicios — Anti-patrones](senior/microservicios-traps) | Distributed monolith, chatty services, coupling | 🔥 Alta |
+| [Feature Flags & Progressive Delivery](senior/feature-flags) | LaunchDarkly, dark launches, canary, kill switches | 🟡 Media |
+| [Distributed Tracing & Observability](senior/distributed-tracing-observability) | OpenTelemetry, Jaeger, correlación de trazas | 🔥 Alta |
+| [Incident Response & Post-Mortems](senior/incident-response) | On-call, runbooks, blameless post-mortems, RCA | 🟡 Media |
 
 ## Horas de estudio recomendadas
 
@@ -65,7 +70,12 @@ No es solo conocer más tecnologías. Es la capacidad de ver el panorama complet
 | API Gateway (YARP & APIM) | 5-6h | 🟡 Media |
 | Multi-tenancy (SaaS) | 6-8h | 🔥 Alta |
 | Source Generators | 4-5h | 🟡 Media |
-| **Total** | **~128-165h** | |
+| System Design Patterns Avanzados | 6-8h | 🔥 Alta |
+| Microservicios — Anti-patrones | 4-5h | 🔥 Alta |
+| Feature Flags & Progressive Delivery | 3-4h | 🟡 Media |
+| Distributed Tracing & Observability | 5-6h | 🔥 Alta |
+| Incident Response & Post-Mortems | 3-4h | 🟡 Media |
+| **Total** | **~149-197h** | |
 
 :::tip Plan sugerido
 A nivel Senior, el estudio debe combinarse con práctica real. Dedica 3-4 horas diarias durante 6-8 semanas. Prioriza Arquitectura, System Design y Clean Architecture — son los temas centrales de cualquier entrevista Senior.

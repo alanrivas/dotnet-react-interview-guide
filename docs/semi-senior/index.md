@@ -45,6 +45,7 @@ A este nivel, el entrevistador no busca solo que "funcione". Busca que expliques
 | [Rate Limiting en .NET 8](semi-senior/rate-limiting) | Fixed Window, Sliding Window, Token Bucket, Concurrency | 🟡 Media |
 | [GraphQL con .NET y React](semi-senior/graphql) | Hot Chocolate, DataLoader, Apollo Client, N+1 | 🟡 Media |
 | [Accesibilidad Web (a11y)](semi-senior/accesibilidad) | ARIA, foco, live regions, testing con jest-axe | 🟡 Media |
+| [Blazor](semi-senior/blazor) | Blazor Server/WASM/Hybrid, componentes, lifecycle, JS Interop | 🟡 Media |
 
 ## Horas de estudio recomendadas
 
@@ -70,7 +71,8 @@ A este nivel, el entrevistador no busca solo que "funcione". Busca que expliques
 | Rate Limiting en .NET 8 | 3-4h | 🟡 Media |
 | GraphQL con .NET y React | 4-5h | 🟡 Media |
 | Accesibilidad Web (a11y) | 3-4h | 🟡 Media |
-| **Total** | **~106-137h** | |
+| Blazor | 4-5h | 🟡 Media |
+| **Total** | **~110-142h** | |
 
 :::tip Plan sugerido
 Dedica 2-3 horas diarias durante 5-6 semanas. Empieza con C# Avanzado, Patrones de Diseño y Testing — son los más preguntados en entrevistas Semi-Senior.

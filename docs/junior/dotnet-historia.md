@@ -845,3 +845,236 @@ NuGet (2010):
 
 **6. ¿Por qué Microsoft hizo el salto a .NET Core en lugar de evolucionar .NET Framework?**
 > .NET Framework arrastraba 15 años de decisiones de diseño ligadas a Windows y al modelo de IIS. Era imposible hacerlo cross-platform o modular sin romper compatibilidad. Reescribirlo desde cero permitió eliminar System.Web, hacer DI nativa, usar Kestrel como servidor embebido, y abrir el código. El costo fue la migración — muchas empresas siguen en .NET Framework por eso.
+
+---
+
+## 🔴 Cambios DRÁSTICOS entre eras (lo que la entrevista va a investigar)
+
+### De .NET Framework a .NET Core: La ruptura
+
+| Aspecto | .NET Framework 4.8 | .NET Core 1.0+ |
+|--------|------------------|----------------|
+| **Servidor web** | IIS obligatorio | Kestrel embebido, sin IIS |
+| **Configuración** | web.config (XML) | appsettings.json (YAML/JSON) |
+| **Inyección de DI** | Externa (Castle, Autofac, Ninject) | Nativa en `IServiceCollection` |
+| **ORM recomendado** | Entity Framework 6 | Entity Framework Core (reescritura) |
+| **Routing** | Atributos `[RoutePrefix]` | Minimal APIs o Controllers con `MapControllers()` |
+| **Clase base** | `System.Web.Mvc.Controller` (pesada) | `ControllerBase` (ligera) o sin controller |
+| **Globales** | `Global.asax` con `Application_Start` | `Program.cs` con `builder.Services` |
+| **Serialización JSON** | Json.NET (Newtonsoft) externo | System.Text.Json nativo (+ opción Newtonsoft) |
+| **System.Web.dll** | Enorme, con todo incluido | ❌ Eliminada completamente |
+| **Características desktop** | WinForms, WPF | ✅ Disponibles (con limitaciones) |
+| **Plataformas** | Windows only | Windows, Linux, macOS (Docker) |
+
+### De .NET Core 3.1 a .NET 5+ : Consolidación
+
+```csharp
+// .NET Core 3.1: Todavía era "Core", cambios frecuentes
+dotnet new console  // output: "old school"
+
+// .NET 5+: Unified, más estable, yearly releases 
+dotnet new console  // output: top-level statements por defecto
+
+// .NET 6+: Hot Reload en VS, pausa el programa y actualiza métodos sin reiniciar
+dotnet watch run
+
+// .NET 8+: Native AOT — compila todo a binario sin CLR (startup <10ms)
+dotnet publish -c Release -p:PublishAot=true
+```
+
+---
+
+## 📅 Versiones y End-of-Life (EOL)
+
+| Versión | Lanzamiento | Tipo | EOL | Por qué EOL |
+|---------|------------|------|-----|-----------|
+| .NET FW 4.8 | Sep 2019 | Legacy | ∞ (indefinido) | Soporte indefinido en Windows; no evoluciona |
+| .NET Core 1.x | Jun 2016 | Preview | Jun 2017 | Demasiado inestable |
+| .NET Core 2.0 | Aug 2017 | STS | Oct 2018 | Short-Term Support |
+| .NET Core 2.1 | May 2018 | LTS | Aug 2021 | LTS de 3 años, migración esperada |
+| .NET Core 3.0 | Sep 2019 | STS | Mar 2020 | Solo 6 meses |
+| .NET Core 3.1 | Dec 2019 | LTS | Dec 2022 | LTS de 3 años, sucesor fue .NET 5 |
+| **.NET 5** | Nov 2020 | STS | May 2022 | 6 meses después de 6 |
+| **.NET 6** | Nov 2021 | LTS | **Nov 2024** | ⚠️ **EOL inminente o próximo** |
+| **.NET 7** | Nov 2022 | STS | May 2024 | Ya deprecado |
+| **.NET 8** | Nov 2023 | LTS | **Nov 2026** | ✅ **Versión LTS recomendada AHORA** |
+| .NET 9 | Nov 2024 | STS | May 2025 | Standard de 6 meses |
+| .NET 10 (plan) | Nov 2025 | LTS | Nov 2028 | Próximo LTS |
+
+**Patrón de Microsoft:**
+- **STS (Standard Term Support)** = 6 meses de soporte
+- **LTS (Long-Term Support)** = 3 años de soporte
+- Nuevas versiones cada noviembre (Patch Tuesdays)
+
+---
+
+## 🚀 Guía de migración: .NET Framework → .NET Moderno
+
+### Paso 1: Identificar dependencias problemáticas
+
+```csharp
+// ❌ Imposible migrar sin reescritura—
+EntityFramework = EF6               // → EntityFrameworkCore
+WebActivator                        // → NuGet/Assembly binding
+HttpServer                          // → Kestrel
+System.Web.* namespaces            // → Microsoft.AspNetCore.*
+
+// ⚠️ Requiere trabajo adicional:
+WCF services (SOAP)                 // → gRPC o REST
+ASP.NET WebForms                    // → ASP.NET Core MVC/Razor Pages
+COM interop                         // → P/Invoke o Runtime.InteropServices
+AppDomains                          // → AssemblyLoadContext (limited)
+
+// ✅ Relativamente fácil si está bien diseñado:
+Business logic (POCOs, repos)       // → Copy as-is, recompile
+Services (interfaces)               // → Funciona igual
+Unit tests (NUnit/MSTest/xUnit)     // → Funciona igual (recompilar)
+```
+
+### Paso 2: Usar el analizador de compatibilidad
+
+```powershell
+# Microsoft publica herramienta gratuita
+dotnet add package Microsoft.Porting.Client
+dotnet porting-client analyze --csproj MiProyecto.csproj
+
+# Output: reporte detallado de qué no es compatible
+```
+
+### Paso 3: Crear nuevo proyecto y migrar
+
+```bash
+# No editar .csproj viejo — arrancar con una plantilla moderna
+dotnet new webapi -n MiProyecto.Moderno
+
+# Copiar code: Controllers, Services, Models
+# Actualizar: Namespaces, configuración en Program.cs, inyección de DI
+```
+
+---
+
+## ⚡ Comparación de Performance Real
+
+Datos de [TechEmpower Benchmarks](https://www.techempower.com/benchmarks/) (2024):
+
+### Throughput (req/sec en JSON serialization)
+
+```
+.NET Framework 4.8:        ~120k req/sec
+.NET Core 2.1 (2018):     ~180k req/sec (+50%)
+.NET 5:                   ~320k req/sec (+80%)
+.NET 6:                   ~350k req/sec (+9%)
+.NET 8 (Native AOT):      ~420k req/sec (+20%)
+
+Mejora acumulada: 3.5x más rápido en 8 años
+(especialmente gracias a RyuJIT y cambios en GC)
+```
+
+### Memory footprint (Linux container, "Hello world")
+
+```
+ASP.NET Framework:    ~250 MB (solo startup del IIS en Windows)
+.NET Core 3.1:       ~50 MB
+.NET 6:             ~40 MB
+.NET 8 (AOT):       ~15 MB (sin CLR)
+```
+
+### Cold startup (tiempo hasta first request)
+
+```
+.NET Framework:    ~1500ms (inicialización de AppDomain)
+.NET Core 1.0:    ~300ms
+.NET Core 3.1:    ~150ms
+.NET 6:          ~80ms
+.NET 8 (AOT):    ~5ms (para serverless = revolucionario)
+```
+
+---
+
+## 🎯 Cambios QUE DESAPARECIERON (features retiradas)
+
+Esto es **crucial** para entrevistas de arquitectura — hay casos donde se NECESITABA esa feature:
+
+### Eliminado en .NET Core / .NET 5+
+
+| Feature | Era | Razón | Alternativa |
+|---------|-----|-------|-----------|
+| **AppDomains** | FW clásico | No existe en .NET moderno (islas de código) | AssemblyLoadContext (muy limitado) |
+| **Remoting** | FW clásico | Seguridad + cross-platform incompatible | gRPC, HTTP, Azure Service Bus |
+| **WebForms** | FW 1.0–4.8 | Modelo antiguo, ViewState pesado | ASP.NET Core Razor Pages/MVC |
+| **GlobalResources (RESX)** | FW ASP.NET | Localización compleja | Localization middleware +  JSON |
+| **Reflection.Emit** | Parcial | Limitado en AOT | IL Weaving + Roslyn (source generators) |
+| **Binary serialization** | .NET Framework | Inseguro (RCE remote code exec risk) | JSON, protobuf |
+| **Obsolete APIs** | Various | Deprecated por ser inseguras | Modern replacements |
+| **CAS (Code Access Security)** | FW 4.x | Obsoleto (nunca fue seguro de verdad) | ❌ Nada (asumir confianza en assembly) |
+
+---
+
+## 🔮 El futuro: .NET 10 y más allá
+
+### RoadMap oficial (Microsoft)
+
+```
+2025 (Nov):   .NET 10 LTS     → Core Focus: Performance AOT, Razor improvements
+2026 (Nov):   .NET 11 STS     → Uncertain, posible deprecation de algo legacy
+2028 (Nov):   .NET 12 LTS     → Coincide con Windows 12 release (rumores)
+
+Prioridades actuales:
+  ✅ Native AOT — cada vez más maduro (hoy .NET 9, casi production-ready)
+  ✅ WASM — Blazor United (SSR + Server + Client en 1 app)
+  ✅ Performance — Siempre, competencia con Go, Rust
+  ✅ Interop — Better P/Invoke, C# 13+ con extern methods
+  ✅ Containers — Optimizaciones para Docker/Kubernetes
+  ❌ Windows Forms en Linux — Muy complejo, probablemente no
+  ❌ "Eliminar" .NET Framework — Indefinido (legacy = compatible eternamente)
+```
+
+### C# roadmap paralelo
+
+```
+C# 13 (hoy, 2024):      Extension types, ref structs improvements
+C# 14 (esperado 2025):  Params collections, mejor pattern matching
+C# 15 (2026):           Speculation, posibles macros
+```
+
+---
+
+## 🎓 Preparación para entrevistas: Una sola pregunta que lo resume TODO
+
+**Pregunta tipo "senior":**
+> *"Describí la evolución de .NET incluyendo qué cambió, por qué, y cuáles fueron los tradeoffs. ¿Cuándo usarías .NET Framework hoy? ¿Y cuándo NO lo usarías?"*
+
+**Respuesta esperada** (la que te hace parecer competente):
+
+> ".NET Framework y .NET Core surgieron de necesidades diferentes. Framework fue robusto durante años pero Windows-only y monolítico. El salto a Core en 2016 fue un reset para eliminar técnica deuda, permitir cross-platform, e integrar DI nativa — pero rompió compatibilidad. Hoy (.NET 8 LTS) es claramente superior para proyectos nuevos: mucho más rápido (3.5x performance), menor huella, despliegue simple sin servidor. 
+>
+> Usaría .NET Framework SOLO si:
+> - heredé código que depende de WinForms legacy sin posibilidad de migrar
+> - Necesito AppDomains (extremadamente raro)
+> - Una librería crítica no tiene versión para .NET Core
+>
+> Para todo lo demás: .NET 8. Migrar WebForms/WCF es trabajo, pero vale la pena.
+>
+> Sobre los contenedores (Castle, Autofac): eran necesarios porque Framework no tenía DI. Hoy Core tiene DI integrada que cubre 90%, aunque Autofac sigue siendo útil para decoradores y factories convencionales."
+
+---
+
+## 📚 Recursos adicionales para ir más profundo
+
+### Documentación oficial (Microsoft Docs)
+- [.NET Foundation History](https://dot.net/en-us/platform/why-choose-dotnet)
+- [Migration guide Framework → Core](https://docs.microsoft.com/en-us/dotnet/core/porting/)
+- [C# version history](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/)
+
+### Artículos técnicos recomendados
+- **"The Evolution of .NET"** — Matt Warren (MSDN Blog, 2020)
+- **"Why we built .NET Core"** — Immo Landwerth (Microsoft Tech Lead)
+- **"Native AOT in .NET"** — .NET Blog (2022)
+
+### Benchmarks y datos reales
+- TechEmpower — techempower.com/benchmarks (actualizado cada trimestre)
+- BenchmarkDotNet — github.com/dotnet/benchmarkdotnet (librería para hacer micro-benchmarks)
+
+### "Historias de horror" de migraciones reales
+- Company that migrated 200k LOC from .NET FW → search "enterprise .NET migration reddit"
+- Common pitfalls: EF6 queries breaking in EF Core, DI configuration, async all the way

@@ -43,6 +43,7 @@ A este nivel, el entrevistador no busca solo que "funcione". Busca que expliques
 | [Next.js & React Server Components](semi-senior/nextjs-rsc) | App Router, RSC, Server Actions, caché, SSR/ISR/SSG | 🔥 Alta |
 | [Testing Frontend — Vitest & MSW](semi-senior/testing-frontend) | Configuración profesional, MSW, providers, React Query | 🔥 Alta |
 | [Rate Limiting en .NET 8](semi-senior/rate-limiting) | Fixed Window, Sliding Window, Token Bucket, Concurrency | 🟡 Media |
+| [GraphQL con .NET y React](semi-senior/graphql) | Hot Chocolate, DataLoader, Apollo Client, N+1 | 🟡 Media |
 
 ## Horas de estudio recomendadas
 
@@ -66,7 +67,8 @@ A este nivel, el entrevistador no busca solo que "funcione". Busca que expliques
 | Next.js & RSC | 6-8h | 🔥 Alta |
 | Testing Frontend (Vitest & MSW) | 5-6h | 🔥 Alta |
 | Rate Limiting en .NET 8 | 3-4h | 🟡 Media |
-| **Total** | **~99-128h** | |
+| GraphQL con .NET y React | 4-5h | 🟡 Media |
+| **Total** | **~103-133h** | |
 
 :::tip Plan sugerido
 Dedica 2-3 horas diarias durante 5-6 semanas. Empieza con C# Avanzado, Patrones de Diseño y Testing — son los más preguntados en entrevistas Semi-Senior.

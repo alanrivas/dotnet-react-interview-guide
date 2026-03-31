@@ -84,7 +84,7 @@ const config: Config = {
           title: 'Niveles',
           items: [
             { label: '🟢 Junior', to: '/docs/junior/csharp-fundamentos' },
-            { label: '🟡 Semi-Senior', to: '/docs/semi-senior/csharp-avanzado' },
+            { label: '🟡 Semi-Senior', to: '/docs/semi-senior/dotnet/csharp-avanzado' },
             { label: '🔴 Senior', to: '/docs/senior/arquitectura' },
           ],
         },

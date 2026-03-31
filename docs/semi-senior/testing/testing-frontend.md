@@ -6,7 +6,7 @@ sidebar_position: 17
 
 # Testing Frontend — Vitest & MSW 🟡
 
-El testing básico de React ya está cubierto en la sección de [Testing](testing). Este documento profundiza en **configuración profesional** con Vitest, mocking de APIs con **MSW (Mock Service Worker)**, y testing de componentes que dependen de Providers, React Query y Router.
+El testing básico de React ya está cubierto en la sección de [Testing](./backend). Este documento profundiza en **configuración profesional** con Vitest, mocking de APIs con **MSW (Mock Service Worker)**, y testing de componentes que dependen de Providers, React Query y Router.
 
 ---
 

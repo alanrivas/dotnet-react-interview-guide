@@ -24,32 +24,94 @@ No es solo conocer más tecnologías. Es la capacidad de ver el panorama complet
 
 ## Temas del nivel Senior
 
+### 🏛️ Arquitectura
+
 | Tema | Descripción | Prioridad |
 |------|-------------|-----------|
 | [Arquitectura de Software](senior/arquitectura) | Estilos arquitectónicos, CQRS, Event-Driven, CAP Theorem | 🔥 Alta |
-| [Clean Architecture & DDD](senior/clean-architecture) | Capas, Domain Model, Aggregates, Value Objects | 🔥 Alta |
+| [Clean Architecture & DDD](senior/arquitectura/clean-architecture) | Capas, Domain Model, Aggregates, Value Objects | 🔥 Alta |
+| [Multi-tenancy — SaaS Architecture](senior/arquitectura/multi-tenancy) | Isolation models, EF Core, provisioning, feature flags | 🔥 Alta |
+
+### 🔗 Microservicios
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
 | [Microservicios](senior/microservicios) | Comunicación, Saga, resiliencia, mensajería | 🔥 Alta |
-| [Performance](senior/performance) | Caching, profiling, query optimization, async | 🔥 Alta |
-| [Seguridad](senior/seguridad) | OWASP Top 10, JWT seguro, autorización avanzada | 🔥 Alta |
-| [Concurrencia & Paralelismo](senior/concurrencia) | Threading, async avanzado, race conditions, locks | 🟡 Media |
-| [DevOps & CI/CD](senior/devops) | GitHub Actions, K8s, Terraform, Observabilidad | 🟡 Media |
-| [Kubernetes a fondo](senior/kubernetes) | Workloads, networking, scaling, probes, secrets, ops | 🔥 Alta |
-| [API Gateway — YARP y Azure APIM](senior/api-gateway) | YARP, BFF pattern, APIM policies, decisiones arq. | 🟡 Media |
-| [Multi-tenancy — SaaS Architecture](senior/multi-tenancy) | Isolation models, EF Core, provisioning, feature flags | 🔥 Alta |
-| [Source Generators en C#](senior/source-generators) | IIncrementalGenerator, AOT, mappers, testing | 🟡 Media |
-| [Cloud (Azure)](senior/cloud) | Servicios principales, arquitecturas cloud-native | 🟡 Media |
+| [Microservicios — Anti-patrones](senior/microservicios/microservicios-traps) | Distributed monolith, chatty services, coupling | 🔥 Alta |
+
+### 📐 System Design
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
 | [System Design](senior/system-design) | Framework, estimaciones, patrones de escalabilidad | 🔥 Alta |
-| [Liderazgo Técnico](senior/liderazgo-tecnico) | Code reviews, ADRs, deuda técnica, mentoring | 🔥 Alta |
-| [Escalabilidad de BD](senior/escalabilidad-bd) | Sharding, replicación, particionamiento, read replicas | 🟡 Media |
+| [System Design Patterns Avanzados](senior/system-design/system-design-patterns-advanced) | CQRS+ES, Saga, Two-Phase Commit, Idempotency | 🔥 Alta |
+
+### ⚡ Performance
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [Performance](senior/performance) | Caching, profiling, query optimization, async | 🔥 Alta |
+
+### ⚙️ C# Avanzado
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [Concurrencia & Paralelismo](senior/dotnet/concurrencia) | Threading, async avanzado, race conditions, locks | 🟡 Media |
+| [Source Generators en C#](senior/dotnet/source-generators) | IIncrementalGenerator, AOT, mappers, testing | 🟡 Media |
+
+### 🔒 Seguridad
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [Seguridad](senior/seguridad) | OWASP Top 10, JWT seguro, autorización avanzada | 🔥 Alta |
+
+### 📨 Event-Driven
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
 | [Event-Driven Architecture](senior/event-driven) | Eventos, mensajería, Kafka, outbox pattern | 🟡 Media |
+
+### 🐳 Infraestructura y DevOps
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [DevOps & CI/CD](senior/infraestructura/devops) | GitHub Actions, Terraform, pipelines | 🟡 Media |
+| [Kubernetes a fondo](senior/infraestructura/kubernetes) | Workloads, networking, scaling, probes, secrets, ops | 🔥 Alta |
+| [API Gateway — YARP y Azure APIM](senior/infraestructura/api-gateway) | YARP, BFF pattern, APIM policies, decisiones arq. | 🟡 Media |
+| [Feature Flags & Progressive Delivery](senior/infraestructura/feature-flags) | LaunchDarkly, dark launches, canary, kill switches | 🟡 Media |
+| [.NET Aspire](senior/infraestructura/dotnet-aspire) | AppHost, ServiceDefaults, service discovery, dashboard, azd | 🔥 Alta |
+
+### 🤖 Inteligencia Artificial
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [AI e Integración con LLMs](senior/ai/semantic-kernel-ai) | Semantic Kernel, RAG, plugins, streaming, seguridad AI | 🔥 Alta |
+
+### 📊 Observabilidad
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
 | [Observabilidad](senior/observabilidad) | Logging estructurado, métricas, trazas distribuidas | 🟡 Media |
-| [System Design Patterns Avanzados](senior/system-design-patterns-advanced) | CQRS+ES, Saga, Two-Phase Commit, Idempotency | 🔥 Alta |
-| [Microservicios — Anti-patrones](senior/microservicios-traps) | Distributed monolith, chatty services, coupling | 🔥 Alta |
-| [Feature Flags & Progressive Delivery](senior/feature-flags) | LaunchDarkly, dark launches, canary, kill switches | 🟡 Media |
-| [Distributed Tracing & Observability](senior/distributed-tracing-observability) | OpenTelemetry, Jaeger, correlación de trazas | 🔥 Alta |
-| [Incident Response & Post-Mortems](senior/incident-response) | On-call, runbooks, blameless post-mortems, RCA | 🟡 Media |
-| [AI e Integración con LLMs](senior/semantic-kernel-ai) | Semantic Kernel, RAG, plugins, streaming, seguridad AI | 🔥 Alta |
-| [.NET Aspire](senior/dotnet-aspire) | AppHost, ServiceDefaults, service discovery, dashboard, azd | 🔥 Alta |
+| [Distributed Tracing & Observability](senior/observabilidad/distributed-tracing-observability) | OpenTelemetry, Jaeger, correlación de trazas | 🔥 Alta |
+| [Incident Response & Post-Mortems](senior/observabilidad/incident-response) | On-call, runbooks, blameless post-mortems, RCA | 🟡 Media |
+
+### 🗄️ Escalabilidad de BD
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [Escalabilidad de BD](senior/escalabilidad-bd) | Sharding, replicación, particionamiento, read replicas | 🟡 Media |
+
+### ☁️ Cloud (Azure)
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [Cloud (Azure)](senior/cloud) | Servicios principales, arquitecturas cloud-native | 🟡 Media |
+
+### Otros
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [Liderazgo Técnico](senior/liderazgo-tecnico) | Code reviews, ADRs, deuda técnica, mentoring | 🔥 Alta |
 
 ## Horas de estudio recomendadas
 

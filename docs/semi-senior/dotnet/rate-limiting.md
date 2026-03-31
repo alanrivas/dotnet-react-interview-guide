@@ -9,7 +9,7 @@ sidebar_position: 18
 Desde .NET 7, ASP.NET Core incluye **Rate Limiting nativo** en el namespace `Microsoft.AspNetCore.RateLimiting` — sin librerías de terceros. Es uno de los temas más preguntados en entrevistas porque combina conceptos de seguridad, performance y algoritmos.
 
 :::info Contexto
-El archivo [Seguridad en APIs](seguridad-api) menciona `AspNetCoreRateLimit` (librería de terceros). Este documento cubre la implementación **nativa de .NET 7/8** que la reemplaza en la mayoría de los casos.
+El archivo [Seguridad en APIs](../apis/seguridad-api) menciona `AspNetCoreRateLimit` (librería de terceros). Este documento cubre la implementación **nativa de .NET 7/8** que la reemplaza en la mayoría de los casos.
 :::
 
 ---

@@ -23,45 +23,77 @@ A este nivel, el entrevistador no busca solo que "funcione". Busca que expliques
 
 ## Temas del nivel Semi-Senior
 
+### ⚙️ C# y .NET
+
 | Tema | Descripción | Prioridad |
 |------|-------------|-----------|
-| [C# Avanzado](semi-senior/csharp-avanzado) | Generics, delegates, pattern matching, async avanzado | 🔥 Alta |
-| [ASP.NET Core](semi-senior/aspnet-core) | Pipeline, middleware, DI, JWT, validación | 🔥 Alta |
-| [Entity Framework Core](semi-senior/entity-framework) | Queries avanzados, migrations, performance | 🔥 Alta |
-| [APIs REST](semi-senior/apis-rest) | Principios REST, versionado, paginación, documentación | 🔥 Alta |
-| [JavaScript Avanzado](semi-senior/javascript-avanzado) | Closures, event loop, prototypes, módulos | 🔥 Alta |
-| [React Avanzado](semi-senior/react-avanzado) | Hooks avanzados, Context, Custom Hooks, React Query | 🔥 Alta |
-| [Estado Global](semi-senior/estado-global) | Redux Toolkit, Zustand, cuándo usar cada uno | 🟡 Media |
-| [Testing](semi-senior/testing) | xUnit, Moq, Integration Testing, Testing Library | 🔥 Alta |
+| [C# Avanzado](semi-senior/dotnet/csharp-avanzado) | Generics, delegates, pattern matching, async avanzado | 🔥 Alta |
+| [ASP.NET Core](semi-senior/dotnet/aspnet-core) | Pipeline, middleware, DI, JWT, validación | 🔥 Alta |
+| [Entity Framework Core](semi-senior/dotnet/entity-framework) | Queries avanzados, migrations, performance | 🔥 Alta |
+| [EF Core — Performance & N+1](semi-senior/dotnet/ef-core-performance) | Include, proyecciones, AsNoTracking, split queries | 🔥 Alta |
+| [Inyección de Dependencias](semi-senior/dotnet/inyeccion-dependencias) | Scopes, lifetimes, keyed services, factory | 🔥 Alta |
+| [Manejo de Errores](semi-senior/dotnet/manejo-errores) | ProblemDetails, middleware, Result pattern | 🔥 Alta |
+| [Rate Limiting en .NET 8](semi-senior/dotnet/rate-limiting) | Fixed Window, Sliding Window, Token Bucket, Concurrency | 🟡 Media |
+| [Minimal API vs Controllers](semi-senior/dotnet/minimal-api-vs-controllers) | Trade-offs, endpoint filters, grupos | 🟡 Media |
+| [Background Services](semi-senior/dotnet/background-services) | IHostedService, Worker, Channels, Quartz | 🟡 Media |
+| [Polly & Resiliencia](semi-senior/dotnet/polly-resiliencia) | Retry, circuit breaker, timeout, bulkhead | 🟡 Media |
+| [SignalR & WebSockets](semi-senior/dotnet/signalr-websockets) | Real-time en .NET, hubs, grupos, reconexión | 🟡 Media |
+| [Serilog & Structured Logging](semi-senior/dotnet/serilog-logging) | Enrichers, sinks, correlation ID, context | 🟡 Media |
+
+### 🎨 Frontend
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [JavaScript Avanzado](semi-senior/frontend/javascript-avanzado) | Closures, event loop, prototypes, módulos | 🔥 Alta |
+| [TypeScript Avanzado](semi-senior/frontend/typescript-avanzado) | Generics, utility types, decorators, type guards | 🟡 Media |
+| [React Avanzado](semi-senior/frontend/react-avanzado) | Hooks avanzados, Context, Custom Hooks, React Query | 🔥 Alta |
+| [Estado Global](semi-senior/frontend/estado-global) | Redux Toolkit, Zustand, cuándo usar cada uno | 🟡 Media |
+| [Next.js & React Server Components](semi-senior/frontend/nextjs-rsc) | App Router, RSC, Server Actions, caché, SSR/ISR/SSG | 🔥 Alta |
+| [Performance Frontend](semi-senior/frontend/performance-frontend) | Bundle size, lazy loading, memoización, Web Vitals | 🟡 Media |
+| [Accesibilidad Web (a11y)](semi-senior/frontend/accesibilidad) | ARIA, foco, live regions, testing con jest-axe | 🟡 Media |
+| [Blazor](semi-senior/frontend/blazor) | Blazor Server/WASM/Hybrid, componentes, lifecycle, JS Interop | 🟡 Media |
+
+### 🗄️ Datos y Persistencia
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [SQL Avanzado](semi-senior/datos/sql-avanzado) | Window Functions, CTEs, índices, ejecución de queries | 🟡 Media |
+| [Caching & Redis](semi-senior/datos/caching-redis) | Cache distribuida, invalidación, patrones de cache | 🟡 Media |
+| [Caching — Estrategias](semi-senior/datos/caching-estrategias) | Cache-aside, write-through, read-through, TTL | 🟡 Media |
+| [Transacciones en BD](semi-senior/datos/transacciones-base-datos) | ACID, IsolationLevel, savepoints, distributed tx | 🟡 Media |
+
+### 🧪 Testing
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [Testing (Backend)](semi-senior/testing/backend) | xUnit, Moq, Integration Testing, Testing Library | 🔥 Alta |
+| [Testing Frontend — Vitest & MSW](semi-senior/testing/testing-frontend) | Configuración profesional, MSW, providers, React Query | 🔥 Alta |
+| [Integration Testing](semi-senior/testing/integration-testing) | WebApplicationFactory, TestContainers, mocks | 🔥 Alta |
+
+### 🔌 APIs y Comunicación
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [APIs REST](semi-senior/apis/apis-rest) | Principios REST, versionado, paginación, documentación | 🔥 Alta |
+| [Autenticación & OAuth](semi-senior/apis/autenticacion-oauth) | OAuth 2.0, OpenID Connect, JWT, Refresh Tokens | 🟡 Media |
+| [Seguridad en APIs](semi-senior/apis/seguridad-api) | OWASP, CORS, CSRF, input validation | 🔥 Alta |
+| [GraphQL con .NET y React](semi-senior/apis/graphql) | Hot Chocolate, DataLoader, Apollo Client, N+1 | 🟡 Media |
+| [gRPC con .NET](semi-senior/apis/grpc) | Protobuf, 4 tipos de comunicación, interceptores, testing | 🟡 Media |
+| [Message Queues](semi-senior/apis/message-queues) | RabbitMQ, Azure Service Bus, patrones async | 🟡 Media |
+
+### 🐳 Infraestructura
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
+| [Docker](semi-senior/infraestructura/docker) | Contenedores, Dockerfile, docker-compose | 🟡 Media |
+| [CI/CD con GitHub Actions](semi-senior/infraestructura/ci-cd-github-actions) | Workflows, matrix, secrets, deploy automático | 🟡 Media |
+
+### Otros
+
+| Tema | Descripción | Prioridad |
+|------|-------------|-----------|
 | [Patrones de Diseño](semi-senior/patrones-diseno) | SOLID, Repository, Strategy, Observer, MediatR | 🔥 Alta |
-| [SQL Avanzado](semi-senior/sql-avanzado) | Window Functions, CTEs, índices, ejecución de queries | 🟡 Media |
-| [Autenticación & OAuth](semi-senior/autenticacion-oauth) | OAuth 2.0, OpenID Connect, JWT, Refresh Tokens | 🟡 Media |
-| [Docker](semi-senior/docker) | Contenedores, Dockerfile, docker-compose | 🟡 Media |
-| [Caching & Redis](semi-senior/caching-redis) | Cache distribuida, invalidación, patrones de cache | 🟡 Media |
-| [Performance Frontend](semi-senior/performance-frontend) | Bundle size, lazy loading, memoización, Web Vitals | 🟡 Media |
-| [TypeScript Avanzado](semi-senior/typescript-avanzado) | Generics, utility types, decorators, type guards | 🟡 Media |
-| [Next.js & React Server Components](semi-senior/nextjs-rsc) | App Router, RSC, Server Actions, caché, SSR/ISR/SSG | 🔥 Alta |
-| [Testing Frontend — Vitest & MSW](semi-senior/testing-frontend) | Configuración profesional, MSW, providers, React Query | 🔥 Alta |
-| [Rate Limiting en .NET 8](semi-senior/rate-limiting) | Fixed Window, Sliding Window, Token Bucket, Concurrency | 🟡 Media |
-| [GraphQL con .NET y React](semi-senior/graphql) | Hot Chocolate, DataLoader, Apollo Client, N+1 | 🟡 Media |
-| [gRPC con .NET](semi-senior/grpc) | Protobuf, 4 tipos de comunicación, interceptores, testing | 🟡 Media |
-| [Accesibilidad Web (a11y)](semi-senior/accesibilidad) | ARIA, foco, live regions, testing con jest-axe | 🟡 Media |
-| [Blazor](semi-senior/blazor) | Blazor Server/WASM/Hybrid, componentes, lifecycle, JS Interop | 🟡 Media |
-| [SignalR & WebSockets](semi-senior/signalr-websockets) | Real-time en .NET, hubs, grupos, reconexión | 🟡 Media |
-| [Transacciones en BD](semi-senior/transacciones-base-datos) | ACID, IsolationLevel, savepoints, distributed tx | 🟡 Media |
-| [Message Queues](semi-senior/message-queues) | RabbitMQ, Azure Service Bus, patrones async | 🟡 Media |
-| [Inyección de Dependencias](semi-senior/inyeccion-dependencias) | Scopes, lifetimes, keyed services, factory | 🔥 Alta |
-| [Manejo de Errores](semi-senior/manejo-errores) | ProblemDetails, middleware, Result pattern | 🔥 Alta |
-| [Seguridad en APIs](semi-senior/seguridad-api) | OWASP, CORS, CSRF, input validation | 🔥 Alta |
-| [Caching — Estrategias](semi-senior/caching-estrategias) | Cache-aside, write-through, read-through, TTL | 🟡 Media |
 | [Performance & Profiling](semi-senior/performance-profiling) | BenchmarkDotNet, dotnet-trace, memory leaks | 🟡 Media |
-| [EF Core — Performance & N+1](semi-senior/ef-core-performance) | Include, proyecciones, AsNoTracking, split queries | 🔥 Alta |
-| [Integration Testing](semi-senior/integration-testing) | WebApplicationFactory, TestContainers, mocks | 🔥 Alta |
-| [Minimal API vs Controllers](semi-senior/minimal-api-vs-controllers) | Trade-offs, endpoint filters, grupos | 🟡 Media |
-| [Polly & Resiliencia](semi-senior/polly-resiliencia) | Retry, circuit breaker, timeout, bulkhead | 🟡 Media |
-| [CI/CD con GitHub Actions](semi-senior/ci-cd-github-actions) | Workflows, matrix, secrets, deploy automático | 🟡 Media |
-| [Background Services](semi-senior/background-services) | IHostedService, Worker, Channels, Quartz | 🟡 Media |
-| [Serilog & Structured Logging](semi-senior/serilog-logging) | Enrichers, sinks, correlation ID, context | 🟡 Media |
 
 ## Horas de estudio recomendadas
 

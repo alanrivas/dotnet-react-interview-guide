@@ -7,9 +7,11 @@ interface QuizProps {
   correctIndex: number;
   /** Una explicación por opción, en el mismo orden que `options`. */
   explanations: string[];
+  /** URL relativa de Docusaurus a la guía teórica relacionada (ej: "/junior/dotnet/csharp-fundamentos"). */
+  guideUrl?: string;
 }
 
-export default function Quiz({ question, options, correctIndex, explanations }: QuizProps): React.ReactElement {
+export default function Quiz({ question, options, correctIndex, explanations, guideUrl }: QuizProps): React.ReactElement {
   const [selected, setSelected] = useState<number | null>(null);
   const answered = selected !== null;
   const isCorrect = selected === correctIndex;
@@ -56,6 +58,16 @@ export default function Quiz({ question, options, correctIndex, explanations }: 
               <strong>💡 ¿Por qué {String.fromCharCode(65 + correctIndex)} es correcta?</strong>
               <p className={styles.explanation}>{explanations[correctIndex]}</p>
             </div>
+          )}
+          {guideUrl && (
+            <a
+              href={guideUrl}
+              className={styles.guideLink}
+              target="_self"
+              rel="noopener noreferrer"
+            >
+              Ver en la guía →
+            </a>
           )}
           <button className={styles.retryBtn} onClick={reset}>🔄 Reintentar</button>
         </div>

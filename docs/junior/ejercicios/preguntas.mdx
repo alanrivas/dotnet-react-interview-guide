@@ -19,6 +19,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 ## C# — Tipos y Memoria
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/csharp-fundamentos"
   question="¿Dónde se almacena un value type (por ejemplo, un int) declarado como variable local en C#?"
   options={[
     "En el heap, igual que los objetos de clase",
@@ -36,6 +37,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/csharp-fundamentos"
   question="¿Qué ocurre exactamente durante una operación de boxing en C#?"
   options={[
     "El value type se copia dentro de un envoltorio object en el heap y la variable apunta a esa copia",
@@ -53,6 +55,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/csharp-fundamentos"
   question="El Garbage Collector de .NET trabaja con generaciones. ¿Qué significa que un objeto esté en Gen 2?"
   options={[
     "Que fue creado hace exactamente 2 segundos",
@@ -70,6 +73,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/csharp-fundamentos"
   question="Tienes un loop que concatena 10 000 strings. ¿Qué problema tiene usar el operador `+` y cuál es la solución?"
   options={[
     "No hay ningún problema, el compilador optimiza la concatenación automáticamente en todos los casos",
@@ -87,6 +91,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/csharp-fundamentos"
   question="¿Para qué sirve el tipo `int?` en C# y cómo se diferencia de `int`?"
   options={[
     "Es un alias de `uint` (entero sin signo)",
@@ -108,6 +113,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 ## C# — Programación Orientada a Objetos
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/poo"
   question="¿Cuál de los siguientes NO es uno de los 4 pilares de la Programación Orientada a Objetos?"
   options={[
     "Encapsulamiento",
@@ -125,6 +131,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/poo"
   question="¿Cuándo deberías elegir una `abstract class` en lugar de una `interface`?"
   options={[
     "Cuando quieres que una clase implemente múltiples contratos distintos al mismo tiempo",
@@ -142,6 +149,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/poo"
   question="¿Qué diferencia hay entre `override` y `new` al redefinir un método en una subclase en C#?"
   options={[
     "Son equivalentes: ambos reemplazan el método de la clase base",
@@ -159,6 +167,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/poo"
   question="¿Cuál es el modificador de acceso que permite acceso desde la misma clase, clases derivadas, pero NO desde ensamblados externos?"
   options={[
     "`public`",
@@ -180,6 +189,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 ## C# — LINQ y Colecciones
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/linq-avanzado"
   question="¿Cuál es la diferencia principal entre `IEnumerable<T>`, `ICollection<T>` e `IList<T>`?"
   options={[
     "Son sinónimos intercambiables; el compilador elige cuál usar según el contexto",
@@ -197,6 +207,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/linq-avanzado"
   question="¿Cuál es la diferencia entre `FirstOrDefault()` y `SingleOrDefault()` en LINQ?"
   options={[
     "Son idénticos; solo difieren en el nombre por razones históricas",
@@ -214,6 +225,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/linq-avanzado"
   question="¿Qué es la evaluación diferida (deferred execution) en LINQ?"
   options={[
     "Que LINQ carga todos los datos en memoria al declarar la query para evitar múltiples accesos a la base de datos",
@@ -231,6 +243,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/linq-avanzado"
   question="¿Cuándo preferirías un `Dictionary<TKey, TValue>` sobre una `List<T>`?"
   options={[
     "Cuando necesitas mantener los elementos ordenados por su valor",
@@ -252,6 +265,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 ## C# — Async/Await
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/csharp-fundamentos"
   question="¿Qué hace realmente `await` cuando se encuentra una operación asíncrona de I/O (como una consulta a la base de datos)?"
   options={[
     "Crea un nuevo hilo en el ThreadPool y bloquea el hilo actual hasta que ese hilo termine",
@@ -269,6 +283,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/csharp-fundamentos"
   question="¿Por qué se recomienda retornar `Task` en lugar de `void` en métodos async?"
   options={[
     "Porque `async void` no compila en versiones modernas de C#",
@@ -286,6 +301,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/csharp-fundamentos"
   question="¿Qué problema concreto indica el warning CS4014 en C#?"
   options={[
     "Que el método async retorna void en lugar de Task",
@@ -303,6 +319,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/csharp-fundamentos"
   question="¿Para qué sirve `ConfigureAwait(false)` y en qué tipo de proyectos es importante usarlo?"
   options={[
     "Hace que el método async se ejecute más rápido al desactivar la compresión del contexto",
@@ -324,6 +341,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 ## SQL Básico
 
 <Quiz
+  guideUrl="/docs/junior/bases-datos/sql-basico"
   question="Tienes tablas `Pedidos` y `Clientes`. Quieres obtener todos los pedidos aunque el cliente haya sido eliminado. ¿Qué JOIN usarías?"
   options={[
     "INNER JOIN Clientes ON Pedidos.ClienteId = Clientes.Id",
@@ -341,6 +359,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/bases-datos/sql-basico"
   question="¿Cuál es la diferencia entre `WHERE` y `HAVING` en SQL?"
   options={[
     "Son equivalentes; `HAVING` es simplemente la sintaxis moderna de `WHERE`",
@@ -358,6 +377,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/bases-datos/sql-basico"
   question="¿Cuál es el propósito principal de un índice en una base de datos relacional?"
   options={[
     "Garantizar la unicidad de los valores en una columna",
@@ -375,6 +395,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/bases-datos/sql-basico"
   question="¿Qué significa el acrónimo ACID en bases de datos relacionales?"
   options={[
     "Authentication, Concurrency, Integrity, Durability",
@@ -396,6 +417,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 ## React — Fundamentos
 
 <Quiz
+  guideUrl="/docs/junior/frontend/react-basico"
   question="¿Cuándo re-renderiza un componente que usa `useState`?"
   options={[
     "En cada tick del event loop del navegador, independientemente de si el estado cambió",
@@ -413,6 +435,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/frontend/react-basico"
   question="¿Qué problema causa tener un array de dependencias vacío `[]` en un `useEffect` que usa una variable del componente?"
   options={[
     "El efecto se ejecuta en cada render, causando un bucle infinito",
@@ -430,6 +453,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/frontend/react-basico"
   question="¿Por qué es un problema usar el índice del array como `key` en una lista que puede cambiar de orden o tener elementos eliminados?"
   options={[
     "React no permite el índice como key; dará un error de compilación",
@@ -447,6 +471,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/frontend/react-basico"
   question="¿Para qué sirve el Virtual DOM en React?"
   options={[
     "Es una base de datos en memoria donde React guarda el estado de todos los componentes",
@@ -464,6 +489,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/frontend/react-basico"
   question="¿Qué ocurre cuando llamas a `setEstado` con el mismo valor que tiene actualmente el estado?"
   options={[
     "React siempre re-renderiza el componente, independientemente del valor",
@@ -485,6 +511,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 ## JavaScript / TypeScript
 
 <Quiz
+  guideUrl="/docs/junior/frontend/javascript-typescript"
   question="¿Cuál es la diferencia principal entre `var`, `let` y `const` en JavaScript?"
   options={[
     "Solo difieren en que `const` no puede cambiar su valor; `var` y `let` son idénticos",
@@ -502,6 +529,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/frontend/javascript-typescript"
   question="¿Qué imprimirá este código? `console.log(0 == '0')` y `console.log(0 === '0')`"
   options={[
     "false y false",
@@ -519,6 +547,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/frontend/javascript-typescript"
   question="¿Qué es un closure en JavaScript y por qué es útil?"
   options={[
     "Es una función que no puede acceder a variables externas; sirve para encapsular completamente su lógica",
@@ -536,6 +565,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/frontend/javascript-typescript"
   question="¿En qué orden se ejecutan las siguientes líneas y por qué?"
   options={[
     "1, 2, 3, 4 — en orden de aparición, JavaScript es síncrono",
@@ -553,6 +583,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/frontend/javascript-typescript"
   question="¿Cuál es la diferencia entre `null` y `undefined` en JavaScript?"
   options={[
     "Son exactamente lo mismo; solo difieren en nombre por razones históricas",
@@ -570,6 +601,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/frontend/javascript-typescript"
   question="En TypeScript, ¿cuándo preferirías `type` sobre `interface` para definir la forma de un objeto?"
   options={[
     "Siempre que el objeto tenga más de 5 propiedades",
@@ -591,6 +623,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 ## Algoritmos y Estructuras de Datos
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/algoritmos-complejidad"
   question="¿Cuál es la complejidad de buscar un elemento en un array sin ordenar comparado con buscarlo en un Dictionary<K,V> en C#?"
   options={[
     "Array: O(1) — Dictionary: O(n)",
@@ -608,6 +641,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/algoritmos-complejidad"
   question="¿Cuál es la complejidad Big O de dos loops anidados que iteran N elementos cada uno?"
   options={[
     "O(N) porque los loops comparten el mismo conjunto de elementos",
@@ -625,6 +659,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/estructuras-datos"
   question="Tienes que implementar un historial de navegación (ir atrás y adelante) y también una cola de impresión (primer documento enviado = primero en imprimirse). ¿Qué estructura usarías para cada caso?"
   options={[
     "Historial: Queue<T> — Cola de impresión: Stack<T>",
@@ -642,6 +677,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/algoritmos-complejidad"
   question="¿Cuándo es aplicable la búsqueda binaria y cuál es su complejidad?"
   options={[
     "Aplicable a cualquier colección; complejidad O(1)",
@@ -663,6 +699,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 ## Testing
 
 <Quiz
+  guideUrl="/docs/junior/testing/testing-basico"
   question="¿Cuál es la diferencia principal entre un unit test, un integration test y un end-to-end (e2e) test?"
   options={[
     "Son nombres distintos para el mismo tipo de prueba; la diferencia es solo de convención de equipo",
@@ -680,6 +717,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/testing/testing-basico"
   question="En el patrón Arrange-Act-Assert (AAA), ¿qué debe contener cada sección?"
   options={[
     "Arrange: ejecuta el código bajo prueba. Act: configura mocks. Assert: limpia el estado",
@@ -697,6 +735,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/testing/testing-basico"
   question="¿Para qué sirven los mocks en testing y qué problema resuelven?"
   options={[
     "Los mocks aceleran el código de producción en entornos de prueba al eliminar operaciones lentas",
@@ -714,6 +753,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/testing/testing-basico"
   question="¿Por qué el 100% de code coverage no garantiza que el código está libre de bugs?"
   options={[
     "Porque el coverage solo mide líneas ejecutadas, no que los comportamientos y combinaciones estén correctamente verificados",
@@ -735,6 +775,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 ## Patrones y Principios
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/patrones-basicos"
   question="¿Qué es el principio DRY y cuál es el problema concreto de violarlo?"
   options={[
     "DRY significa escribir código corto. Violarlo produce funciones demasiado largas",
@@ -752,6 +793,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/patrones-basicos"
   question="¿Cuál es la diferencia entre un DTO (Data Transfer Object) y una Entidad de dominio?"
   options={[
     "Son exactamente lo mismo; DTO es solo el nombre que se usa en el frontend y Entidad en el backend",
@@ -769,6 +811,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/patrones-basicos"
   question="¿Qué es el patrón MVC y qué responsabilidad tiene cada capa?"
   options={[
     "Model: base de datos. View: lógica de negocio. Controller: interfaz de usuario",
@@ -786,6 +829,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/dotnet/patrones-basicos"
   question="¿Qué es la Inyección de Dependencias y qué problema concreto resuelve?"
   options={[
     "Es una técnica para importar librerías externas sin declararlas en el archivo de configuración del proyecto",
@@ -807,6 +851,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 ## Git
 
 <Quiz
+  guideUrl="/docs/junior/fundamentos-web/git"
   question="¿Cuál es la diferencia entre `git merge` y `git rebase`?"
   options={[
     "Son equivalentes; `rebase` es solo el nombre antiguo de `merge`",
@@ -824,6 +869,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/fundamentos-web/git"
   question="¿Qué hace `git stash` y cuándo lo usarías?"
   options={[
     "Elimina permanentemente los cambios no commiteados del working directory",
@@ -841,6 +887,7 @@ Intenta responder cada pregunta **en voz alta** antes de ver la respuesta. En la
 />
 
 <Quiz
+  guideUrl="/docs/junior/fundamentos-web/git"
   question="¿Cuál es la diferencia entre `git reset` y `git revert`?"
   options={[
     "Son equivalentes; `revert` es solo un alias de `reset` con `--hard`",

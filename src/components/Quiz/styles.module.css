@@ -143,3 +143,19 @@
 .retryBtn:hover {
   opacity: 0.75;
 }
+
+.guideLink {
+  display: inline-block;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  margin-right: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+.guideLink:hover {
+  opacity: 1;
+}

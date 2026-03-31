@@ -19,6 +19,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## C# Avanzado
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/csharp-avanzado"
   question="¿Cuándo deberías usar ValueTask<T> en lugar de Task<T>?"
   options={[
     "Cuando el método siempre realiza operaciones asíncronas reales (I/O, red)",
@@ -36,6 +37,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/csharp-avanzado"
   question="¿Qué constraint de generics debes usar para garantizar que T es una clase y tiene constructor sin parámetros?"
   options={[
     "where T : struct",
@@ -53,6 +55,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/csharp-avanzado"
   question="¿Cuál es la diferencia principal entre record, class y struct en C# 9+?"
   options={[
     "Los records se almacenan en el stack igual que los structs, por eso son más eficientes",
@@ -70,6 +73,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/csharp-avanzado"
   question="¿Qué ventaja ofrece el switch expression con pattern matching en C# 8+ frente a un switch statement clásico?"
   options={[
     "El switch expression solo funciona con tipos primitivos como int, string y enum",
@@ -91,6 +95,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## Inyección de Dependencias
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/inyeccion-dependencias"
   question="¿Cuál es el lifetime correcto para registrar un DbContext de Entity Framework en una API ASP.NET Core?"
   options={[
     "Singleton — para reutilizar la misma conexión y aprovechar el connection pooling",
@@ -108,6 +113,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/inyeccion-dependencias"
   question="¿Qué es una 'captive dependency' (dependencia cautiva) en el contenedor de DI?"
   options={[
     "Una dependencia que no puede ser reemplazada por un mock en tests unitarios",
@@ -125,6 +131,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/inyeccion-dependencias"
   question="¿Cómo implementar el patrón Decorator para INotificationService usando el DI nativo de .NET sin librerías externas?"
   options={[
     "Crear una nueva interfaz INotificationServiceDecorator que herede de INotificationService",
@@ -146,6 +153,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## ASP.NET Core
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/aspnet-core"
   question="¿En qué orden deben configurarse UseAuthentication y UseAuthorization en el pipeline de ASP.NET Core?"
   options={[
     "app.UseAuthorization() debe ir antes de app.UseAuthentication()",
@@ -163,6 +171,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/aspnet-core"
   question="¿Cuándo deberías usar un IActionFilter en lugar de middleware en ASP.NET Core?"
   options={[
     "Cuando necesitas lógica que aplique a toda la aplicación, incluyendo archivos estáticos y health checks",
@@ -180,6 +189,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/aspnet-core"
   question={"Para el endpoint [HttpPut(\"{id}\")] public IActionResult Update(int id, UpdateDto dto), ¿de dónde infiere ASP.NET Core cada parámetro?"}
   options={[
     "Ambos parámetros (id y dto) se leen del cuerpo del request (body)",
@@ -197,6 +207,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/aspnet-core"
   question="¿Cuál es una ventaja real y documentada de Minimal APIs sobre Controllers en .NET 6+?"
   options={[
     "Las Minimal APIs soportan más verbos HTTP que los controllers (PATCH, OPTIONS, etc.)",
@@ -218,6 +229,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## Entity Framework Core
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/entity-framework"
   question="Tienes este código: var posts = context.Posts.ToList(); foreach (var post in posts) { var count = context.Comments.Count(c => c.PostId == post.Id); } ¿Qué problema tiene y cómo solucionarlo?"
   options={[
     "No hay problema; EF Core cachea los resultados de queries repetidas automáticamente",
@@ -235,6 +247,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/entity-framework"
   question="¿Cuándo es correcto y beneficioso usar .AsNoTracking() en Entity Framework Core?"
   options={[
     "Siempre, en todas las queries, para maximizar el rendimiento de la aplicación",
@@ -252,6 +265,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/entity-framework"
   question="¿Cómo se revierte la base de datos a una migración anterior llamada 'AddProductsTable' en EF Core?"
   options={[
     "dotnet ef migrations remove",
@@ -269,6 +283,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/dotnet/entity-framework"
   question="¿Cómo envuelves múltiples operaciones de EF Core en una transacción explícita para garantizar atomicidad?"
   options={[
     "Llamar a SaveChanges() al final es suficiente; siempre envuelve todas las operaciones en una transacción automática",
@@ -290,6 +305,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## APIs REST
 
 <Quiz
+  guideUrl="/docs/semi-senior/apis/apis-rest"
   question="¿Cuál de estos verbos HTTP NO es idempotente según la especificación RFC 7231?"
   options={[
     "GET",
@@ -307,6 +323,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/apis/apis-rest"
   question="¿Cuál estrategia de versionado de API REST es generalmente más recomendada para APIs públicas?"
   options={[
     "Header-based versioning: Accept: application/vnd.myapi.v1+json",
@@ -324,6 +341,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/apis/apis-rest"
   question="Un usuario autenticado intenta acceder a un recurso que pertenece a otro usuario. ¿Qué código HTTP debe devolver tu API?"
   options={[
     "401 Unauthorized — el usuario no tiene autorización para ese recurso",
@@ -341,6 +359,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/apis/apis-rest"
   question="¿Cuál es la principal ventaja de cursor-based pagination sobre offset-based pagination en una API con datos que cambian frecuentemente?"
   options={[
     "Es más simple de implementar en el backend porque no requiere conocer el total de registros",
@@ -362,6 +381,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## Patrones de Diseño
 
 <Quiz
+  guideUrl="/docs/semi-senior/patrones-diseno"
   question="¿Cuál es el propósito principal del Repository Pattern en una arquitectura de software?"
   options={[
     "Mejorar automáticamente el rendimiento de las queries mediante caché transparente",
@@ -379,6 +399,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/patrones-diseno"
   question="¿Cuál de estas clases viola el Principio de Responsabilidad Única (SRP) de SOLID?"
   options={[
     "UserRepository con métodos GetById, GetAll, Add, Update, Delete para la entidad User",
@@ -396,6 +417,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/patrones-diseno"
   question="¿Cuándo el patrón Strategy es claramente preferible a una cadena de if/else o switch?"
   options={[
     "Cuando solo hay 2-3 condiciones simples que raramente cambian",
@@ -413,6 +435,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/patrones-diseno"
   question="¿Qué problema arquitectónico resuelve principalmente MediatR en aplicaciones .NET?"
   options={[
     "Reemplaza el sistema de inyección de dependencias nativo con uno más potente",
@@ -434,6 +457,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## Testing
 
 <Quiz
+  guideUrl="/docs/semi-senior/testing/backend"
   question="¿Cuál es la definición correcta de un test de integración en el contexto de .NET?"
   options={[
     "Prueba una sola función o método de forma aislada usando mocks para todas las dependencias externas",
@@ -451,6 +475,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/testing/backend"
   question="En un unit test de OrderService que depende de IOrderRepository y IEmailService, ¿qué debes mockear?"
   options={[
     "Solo IEmailService, porque las operaciones de base de datos son rápidas y no afectan el aislamiento",
@@ -468,6 +493,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/testing/backend"
   question="¿Cuál es el orden correcto del ciclo Red-Green-Refactor en TDD?"
   options={[
     "Verde (hacer pasar el test) → Rojo (escribir test que falla) → Refactor (mejorar el código)",
@@ -485,6 +511,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/testing/backend"
   question="¿Cuál es la forma recomendada de hacer integration testing de endpoints HTTP en ASP.NET Core?"
   options={[
     "Instanciar el Controller directamente en el test e invocar los métodos de acción",
@@ -506,6 +533,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## React Avanzado
 
 <Quiz
+  guideUrl="/docs/semi-senior/frontend/react-avanzado"
   question="¿Cuál es la diferencia fundamental entre useCallback y useMemo en React?"
   options={[
     "useCallback es para componentes de clase, useMemo es exclusivo de functional components",
@@ -523,6 +551,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/frontend/react-avanzado"
   question="¿Cuándo deberías preferir useReducer sobre useState en un componente React?"
   options={[
     "Siempre que el estado sea un objeto con más de dos propiedades",
@@ -540,6 +569,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/frontend/react-avanzado"
   question="¿Qué problema de rendimiento puede causar el uso incorrecto de Context API en React?"
   options={[
     "Memory leaks permanentes porque los contextos nunca liberan las referencias a sus consumidores",
@@ -557,6 +587,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/frontend/react-avanzado"
   question="¿Qué ventaja concreta ofrece React Query sobre el patrón useState + useEffect para fetching de datos?"
   options={[
     "React Query usa Web Workers automáticamente para no bloquear el main thread durante las peticiones",
@@ -578,6 +609,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## SQL Avanzado
 
 <Quiz
+  guideUrl="/docs/semi-senior/datos/sql-avanzado"
   question="¿Qué devuelve exactamente ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC)?"
   options={[
     "El número total de empleados en cada departamento (COUNT por partición)",
@@ -595,6 +627,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/datos/sql-avanzado"
   question="¿Cuándo son preferibles las CTEs (WITH clause) sobre subqueries en SQL?"
   options={[
     "Siempre; las CTEs son compiladas y cacheadas por el motor SQL, lo que las hace siempre más rápidas",
@@ -612,6 +645,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/datos/sql-avanzado"
   question="Para la query: SELECT * FROM orders WHERE status = 'active' AND created_date > '2024-01-01' ORDER BY user_id, ¿qué estrategia de índice es más óptima?"
   options={[
     "Tres índices separados: uno en status, uno en created_date y uno en user_id",
@@ -633,6 +667,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## Docker
 
 <Quiz
+  guideUrl="/docs/semi-senior/infraestructura/docker"
   question="¿Cuál es el beneficio principal de un multi-stage build en un Dockerfile para una app .NET?"
   options={[
     "Permite ejecutar múltiples contenedores en paralelo dentro de un único docker run",
@@ -650,6 +685,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/infraestructura/docker"
   question="¿Cuál es la diferencia práctica entre COPY y ADD en un Dockerfile, y cuál deberías preferir?"
   options={[
     "COPY es para archivos locales del build context; ADD es exclusivamente para descargar desde URLs remotas",
@@ -667,6 +703,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/infraestructura/docker"
   question="¿Cuál es la diferencia conceptual entre una imagen Docker y un contenedor Docker?"
   options={[
     "Una imagen es un contenedor detenido; un contenedor es una imagen que está actualmente en ejecución",
@@ -689,6 +726,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## TypeScript Avanzado
 
 <Quiz
+  guideUrl="/docs/semi-senior/frontend/typescript-avanzado"
   question="¿Cuál es la diferencia entre Partial<T> y Required<T> en TypeScript y cuándo usar cada uno?"
   options={[
     "Partial<T> elimina propiedades del tipo T; Required<T> añade propiedades nuevas al tipo",
@@ -706,6 +744,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/frontend/typescript-avanzado"
   question="¿Qué hace Pick<T, K> vs Omit<T, K> en TypeScript?"
   options={[
     "Pick<T, K> crea un tipo con SOLO las propiedades listadas en K; Omit<T, K> crea un tipo con TODAS las propiedades EXCEPTO las de K",
@@ -723,6 +762,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/frontend/typescript-avanzado"
   question="¿Qué son los Mapped Types en TypeScript y para qué sirven?"
   options={[
     "Son una forma de iterar arrays de objetos en TypeScript de manera tipada, similar a Array.map pero con type safety",
@@ -740,6 +780,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/frontend/typescript-avanzado"
   question="¿Cuándo deberías preferir interface sobre type en TypeScript, considerando declaration merging y extensión?"
   options={[
     "Siempre debes usar type; interface está deprecada en TypeScript moderno y se mantendrá solo por compatibilidad",
@@ -761,6 +802,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## Performance del Frontend
 
 <Quiz
+  guideUrl="/docs/semi-senior/frontend/performance-frontend"
   question="¿Qué es el Code Splitting y cómo se implementa en React con React.lazy?"
   options={[
     "Code Splitting divide el código CSS en múltiples archivos para cargar estilos bajo demanda según la ruta activa",
@@ -778,6 +820,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/frontend/performance-frontend"
   question="¿Cuál es la diferencia entre useMemo y useCallback en React?"
   options={[
     "useMemo memoiza el resultado de una función; useCallback memoiza la referencia de la función misma. Son equivalentes y se pueden usar indistintamente",
@@ -795,6 +838,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/frontend/performance-frontend"
   question="¿Qué es el LCP (Largest Contentful Paint) y cuáles son las técnicas más efectivas para mejorarlo?"
   options={[
     "LCP mide el tiempo total hasta que la página es completamente interactiva; se mejora reduciendo el JavaScript del bundle",
@@ -812,6 +856,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/frontend/performance-frontend"
   question="¿Por qué import _ from 'lodash' puede ser problemático para el bundle size y cómo solucionarlo?"
   options={[
     "Lodash está deprecada y genera warnings en el bundle; debes reemplazarla con underscore.js que es más moderna",
@@ -833,6 +878,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## Caché y Redis
 
 <Quiz
+  guideUrl="/docs/semi-senior/datos/caching-estrategias"
   question="¿Cuál es la diferencia entre Cache-Aside y Write-Through como estrategias de caché?"
   options={[
     "Cache-Aside es para lecturas y Write-Through es para escrituras; se deben usar juntos obligatoriamente en cualquier sistema",
@@ -850,6 +896,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/datos/caching-redis"
   question="¿Cuándo deberías usar IMemoryCache vs IDistributedCache en .NET?"
   options={[
     "IMemoryCache es para datos pequeños (menos de 1MB); IDistributedCache es para datos más grandes sin importar la arquitectura",
@@ -867,6 +914,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/datos/caching-redis"
   question="¿Para qué sirve el TTL (Time To Live) en Redis y qué problemas puede causar no configurarlo?"
   options={[
     "TTL controla la velocidad máxima de transferencia de datos entre Redis y la aplicación; sin él, Redis puede saturarse",
@@ -884,6 +932,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/datos/caching-estrategias"
   question="¿Qué es el cache stampede (thundering herd) y cómo se mitiga?"
   options={[
     "Es cuando Redis recibe demasiadas conexiones simultáneas y colapsa; se mitiga aumentando el número de réplicas de lectura",
@@ -905,6 +954,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 ## Autenticación Avanzada
 
 <Quiz
+  guideUrl="/docs/semi-senior/apis/autenticacion-oauth"
   question="¿Cuál es la diferencia entre OAuth 2.0 y OpenID Connect (OIDC)?"
   options={[
     "OAuth 2.0 es más moderno y reemplaza a OIDC; son incompatibles entre sí y no deben usarse en el mismo sistema",
@@ -922,6 +972,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/apis/autenticacion-oauth"
   question="¿Por qué se recomienda el flujo PKCE para SPAs en lugar del flujo implícito (Implicit Flow) de OAuth 2.0?"
   options={[
     "PKCE es más fácil de implementar que el flujo implícito; la seguridad es equivalente pero PKCE requiere menos código",
@@ -939,6 +990,7 @@ A este nivel, el "por qué" es tan importante como el "qué". Siempre explica lo
 />
 
 <Quiz
+  guideUrl="/docs/semi-senior/apis/autenticacion-oauth"
   question="¿Qué es el Refresh Token Rotation y por qué mejora la seguridad frente a refresh tokens estáticos?"
   options={[
     "Refresh Token Rotation significa que los refresh tokens se renuevan periódicamente de forma automática sin intervención del usuario, similar a una sesión con sliding expiration",

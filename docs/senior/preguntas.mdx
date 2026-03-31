@@ -19,6 +19,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## Arquitectura
 
 <Quiz
+  guideUrl="/docs/senior/arquitectura/estilos-arquitectonicos"
   question="¿Cuándo es recomendable empezar con un monolito modular en lugar de microservicios?"
   options={[
     "Solo cuando el equipo tiene menos de 5 personas",
@@ -36,6 +37,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/arquitectura/patrones-avanzados"
   question="¿Qué problema principal resuelve CQRS y cuál es su trade-off más significativo?"
   options={[
     "Elimina la necesidad de base de datos relacional al combinarse con Event Sourcing",
@@ -53,6 +55,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/arquitectura/estilos-arquitectonicos"
   question="En el teorema CAP, durante una partición de red en un sistema distribuido, ¿qué determina si debes elegir CP o AP?"
   options={[
     "Siempre CP, porque la consistencia es fundamental en cualquier sistema serio",
@@ -70,6 +73,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/arquitectura/patrones-avanzados"
   question="¿En qué escenario tiene valor real implementar Event Sourcing?"
   options={[
     "En cualquier aplicación CRUD para tener historial automático de cambios",
@@ -91,6 +95,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## Clean Architecture y DDD
 
 <Quiz
+  guideUrl="/docs/senior/arquitectura/domain-driven-design"
   question="¿Cuál es el propósito principal de un Aggregate Root en Domain-Driven Design?"
   options={[
     "Que todos los objetos del dominio sean inmutables y no expongan setters públicos",
@@ -108,6 +113,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/arquitectura/domain-driven-design"
   question="¿Cuál es la diferencia clave entre un Domain Event y un Integration Event?"
   options={[
     "Son lo mismo; solo difieren en el nombre según el contexto arquitectónico que los usa",
@@ -125,6 +131,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/arquitectura/domain-driven-design"
   question="¿Cuál es la diferencia fundamental entre un Value Object y una Entity en DDD?"
   options={[
     "Un Value Object es inmutable; una Entity puede cambiar su estado. Esta es la única diferencia relevante",
@@ -142,6 +149,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/arquitectura/domain-driven-design"
   question="¿Qué define los límites de un Bounded Context en DDD?"
   options={[
     "Los límites físicos de los microservicios desplegados en producción",
@@ -163,6 +171,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## Microservicios Distribuidos
 
 <Quiz
+  guideUrl="/docs/senior/microservicios/comunicacion-avanzada"
   question="¿Por qué se prefiere Saga sobre 2PC (Two-Phase Commit) para transacciones distribuidas entre microservicios?"
   options={[
     "Porque Saga garantiza consistencia fuerte igual que 2PC pero sin coordinador central",
@@ -180,6 +189,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/arquitectura/patrones-avanzados"
   question="¿Qué problema resuelve el patrón Circuit Breaker y cómo pasa del estado Open al estado Half-Open?"
   options={[
     "Resuelve la autenticación entre servicios; pasa a Half-Open cuando expira el token de servicio",
@@ -197,6 +207,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/arquitectura/patrones-avanzados"
   question="¿Qué garantía de entrega ofrece el Outbox Pattern y qué problema concreto resuelve?"
   options={[
     "Exactly-once delivery; resuelve la duplicación de mensajes en brokers distribuidos",
@@ -214,6 +225,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/microservicios/comunicacion-avanzada"
   question="¿Cuándo conviene usar BFF (Backend for Frontend) en lugar de un API Gateway genérico?"
   options={[
     "Siempre, porque BFF es estrictamente superior a un API Gateway en cualquier escenario",
@@ -235,6 +247,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## Concurrencia .NET
 
 <Quiz
+  guideUrl="/docs/senior/dotnet/concurrencia"
   question="¿Por qué NO deberías usar Task.Run para envolver operaciones I/O-bound como llamadas a base de datos o HTTP?"
   options={[
     "Porque Task.Run no soporta async/await internamente y bloquearía el hilo del caller",
@@ -252,6 +265,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/dotnet/concurrencia"
   question="¿Cuándo usar SemaphoreSlim en lugar de lock para sincronización en .NET?"
   options={[
     "SemaphoreSlim es siempre preferible; lock es obsoleto en .NET moderno y genera warnings",
@@ -269,6 +283,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/dotnet/concurrencia"
   question="¿Cuál es el caso de uso principal de IAsyncEnumerable en .NET?"
   options={[
     "Reemplazar todas las listas y arrays existentes para mejorar el rendimiento de forma automática",
@@ -286,6 +301,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/dotnet/concurrencia"
   question="¿Cuál de las siguientes situaciones puede causar un deadlock en código async .NET?"
   options={[
     "Usar await en múltiples operaciones I/O en secuencia dentro de un método async Task",
@@ -307,6 +323,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## Performance
 
 <Quiz
+  guideUrl="/docs/senior/performance/avanzado"
   question="¿Cómo afecta la diferencia entre operaciones CPU-bound e I/O-bound al diseño de endpoints en una API .NET?"
   options={[
     "No afecta el diseño; async/await resuelve ambos casos exactamente de la misma manera",
@@ -324,6 +341,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/performance/avanzado"
   question="¿Cuándo usar Redis distribuido en lugar de IMemoryCache en una API .NET desplegada en múltiples instancias?"
   options={[
     "Siempre; Redis es más rápido que IMemoryCache porque usa un servidor RAM dedicado",
@@ -341,6 +359,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/performance/avanzado"
   question="¿Cuál es la diferencia de rendimiento entre Select con proyección vs Include en EF Core?"
   options={[
     "Include siempre es más eficiente porque EF Core optimiza automáticamente los JOINs generados",
@@ -358,6 +377,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/performance/avanzado"
   question="¿Qué es el problema del thundering herd y cómo se mitiga en una API con caché?"
   options={[
     "Cuando demasiados usuarios acceden a la API simultáneamente, sobrecargando el load balancer de entrada",
@@ -379,6 +399,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## Seguridad
 
 <Quiz
+  guideUrl="/docs/senior/seguridad/index"
   question="¿Qué es BOLA/IDOR y por qué es la vulnerabilidad más común en APIs REST?"
   options={[
     "Un ataque de inyección SQL que explota parámetros de ruta mal sanitizados en endpoints REST",
@@ -396,6 +417,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/seguridad/autenticacion-hardening"
   question="¿Dónde debe almacenarse un JWT access token en una SPA y por qué?"
   options={[
     "En localStorage, porque es la forma más simple y persiste cómodamente entre sesiones del navegador",
@@ -413,6 +435,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/seguridad/index"
   question="¿Cuál es la diferencia entre Fixed Window y Token Bucket como algoritmos de rate limiting?"
   options={[
     "Fixed Window es más preciso; Token Bucket es una aproximación útil solo para alto throughput",
@@ -430,6 +453,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/seguridad/index"
   question="¿Qué protege HSTS (HTTP Strict Transport Security) y cómo funciona?"
   options={[
     "Encripta el contenido de las cookies de sesión con AES-256 en el servidor",
@@ -451,6 +475,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## Cloud y DevOps
 
 <Quiz
+  guideUrl="/docs/senior/infraestructura/devops"
   question="¿Cuál es la diferencia principal entre Blue/Green deployment y Canary deployment?"
   options={[
     "Blue/Green es exclusivo para contenedores Docker; Canary es para despliegues en máquinas virtuales",
@@ -468,6 +493,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/infraestructura/devops"
   question="¿Por qué se prefiere Managed Identity sobre connection strings para acceder a servicios Azure desde una aplicación?"
   options={[
     "Managed Identity es más rápido porque evita el overhead de la capa de autenticación de Azure AD",
@@ -485,6 +511,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/infraestructura/devops"
   question="¿Cuándo usar Azure Service Bus en lugar de Azure Event Hub?"
   options={[
     "Service Bus para mensajes de más de 1 MB; Event Hub para mensajes pequeños y frecuentes",
@@ -502,6 +529,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/infraestructura/devops"
   question="¿Qué problema fundamental resuelve Infrastructure as Code (IaC) con herramientas como Terraform?"
   options={[
     "Automatiza el despliegue del código de la aplicación en los servidores de producción",
@@ -523,6 +551,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## Liderazgo Técnico
 
 <Quiz
+  guideUrl="/docs/senior/liderazgo-tecnico"
   question="¿Cómo priorizarías la deuda técnica en un backlog que compite con features de negocio?"
   options={[
     "La deuda técnica siempre tiene prioridad sobre las features porque si no se paga, el proyecto inevitablemente muere",
@@ -540,6 +569,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/liderazgo-tecnico"
   question="¿Para qué sirve un ADR (Architecture Decision Record) y cuándo crearlo?"
   options={[
     "Es un documento de requisitos funcionales que reemplaza las historias de usuario en proyectos técnicos",
@@ -557,6 +587,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/liderazgo-tecnico"
   question="¿Cuál es el criterio más importante en una decisión Build vs Buy para un componente de software?"
   options={[
     "Siempre Buy para no distraer al equipo del desarrollo del core del negocio",
@@ -574,6 +605,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/liderazgo-tecnico"
   question="Durante un code review, ¿qué deberías revisar con mayor prioridad?"
   options={[
     "El estilo de código y el formateo, ya que impactan directamente la legibilidad del equipo",
@@ -596,6 +628,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## Observabilidad
 
 <Quiz
+  guideUrl="/docs/senior/observabilidad/metricas-tracing"
   question="¿Cuál es la diferencia fundamental entre los tres pilares de la observabilidad: logs, métricas y trazas distribuidas?"
   options={[
     "Son sinónimos: todos registran eventos del sistema con diferente nivel de detalle",
@@ -613,6 +646,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/observabilidad/metricas-tracing"
   question="¿Por qué se recomienda logging estructurado en lugar de concatenar strings en los logs en sistemas de producción?"
   options={[
     "Porque el logging estructurado es más rápido en términos de CPU al evitar concatenación de strings",
@@ -630,6 +664,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/observabilidad/metricas-tracing"
   question="¿Cuál es la diferencia entre SLI, SLO y SLA en el contexto de Site Reliability Engineering?"
   options={[
     "Son tres formas de nombrar lo mismo: el acuerdo de nivel de servicio con el cliente",
@@ -647,6 +682,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/observabilidad/metricas-tracing"
   question="¿Cuál es la diferencia entre liveness probe y readiness probe en Kubernetes?"
   options={[
     "Son equivalentes: Kubernetes usa cualquiera de las dos para decidir si reiniciar un pod",
@@ -668,6 +704,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## Arquitectura Event-Driven
 
 <Quiz
+  guideUrl="/docs/senior/event-driven/patrones"
   question="¿Cuándo elegirías Apache Kafka sobre RabbitMQ para un sistema de mensajería?"
   options={[
     "Siempre Kafka, ya que es más moderno y tiene mayor adopción en la industria",
@@ -685,6 +722,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/event-driven/patrones"
   question="¿Qué problema resuelve el Outbox Pattern y qué garantía proporciona?"
   options={[
     "Garantiza que los mensajes lleguen exactamente una vez al broker de mensajes usando transacciones XA distribuidas",
@@ -702,6 +740,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/event-driven/patrones"
   question="¿Cuál es la diferencia entre at-least-once y exactly-once delivery, y cuál es más común en la práctica?"
   options={[
     "Exactly-once es el estándar en todos los brokers modernos y es la garantía que Kafka ofrece por defecto",
@@ -719,6 +758,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/event-driven/patrones"
   question="¿Cuáles son los trade-offs entre Choreography y Orchestration en el patrón Saga para transacciones distribuidas?"
   options={[
     "Choreography es siempre superior porque elimina el punto único de fallo que representa el orquestador",
@@ -740,6 +780,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## Escalabilidad de Bases de Datos
 
 <Quiz
+  guideUrl="/docs/senior/escalabilidad-bd/replicacion-sharding"
   question="¿Cuál es la diferencia entre sharding horizontal y particionamiento vertical de una base de datos?"
   options={[
     "Sharding horizontal divide la tabla por columnas y el particionamiento vertical divide por filas",
@@ -757,6 +798,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/escalabilidad-bd/replicacion-sharding"
   question="¿Qué es un covering index y cómo reduce el I/O en una consulta?"
   options={[
     "Un covering index es un índice que cubre todas las tablas del esquema para evitar full table scans",
@@ -774,6 +816,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/escalabilidad-bd/replicacion-sharding"
   question="¿Cuándo es correcto elegir una base de datos NoSQL sobre una relacional SQL para un sistema nuevo?"
   options={[
     "Siempre que el proyecto tenga alta carga, porque NoSQL escala mejor horizontalmente que cualquier base SQL",
@@ -791,6 +834,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/escalabilidad-bd/replicacion-sharding"
   question="¿Qué es la estrategia Expand/Contract (también llamada parallel change) para migraciones zero-downtime?"
   options={[
     "Es un patrón para expandir la capacidad del servidor antes de una migración y reducirla después para optimizar costos",
@@ -812,6 +856,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## Concurrencia Avanzada
 
 <Quiz
+  guideUrl="/docs/senior/dotnet/concurrencia"
   question="¿Cuál es la diferencia entre `lock` (Monitor) y `SemaphoreSlim` en .NET y cuándo usar cada uno?"
   options={[
     "Son equivalentes: `SemaphoreSlim` es la versión moderna de `lock` con mejor rendimiento en todos los escenarios",
@@ -829,6 +874,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/dotnet/concurrencia"
   question="¿Qué es un deadlock y cómo se produce el escenario clásico en aplicaciones multithreaded?"
   options={[
     "Un deadlock ocurre cuando un thread entra en un bucle infinito consumiendo 100% de CPU sin liberar el control",
@@ -846,6 +892,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/dotnet/concurrencia"
   question="¿Por qué `async void` es peligroso en C# y cuándo es aceptable usarlo?"
   options={[
     "`async void` es peligroso porque es más lento que `async Task` al no poder ser esperado por el scheduler",
@@ -867,6 +914,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 ## System Design
 
 <Quiz
+  guideUrl="/docs/senior/system-design/fundamentos"
   question="¿Cómo diseñarías un sistema de caché distribuida para reducir la carga en una base de datos con alto tráfico de lectura?"
   options={[
     "Poner Redis delante de todas las queries sin distinción y con TTL de 1 hora para maximizar el hit rate",
@@ -884,6 +932,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/system-design/fundamentos"
   question="¿Cuál es el principal trade-off del patrón CQRS (Command Query Responsibility Segregation) en un sistema distribuido?"
   options={[
     "El principal trade-off es que CQRS requiere duplicar todo el código de dominio para el modelo de lectura y el de escritura",
@@ -901,6 +950,7 @@ Intenta responder cada pregunta antes de revelar el resultado. Las explicaciones
 />
 
 <Quiz
+  guideUrl="/docs/senior/system-design/fundamentos"
   question="¿Qué afirma el CAP Theorem y qué eligen los sistemas CP vs AP en la práctica?"
   options={[
     "CAP Theorem afirma que un sistema distribuido puede garantizar Consistency, Availability y Performance, pero solo dos de los tres simultáneamente",

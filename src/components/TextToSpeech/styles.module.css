@@ -1,0 +1,165 @@
+/* Floating container — fixed bottom-right */
+.container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  font-size: 0.875rem;
+  font-family: var(--ifm-font-family-base);
+}
+
+/* Collapsed trigger button */
+.triggerBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 9999px;
+  border: none;
+  background: var(--ifm-color-primary);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.triggerBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.triggerLabel {
+  /* Hide on very small screens */
+}
+
+@media (max-width: 400px) {
+  .triggerLabel {
+    display: none;
+  }
+}
+
+/* Expanded player panel */
+.player {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  min-width: 240px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+[data-theme='dark'] .player {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Header */
+.playerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.playerTitle {
+  font-weight: 600;
+  color: var(--ifm-font-color-base);
+  font-size: 0.875rem;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--ifm-color-emphasis-600);
+  font-size: 0.85rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.closeBtn:hover {
+  background: var(--ifm-color-emphasis-200);
+  color: var(--ifm-font-color-base);
+}
+
+/* Main controls row */
+.controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ctrlBtn {
+  flex: 1;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.ctrlBtn:hover {
+  opacity: 0.85;
+}
+
+.playBtn {
+  background: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.pauseBtn {
+  background: #d97706;
+  color: #fff;
+}
+
+[data-theme='dark'] .pauseBtn {
+  background: #f59e0b;
+  color: #1a1a1a;
+}
+
+.stopBtn {
+  background: var(--ifm-color-emphasis-200);
+  color: var(--ifm-font-color-base);
+  border: 1px solid var(--ifm-color-emphasis-300);
+}
+
+/* Speed controls */
+.speedRow {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.speedLabel {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.78rem;
+  margin-right: 0.1rem;
+}
+
+.speedBtn {
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  background: transparent;
+  color: var(--ifm-font-color-base);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.speedBtn:hover {
+  border-color: var(--ifm-color-primary);
+}
+
+.speedActive {
+  background: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  color: #fff;
+  font-weight: 700;
+}

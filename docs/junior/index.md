@@ -8,6 +8,16 @@ sidebar_position: 0
 
 Bienvenido a la sección Junior. Este nivel cubre los fundamentos necesarios para una posición de entrada como desarrollador Full Stack .NET + React.
 
+## Prerequisitos
+
+Este es el nivel de entrada: **no necesitas conocimientos previos de .NET ni React**. Solo se asume:
+
+- Conocimiento básico de programación en cualquier lenguaje (variables, condicionales, bucles)
+- Haber escrito código antes, aunque sea en un bootcamp o curso introductorio
+- Inglés técnico de lectura (la documentación oficial está mayormente en inglés)
+
+> Si vienes de otro stack (Python, Java, PHP), tus conocimientos de POO y bases de datos se aplicarán directamente.
+
 ## ¿Qué se evalúa en entrevistas Junior?
 
 En entrevistas para posiciones junior, los entrevistadores evalúan principalmente:
@@ -26,15 +36,15 @@ No finjas saber algo que no sabes. Los entrevistadores prefieren "No lo sé, per
 
 | Tema | Descripción | Prioridad |
 |------|-------------|-----------|
-| [C# Fundamentos](./dotnet/csharp-fundamentos.md) | Tipos, colecciones, excepciones, strings | 🔥 Alta |
-| [POO](./dotnet/poo.md) | Los 4 pilares, clases, interfaces | 🔥 Alta |
-| [.NET Básico](./dotnet/dotnet-basico.md) | CLR, GC, LINQ, async/await | 🔥 Alta |
-| [JavaScript & TypeScript](./frontend/javascript-typescript.md) | ES6+, promesas, tipos, closures | 🔥 Alta |
-| [React Básico](./frontend/react-basico.md) | Componentes, hooks básicos, JSX | 🔥 Alta |
-| [SQL Básico](./bases-datos/sql-basico.md) | CRUD, JOINs, GROUP BY | 🔥 Alta |
-| [HTML & CSS](./frontend/html-css.md) | Semántica, Box Model, Flexbox, Grid | 🟡 Media |
-| [HTTP & Web](./fundamentos-web/http-web.md) | HTTP, REST básico, cookies, seguridad básica | 🟡 Media |
-| [Git](./fundamentos-web/git.md) | Comandos básicos, branching, flujo de trabajo | 🟡 Media |
+| [C# Fundamentos](junior/dotnet/csharp-fundamentos) | Tipos, colecciones, excepciones, strings | 🔥 Alta |
+| [POO](junior/dotnet/poo) | Los 4 pilares, clases, interfaces | 🔥 Alta |
+| [.NET Básico](junior/dotnet/dotnet-basico) | CLR, GC, LINQ, async/await | 🔥 Alta |
+| [JavaScript & TypeScript](junior/frontend/javascript-typescript) | ES6+, promesas, tipos, closures | 🔥 Alta |
+| [React Básico](junior/frontend/react-basico) | Componentes, hooks básicos, JSX | 🔥 Alta |
+| [SQL Básico](junior/bases-datos/sql-basico) | CRUD, JOINs, GROUP BY | 🔥 Alta |
+| [HTML & CSS](junior/frontend/html-css) | Semántica, Box Model, Flexbox, Grid | 🟡 Media |
+| [HTTP & Web](junior/fundamentos-web/http-web) | HTTP, REST básico, cookies, seguridad básica | 🟡 Media |
+| [Git](junior/fundamentos-web/git) | Comandos básicos, branching, flujo de trabajo | 🟡 Media |
 
 ## Horas de estudio recomendadas
 
@@ -73,3 +83,22 @@ Dedica 2-3 horas diarias durante 3-4 semanas. Prioriza C#, POO y React primero �
 - Pregunta en qué áreas puedes mejorar
 - Reflexiona sobre las preguntas que no supiste responder
 - Estudia esos temas antes de la siguiente entrevista
+
+## Práctica y simulacros
+
+| Recurso | Descripción |
+|---------|-------------|
+| [Live Coding Junior](junior/ejercicios/live-coding) | Ejercicios de código en tiempo real: FizzBuzz, algoritmos básicos, strings |
+| [Preguntas frecuentes](junior/ejercicios/preguntas) | Banco de preguntas reales de entrevistas Junior con explicaciones |
+| [Simulacro de entrevista](junior/ejercicios/simulacro) | Entrevista completa simulada con tiempo y feedback |
+
+## Lo que diferencia a un Junior de un Semi-Senior
+
+| Junior | Semi-Senior |
+|--------|-------------|
+| "Funciona" | "Funciona y es mantenible" |
+| "No sé por qué" | "Sé exactamente por qué" |
+| Aprende el camino feliz | Maneja errores y edge cases |
+| Implementa lo que se le pide | Cuestiona y propone mejoras |
+| Una sola solución | Ve múltiples enfoques y sus trade-offs |
+| Sin tests (o muy pocos) | Tests en toda la lógica crítica |

@@ -34,6 +34,7 @@ const sidebars: SidebarsConfig = {
       collapsed: false,
       items: [
         { type: 'doc', id: 'comportamiento-star', label: '🌟 Preguntas de Comportamiento (STAR)' },
+        { type: 'doc', id: 'cultura-empresa', label: '🏢 Cultura y Dinámicas de Equipo' },
       ],
     },
   ],

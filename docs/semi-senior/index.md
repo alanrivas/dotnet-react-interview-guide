@@ -8,6 +8,18 @@ sidebar_position: 0
 
 El nivel semi-senior asume que ya dominas los fundamentos y evalúa tu capacidad para construir soluciones robustas, mantenibles y escalables.
 
+## Prerequisitos
+
+Antes de abordar este nivel, deberías estar cómodo con **todo el nivel Junior**:
+
+- ✅ C# y POO — tipos, colecciones, herencia, interfaces
+- ✅ React — componentes, hooks básicos, estado y efectos
+- ✅ SQL básico — CRUD, JOINs, GROUP BY, subconsultas
+- ✅ Git — branching, merging, pull requests
+- ✅ HTTP / REST — métodos, status codes, autenticación básica
+
+> Si alguno de estos puntos te genera dudas, repasa el [nivel Junior](../junior/index.md) antes de continuar.
+
 ## ¿Qué se evalúa en entrevistas Semi-Senior?
 
 - **Buenas prácticas y patrones**: SOLID, patrones de diseño aplicados
@@ -160,3 +172,15 @@ Junior:             Semi-Senior:
 "Sin tests"   →    "Tests en lógica crítica"
 "1 solución"  →    "Veo múltiples enfoques y sus trade-offs"
 ```
+
+## Lo que diferencia a un Semi-Senior de un Senior
+
+| Semi-Senior | Senior |
+|-------------|--------|
+| Diseña módulos y servicios | Diseña sistemas completos |
+| Aplica patrones conocidos | Elige cuándo NO aplicar un patrón |
+| Conoce los trade-offs técnicos | Define los trade-offs con impacto en el negocio |
+| Trabaja dentro de la arquitectura | Define y evoluciona la arquitectura |
+| Resuelve problemas técnicos reactivamente | Anticipa problemas antes de que ocurran |
+| Código correcto y bien testeado | Decisiones técnicas con visión a largo plazo |
+| Mentoreado por seniors | Mentora a juniors y semi-seniors |

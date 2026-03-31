@@ -8,6 +8,20 @@ sidebar_position: 0
 
 El nivel senior evalúa tu capacidad para diseñar sistemas completos, liderar decisiones técnicas, y pensar en escalabilidad, mantenibilidad y confiabilidad a largo plazo.
 
+## Prerequisitos
+
+Antes de abordar este nivel, deberías dominar **todo el nivel Semi-Senior**:
+
+- ✅ C# avanzado — generics, async/await profundo, patrones de concurrencia
+- ✅ ASP.NET Core — middleware pipeline, DI avanzado, performance
+- ✅ Entity Framework y SQL avanzado — índices, query optimization, transacciones
+- ✅ Testing — unit, integration, mocking con Moq, WebApplicationFactory
+- ✅ APIs REST, autenticación OAuth/JWT y seguridad de APIs
+- ✅ Patrones de diseño — SOLID, Repository, Strategy, CQRS básico
+- ✅ Docker y CI/CD con GitHub Actions
+
+> Si llegas aquí con huecos en alguno de estos temas, consolida primero el [nivel Semi-Senior](../semi-senior/index.md).
+
 ## ¿Qué se evalúa en entrevistas Senior?
 
 - **System Design**: diseñar sistemas desde cero con millones de usuarios

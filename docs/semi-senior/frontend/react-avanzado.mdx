@@ -451,3 +451,57 @@ function MedirAltura() {
 
 **4. ¿Qué es un Custom Hook?**
 > Una función que empieza con `use` y puede llamar a otros hooks. Permite extraer y reutilizar lógica stateful entre componentes. No crea un estado compartido — cada uso del custom hook tiene su propio estado.
+
+
+import QuizSection from '@site/src/components/QuizSection';
+
+<QuizSection
+  storageKey="semi-react-avanzado"
+  title="🧠 Mini-Quiz — React Avanzado"
+  questions={[
+    {
+      question: "¿Cuándo usarías useMemo en lugar de useCallback?",
+      options: [
+        "useMemo para funciones, useCallback para valores calculados",
+        "useMemo memoriza el resultado de un cálculo; useCallback memoriza la función misma",
+        "Son intercambiables, solo difieren en la sintaxis",
+        "useMemo es para componentes de clase, useCallback para funcionales"
+      ],
+      correctIndex: 1,
+      explanation: "useMemo(() => calcularValor(), [deps]) retorna el valor calculado. useCallback(() => miFuncion(), [deps]) retorna la función. Usa useMemo para cálculos costosos, useCallback para funciones que pasas como props a componentes optimizados."
+    },
+    {
+      question: "¿Qué problema resuelve React Query (TanStack Query) que Context API no puede?",
+      options: [
+        "Compartir estado entre componentes hermanos",
+        "Manejo de estado del servidor: cacheo, refetch automático, deduplicación de requests y sincronización",
+        "Evitar re-renders innecesarios con selector functions",
+        "Gestionar formularios complejos con validación"
+      ],
+      correctIndex: 1,
+      explanation: "Context API es para estado de UI (tema, usuario). React Query maneja estado del servidor: cachea responses, hace refetch cuando la ventana recupera foco, deduplica requests paralelos y sincroniza estado entre componentes automáticamente."
+    },
+    {
+      question: "¿Cuál es la diferencia entre useEffect y useLayoutEffect?",
+      options: [
+        "useLayoutEffect solo existe en React Native",
+        "useEffect se ejecuta después del commit al DOM y el pintado; useLayoutEffect antes del pintado, bloqueando el render",
+        "useLayoutEffect acepta dependencias adicionales que useEffect no",
+        "No hay diferencia en comportamiento, solo en nomenclatura"
+      ],
+      correctIndex: 1,
+      explanation: "useLayoutEffect se ejecuta síncronamente después de las mutaciones del DOM pero antes de que el navegador pinte. Úsalo cuando necesitas medir el DOM o evitar flashes visuales. Prefiere useEffect siempre que puedas."
+    },
+    {
+      question: "¿Qué hace el prop 'key' en listas y por qué importa?",
+      options: [
+        "Solo sirve como identificador visual para debugging",
+        "Controla el orden de renderizado de los elementos",
+        "Permite a React identificar qué elementos cambiaron, se agregaron o eliminaron en el Virtual DOM",
+        "Mejora el performance precompilando el elemento en el bundle"
+      ],
+      correctIndex: 2,
+      explanation: "React usa key para identificar elementos entre re-renders. Con key estable, React hace diff eficiente y reutiliza nodos del DOM. Con key inestable (como el índice del array), React puede recrear elementos innecesariamente o mezclar estado."
+    }
+  ]}
+/>

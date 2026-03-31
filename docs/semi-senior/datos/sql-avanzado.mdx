@@ -203,3 +203,46 @@ SET TRANSACTION ISOLATION LEVEL SNAPSHOT;       -- MVCC, menos bloqueos
 
 **4. ¿Qué es el problema de N+1 en SQL?**
 > Ejecutar 1 query principal y luego N queries adicionales (una por cada resultado). Ej: traer 100 pedidos y luego hacer 100 queries para los items de cada pedido. Se soluciona con JOINs o eager loading.
+
+
+import QuizSection from '@site/src/components/QuizSection';
+
+<QuizSection
+  storageKey="semi-sql-avanzado"
+  title="🧠 Mini-Quiz — SQL Avanzado"
+  questions={[
+    {
+      question: "¿Qué hace ROW_NUMBER() OVER (PARTITION BY ... ORDER BY ...) ?",
+      options: [
+        "Cuenta el número total de filas en la tabla",
+        "Asigna un número secuencial a cada fila dentro de cada partición, reiniciando en cada grupo",
+        "Ordena las filas y elimina duplicados automáticamente",
+        "Crea una copia temporal de la tabla para operaciones seguras"
+      ],
+      correctIndex: 1,
+      explanation: "ROW_NUMBER() asigna 1, 2, 3... dentro de cada PARTITION BY group. Útil para obtener el último registro por grupo, paginación eficiente, y eliminar duplicados manteniendo uno."
+    },
+    {
+      question: "¿Cuándo usarías una CTE recursiva?",
+      options: [
+        "Para queries que usan más de 3 tablas en JOINs",
+        "Para traversar estructuras jerárquicas: árbol de empleados, categorías anidadas, grafos",
+        "Para reemplazar todos los subqueries y mejorar performance",
+        "Cuando necesitas actualizar datos en múltiples tablas relacionadas"
+      ],
+      correctIndex: 1,
+      explanation: "CTEs recursivas tienen un anchor (caso base) y un recursive member que se auto-referencia. Perfectas para jerarquías como organigrama de empleados, árbol de categorías, o rutas en un grafo."
+    },
+    {
+      question: "¿Cuál es la diferencia entre los niveles de aislamiento READ COMMITTED y SERIALIZABLE?",
+      options: [
+        "READ COMMITTED es más lento pero más seguro que SERIALIZABLE",
+        "READ COMMITTED permite phantom reads; SERIALIZABLE previene todos los problemas de concurrencia pero reduce throughput",
+        "SERIALIZABLE solo funciona en SQL Server, no en PostgreSQL",
+        "Son equivalentes en la práctica moderna"
+      ],
+      correctIndex: 1,
+      explanation: "READ COMMITTED (default en SQL Server/PG): ve solo datos confirmados, pero permite phantom reads y non-repeatable reads. SERIALIZABLE: máxima consistencia, los transactions se comportan como si fueran seriales — pero a costa de más locks y menor throughput."
+    }
+  ]}
+/>

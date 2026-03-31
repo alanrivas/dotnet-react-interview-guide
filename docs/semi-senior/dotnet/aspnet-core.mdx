@@ -600,3 +600,56 @@ builder.Services.AddCors(options =>
 });
 app.UseCors("MiPolicy");
 ```
+
+import QuizSection from '@site/src/components/QuizSection';
+
+<QuizSection
+  storageKey="semi-aspnet-core"
+  title="🧠 Mini-Quiz — ASP.NET Core"
+  questions={[
+    {
+      question: "¿En qué orden se ejecutan los middlewares en ASP.NET Core?",
+      options: [
+        "En orden inverso al de registro siempre",
+        "En el orden en que se registran con app.Use()",
+        "El framework los ordena automáticamente por prioridad",
+        "Depende del tipo: primero autenticación, luego el resto"
+      ],
+      correctIndex: 1,
+      explanation: "Los middlewares se ejecutan en el orden exacto en que se registran. La request pasa por cada uno en orden, y la response vuelve en orden inverso."
+    },
+    {
+      question: "¿Cuál es la diferencia entre ActionResult<T> e IActionResult?",
+      options: [
+        "No hay diferencia funcional, son intercambiables",
+        "IActionResult permite retornar múltiples tipos; ActionResult<T> no",
+        "ActionResult<T> permite que Swagger infiera el tipo de respuesta y retornar T directamente",
+        "ActionResult<T> solo puede retornar el tipo T, no errores"
+      ],
+      correctIndex: 2,
+      explanation: "ActionResult<T> es más específico: Swagger puede inferir el tipo automáticamente y puedes retornar tanto el tipo T como cualquier IActionResult (NotFound, BadRequest, etc.)."
+    },
+    {
+      question: "¿Qué sucede si registras un servicio Scoped dentro de un Singleton?",
+      options: [
+        "El contenedor lo convierte automáticamente a Singleton",
+        "Lanza InvalidOperationException en tiempo de ejecución (Captive Dependency)",
+        "Funciona correctamente, el scope se crea por cada uso",
+        "Solo falla en producción, en desarrollo funciona normal"
+      ],
+      correctIndex: 1,
+      explanation: "Esto es una 'Captive Dependency'. El servicio Scoped queda 'capturado' por el Singleton, viviendo tanto como él. En modo de desarrollo ASP.NET Core lanza InvalidOperationException para detectarlo."
+    },
+    {
+      question: "¿Cuándo deberías usar FluentValidation en lugar de DataAnnotations?",
+      options: [
+        "Nunca, DataAnnotations siempre es suficiente",
+        "Solo cuando validaciones son asíncronas",
+        "Cuando las reglas son complejas, condicionales, o necesitan acceder a servicios externos",
+        "Cuando quieres validar modelos de respuesta, no solo de entrada"
+      ],
+      correctIndex: 2,
+      explanation: "FluentValidation brilla cuando necesitas reglas complejas (ej: verificar unicidad en DB), reglas condicionales, mensajes de error dinámicos o separar las reglas de validación del modelo."
+    }
+  ]}
+/>

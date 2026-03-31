@@ -627,3 +627,57 @@ export function useAuth() {
 
 **7. ¿OAuth o mTLS (mutual TLS) para machine-to-machine?**
 > Para APIs entre servicios (machine-to-machine): **mTLS** (certificados de cliente) es más simple. Para aplicaciones SPA/mobile: **OAuth 2.0 con PKCE**. Para integraciones públicas: **OAuth 2.0 con client_secret**.
+
+
+import QuizSection from '@site/src/components/QuizSection';
+
+<QuizSection
+  storageKey="semi-autenticacion-oauth"
+  title="🧠 Mini-Quiz — Autenticación & OAuth 2.0"
+  questions={[
+    {
+      question: "¿Cuál es la diferencia entre autenticación y autorización?",
+      options: [
+        "Son sinónimos en el contexto de seguridad web",
+        "Autenticación: verifica QUIÉN eres; Autorización: verifica QUÉ puedes hacer",
+        "Autenticación: para APIs; Autorización: para interfaces web",
+        "Autenticación: verifica QUÉ puedes hacer; Autorización: verifica QUIÉN eres"
+      ],
+      correctIndex: 1,
+      explanation: "Autenticación = identidad ('¿quién eres?'). Autorización = permisos ('¿qué puedes hacer?'). Primero autenticas, luego autorizas. Sin autenticación no puede haber autorización significativa."
+    },
+    {
+      question: "¿Qué problema resuelve PKCE en el Authorization Code Flow?",
+      options: [
+        "Cifra el access token para que no sea legible en tránsito",
+        "Permite que SPAs y apps móviles usen OAuth sin client_secret, protegiéndose del robo del authorization code",
+        "Acelera el proceso de autenticación evitando un round-trip al servidor",
+        "Reemplaza completamente al refresh token"
+      ],
+      correctIndex: 1,
+      explanation: "SPAs y apps móviles no pueden guardar un client_secret de forma segura. PKCE usa un code_verifier generado dinámicamente: el servidor verifica que quien intercambia el code es el mismo que inició el flujo, sin necesitar un secreto estático."
+    },
+    {
+      question: "¿Qué es Refresh Token Rotation y por qué importa?",
+      options: [
+        "Rotar las claves criptográficas del servidor cada cierto tiempo",
+        "Cambiar el algoritmo de firma del JWT periódicamente",
+        "Emitir un nuevo refresh token en cada uso e invalidar el anterior, detectando robo si el viejo es usado",
+        "Renovar el access token antes de que expire, sin esperar a que caduque"
+      ],
+      correctIndex: 2,
+      explanation: "Cada vez que usas el refresh token, recibes uno nuevo y el anterior se invalida. Si alguien roba y usa el token viejo, el servidor detecta que hay dos intentos de uso del mismo token y puede revocar toda la sesión."
+    },
+    {
+      question: "¿Por qué los access tokens deben tener vida corta (ej. 15 minutos)?",
+      options: [
+        "Para reducir el tamaño del JWT en cada request",
+        "Porque los servidores no pueden almacenar más de 15 minutos de sesiones",
+        "Para limitar la ventana de tiempo en que un token robado puede ser usado maliciosamente",
+        "Es un requerimiento del estándar OAuth 2.0"
+      ],
+      correctIndex: 2,
+      explanation: "Los JWTs son stateless — no se pueden revocar individualmente sin una lista negra. Si el token expira en 15 min, el daño de un robo está limitado a ese window. El refresh token (de larga vida) sí puede revocarse en el servidor."
+    }
+  ]}
+/>

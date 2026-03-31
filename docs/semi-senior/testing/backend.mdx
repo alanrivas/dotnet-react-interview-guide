@@ -581,3 +581,46 @@ it('muestra mensaje', async () => {
 > - **Unit** (80%): lógica pura, funciones, utilidades
 > - **Integration** (15%): componentes + servicios, hooks + APIs mockeadas
 > - **E2E** (5%): flujos críticos en navegador real (login, pago, contacto) — lentos pero garantizan que funciona todo junto
+
+
+import QuizSection from '@site/src/components/QuizSection';
+
+<QuizSection
+  storageKey="semi-testing-backend"
+  title="🧠 Mini-Quiz — Testing"
+  questions={[
+    {
+      question: "¿Cuál es la diferencia entre un mock y un stub?",
+      options: [
+        "Son sinónimos, ambos reemplazan dependencias en tests",
+        "Stub: retorna datos predefinidos; Mock: verifica que se llamó correctamente (comportamiento)",
+        "Mock: retorna datos; Stub: lanza excepciones controladas",
+        "Stub es para testing unitario; Mock es para integration testing"
+      ],
+      correctIndex: 1,
+      explanation: "Stub proporciona respuestas predefinidas (Setup().Returns()). Mock además verifica que los métodos fueron llamados correctamente (Verify()). En Moq, el mismo objeto puede actuar como ambos."
+    },
+    {
+      question: "¿Por qué xUnit crea una nueva instancia de la clase de test por cada test?",
+      options: [
+        "Para mejorar el performance ejecutando tests en paralelo",
+        "Para garantizar aislamiento: el estado de un test no puede afectar a otro",
+        "Porque no soporta compartir estado entre tests de la misma clase",
+        "Es un defecto de diseño heredado de NUnit"
+      ],
+      correctIndex: 1,
+      explanation: "Aislamiento es el principio clave. Si los tests comparten estado (una instancia), un test que modifica ese estado puede hacer que otro falle de forma intermitente (flaky). Constructor = SetUp, IDisposable.Dispose() = TearDown."
+    },
+    {
+      question: "¿Cuándo es apropiado usar Integration Tests en lugar de Unit Tests?",
+      options: [
+        "Siempre que el código involucre más de una clase",
+        "Cuando necesitas verificar que múltiples componentes funcionan juntos: EF + DB real, HTTP + middleware, etc.",
+        "Solo cuando los Unit Tests fallan y no sabes por qué",
+        "Para todo el código de controllers — los unit tests no los cubren bien"
+      ],
+      correctIndex: 1,
+      explanation: "Integration Tests validan que los componentes funcionan juntos correctamente: que las queries SQL son válidas, que el middleware procesa los headers, que las validaciones se aplican en el pipeline completo. Úsalos para los puntos de integración críticos."
+    }
+  ]}
+/>

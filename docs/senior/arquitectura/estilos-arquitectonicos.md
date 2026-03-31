@@ -416,3 +416,19 @@ FASE 4: Madurez
 > Comienza con un **monolito bien estructurado**. Siempre. Extrae microservicios solo cuando tengas problemas claros que la arquitectura actual no resuelve.
 
 **La mayoría de aplicaciones son monolitos**, incluso empresas grandes mantienen componentes importantes como monolitos internos bien estructurados.
+
+---
+
+## Preguntas frecuentes de entrevista 🎯
+
+**1. ¿Cuándo usarías microservicios en lugar de un monolito?**
+> Microservicios cuando: diferentes partes del sistema tienen requisitos de escala muy distintos, equipos independientes necesitan deployar sin coordinación, partes del sistema requieren tecnologías o lenguajes distintos, o cuando el dominio está bien definido y los límites son claros. Siempre comenzar con monolito — los microservicios son la solución a problemas del monolito, no el punto de partida.
+
+**2. ¿Qué es un monolito modular y cuándo es suficiente?**
+> Un monolito con módulos bien delimitados que no comparten internals — solo se comunican por interfaces públicas. Da la estructura de microservicios con la operatividad de un monolito. Es suficiente para la mayoría de aplicaciones medianas. Amazon, Stack Overflow, Shopify — todos usan monolitos para partes importantes de sus sistemas.
+
+**3. Si debieras migrar un monolito a microservicios, ¿por dónde empezarías?**
+> Patrón Strangler Fig: identificar el módulo con mayor valor de extracción independiente (alto tráfico, equipo dedicado, ciclo de deploy lento). Extraerlo primero. Mantener el monolito como fallback. Usar un API Gateway para enrutar gradualmente. No migrar todo de golpe — es una receta para el caos.
+
+**4. ¿Cómo manejas el estado distribuido en una arquitectura de microservicios?**
+> Cada microservicio tiene su propia base de datos (Database per Service). Para queries que cruzan servicios: API Composition o CQRS con event sourcing. Para transacciones distribuidas: Saga Pattern (coreografía o orquestación). Aceptar eventual consistency en lugar de ACID distribuido — es la realidad de los sistemas distribuidos.

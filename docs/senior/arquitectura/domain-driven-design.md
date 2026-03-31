@@ -640,3 +640,22 @@ YourProject/
     └── Integration/
         └── CreateOrderTests.cs
 ```
+
+---
+
+## Preguntas frecuentes de entrevista 🎯
+
+**1. ¿Cuándo aplicarías DDD y cuándo no?**
+> **Aplicar DDD cuando**: el dominio es complejo con reglas de negocio no triviales, hay un equipo dedicado y expertos del dominio disponibles, el proyecto tiene vida útil larga y crecerá. **No aplicar cuando**: es un CRUD simple, un script de procesamiento de datos, un proyecto pequeño o de vida corta. DDD tiene overhead real — no usar en proyectos donde no justifique.
+
+**2. ¿Qué es un Aggregate Root y cuál es su responsabilidad?**
+> El Aggregate Root es el único punto de entrada al Aggregate. Garantiza las invariantes del negocio (ej: un Pedido no puede tener items con precio negativo). Solo el Root tiene un repositorio propio. Las entidades internas solo se modifican a través del Root, nunca directamente desde fuera.
+
+**3. ¿Cómo comunicas cambios entre Bounded Contexts?**
+> Mediante Domain Events y mensajería asíncrona (MassTransit, RabbitMQ). Cada BC es autónomo — no comparte su base de datos ni su modelo de dominio. El BC emisor publica un evento; el BC receptor lo consume y actualiza su propio modelo. Esto garantiza bajo acoplamiento y eventual consistency.
+
+**4. ¿Cuál es la diferencia entre una Entity y un Value Object?**
+> **Entity**: tiene identidad única que persiste en el tiempo (un Usuario con Id=42 sigue siendo el mismo aunque cambie su email). **Value Object**: definido por sus atributos, sin identidad propia (una Dirección con calle="Main St" es igual a cualquier otra Dirección con los mismos campos). Los Value Objects son inmutables y se comparan por valor.
+
+**5. ¿Cómo evitas que el modelo de dominio se corrompa por dependencias externas (Anti-Corruption Layer)?**
+> Implementando un ACL como un adaptador en la capa de Infrastructure. Traduce el modelo externo al modelo de dominio interno. El dominio solo conoce sus propias interfaces — nunca toca directamente SDKs, APIs externas o modelos de otras BCs. El ACL es el "guardabosques" que mantiene el modelo limpio.

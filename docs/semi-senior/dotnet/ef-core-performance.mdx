@@ -335,3 +335,46 @@ builder.Services.AddMiniProfiler(options =>
 
 **6. ¿Qué hace `ExecuteUpdateAsync`?**
 > Genera un `UPDATE` directo en la DB sin cargar las entidades a memoria. Mucho más eficiente que cargar-modificar-guardar para updates masivos. Disponible desde EF Core 7.
+
+
+import QuizSection from '@site/src/components/QuizSection';
+
+<QuizSection
+  storageKey="semi-ef-core-performance"
+  title="🧠 Mini-Quiz — EF Core Performance"
+  questions={[
+    {
+      question: "¿Qué es Split Query en EF Core y cuándo usarlo?",
+      options: [
+        "Dividir el DbContext en múltiples instancias para mejor performance",
+        "Separar un query con múltiples Include() en varias consultas SQL para evitar el producto cartesiano",
+        "Ejecutar queries en paralelo en múltiples hilos",
+        "Cachear partes de un query complejo para reutilizarlas"
+      ],
+      correctIndex: 1,
+      explanation: "Sin Split Query, EF usa JOINs que pueden crear producto cartesiano: 100 pedidos × 50 items × 10 productos = 50,000 filas. Con AsSplitQuery(), EF hace 3 queries separadas y combina en memoria."
+    },
+    {
+      question: "¿Qué ventaja tienen las Compiled Queries?",
+      options: [
+        "Se ejecutan en un hilo separado para no bloquear la UI",
+        "El expression tree se compila una sola vez y se reutiliza, eliminando overhead de compilación en cada llamada",
+        "Permiten usar SQL nativo dentro de LINQ",
+        "Solo funcionan con AsNoTracking() para mayor compatibilidad"
+      ],
+      correctIndex: 1,
+      explanation: "Cada vez que EF ejecuta un LINQ query, compila el expression tree a SQL. Con EF.CompileAsyncQuery(), esa compilación ocurre una sola vez al inicio. Para queries de alta frecuencia (miles por segundo) esto puede dar 20-30% de mejora."
+    },
+    {
+      question: "¿Cuál es la forma más eficiente de paginar resultados en EF Core?",
+      options: [
+        "Traer todos los registros con .ToList() y usar .Skip().Take() en memoria",
+        "Usar cursores de base de datos con stored procedures",
+        ".Skip(page * size).Take(size) en IQueryable<T> antes de materializar — se traduce a OFFSET/FETCH en SQL",
+        "Usar .Take() sin .Skip() y recordar la posición en el cliente"
+      ],
+      correctIndex: 2,
+      explanation: "Skip/Take en IQueryable<T> se traduce a OFFSET n ROWS FETCH NEXT m ROWS ONLY en SQL — la paginación ocurre en la base de datos. Jamás hagas .ToList() primero y luego Skip/Take, eso trae todos los registros a memoria."
+    }
+  ]}
+/>

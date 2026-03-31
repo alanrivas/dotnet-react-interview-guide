@@ -203,3 +203,19 @@ ORDER BY COALESCE(us.user_seeks + us.user_scans + us.user_lookups, 0) ASC;
 
 ---
 
+
+---
+
+## Preguntas frecuentes de entrevista 🎯
+
+**1. ¿Cuándo agregarías un índice y cuándo no?**
+> **Agregar**: columnas en WHERE frecuentes, JOIN keys, columnas en ORDER BY/GROUP BY. **No agregar**: tablas muy pequeñas (full scan es igual de rápido), columnas con baja cardinalidad (gender M/F: el índice no ayuda), tablas con muchos INSERTs/UPDATEs (los índices ralentizan escrituras). Siempre medir antes y después con EXPLAIN/Query Plan.
+
+**2. ¿Cuál es la diferencia entre sharding y replicación?**
+> **Replicación**: copias del mismo dataset en múltiples nodos — escala lecturas y da alta disponibilidad. El primary maneja escrituras, los replicas sirven lecturas. **Sharding**: parte el dataset en subconjuntos (shards), cada shard en su propio nodo — escala tanto lecturas como escrituras. Sharding agrega complejidad operacional significativa — implementar solo cuando la replicación no es suficiente.
+
+**3. ¿Qué es un covering index y cómo puede eliminar lookups costosos?**
+> Un covering index incluye todas las columnas que necesita una query (tanto las del WHERE como las del SELECT). El motor puede satisfacer la query completa desde el índice sin tocar la tabla principal (evita el Key Lookup). Para queries muy frecuentes, el covering index puede reducir la latencia dramáticamente.
+
+**4. ¿Cuándo elegirías una base de datos NoSQL sobre SQL relacional?**
+> **NoSQL cuando**: el esquema es variable o cambia frecuentemente (document store), necesitas escala horizontal masiva (wide-column), el acceso es por clave-valor con alta frecuencia (Redis), o el dataset es un grafo con relaciones complejas (graph DB). **SQL cuando**: necesitas transacciones ACID, relaciones complejas con JOINs, o el dominio tiene esquema estable. No es "mejor o peor" — es "cuál herramienta para cuál problema".

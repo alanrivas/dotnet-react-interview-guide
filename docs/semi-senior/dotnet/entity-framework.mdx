@@ -268,3 +268,57 @@ public async Task TransferirStockAsync(int origenId, int destinoId, int cantidad
 
 **4. ¿Cómo manejas las migrations en un entorno de producción?**
 > Genero un script SQL con `dotnet ef migrations script --idempotent`, lo reviso, y lo aplico como parte del proceso de deployment (CI/CD pipeline o manualmente con DBA). Nunca aplico migrations automáticas en producción sin revisión.
+
+
+import QuizSection from '@site/src/components/QuizSection';
+
+<QuizSection
+  storageKey="semi-entity-framework"
+  title="🧠 Mini-Quiz — Entity Framework Core"
+  questions={[
+    {
+      question: "¿Qué es el problema N+1 en Entity Framework?",
+      options: [
+        "Tener más de un DbContext por aplicación",
+        "Ejecutar 1 query principal + N queries adicionales al iterar propiedades de navegación sin Include",
+        "Usar más de N índices en una tabla",
+        "Abrir más de una conexión a la base de datos simultáneamente"
+      ],
+      correctIndex: 1,
+      explanation: "N+1: traes 100 productos (1 query) y luego al acceder a producto.Categoria, EF hace 100 queries adicionales. Solución: usar Include() para hacer Eager Loading."
+    },
+    {
+      question: "¿Cuándo NO deberías usar AsNoTracking()?",
+      options: [
+        "En queries de lectura (GET de APIs)",
+        "Cuando la lista tiene más de 100 registros",
+        "Cuando vas a modificar las entidades y guardar con SaveChangesAsync()",
+        "En queries con múltiples Include()"
+      ],
+      correctIndex: 2,
+      explanation: "AsNoTracking() desactiva el rastreo de cambios. Si planeas modificar la entidad y llamar SaveChangesAsync(), EF no detectará los cambios y no guardará nada."
+    },
+    {
+      question: "¿Cuál es la forma recomendada de aplicar migrations en producción?",
+      options: [
+        "context.Database.MigrateAsync() en Program.cs al iniciar la app",
+        "Aplicar el .dacpac generado por Visual Studio",
+        "Generar script SQL con --idempotent, revisarlo y aplicarlo en el pipeline de CI/CD",
+        "Eliminar la base de datos y recrearla con EnsureCreatedAsync()"
+      ],
+      correctIndex: 2,
+      explanation: "dotnet ef migrations script --idempotent genera SQL que puedes revisar antes de aplicar. Nunca deberías aplicar migrations automáticas en producción sin revisión previa."
+    },
+    {
+      question: "¿Qué ventaja tiene ExecuteUpdateAsync() sobre el patrón cargar-modificar-guardar?",
+      options: [
+        "Funciona sin DbContext",
+        "Genera un UPDATE directo en DB sin cargar entidades a memoria — mucho más eficiente para updates masivos",
+        "Permite actualizar entidades sin transacciones",
+        "Aplica cambios en múltiples bases de datos simultáneamente"
+      ],
+      correctIndex: 1,
+      explanation: "ExecuteUpdateAsync() (EF Core 7+) traduce directamente a UPDATE ... WHERE sin traer entidades a memoria. Para actualizar 10,000 registros es la diferencia entre 1 query vs 10,001."
+    }
+  ]}
+/>

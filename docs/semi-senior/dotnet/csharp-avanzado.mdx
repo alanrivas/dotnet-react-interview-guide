@@ -256,3 +256,56 @@ IEnumerable<int> NumerosPares(int hasta)
         yield return i; // produce un valor y suspende
 }
 ```
+
+import QuizSection from '@site/src/components/QuizSection';
+
+<QuizSection
+  storageKey="semi-csharp-avanzado"
+  title="🧠 Mini-Quiz — C# Avanzado"
+  questions={[
+    {
+      question: "¿Qué es un Record en C# y cuándo usarlo?",
+      options: [
+        "Un tipo de dato solo para bases de datos relacionales",
+        "Un tipo por referencia que impone inmutabilidad con igualdad por valor — ideal para DTOs y Value Objects",
+        "Una clase que solo puede tener propiedades, sin métodos",
+        "Una alternativa a struct siempre que el objeto tenga más de 5 propiedades"
+      ],
+      correctIndex: 1,
+      explanation: "record genera automáticamente: constructor posicional, igualdad por valor, ToString(), Deconstruct() e inmutabilidad con init. Perfecto para DTOs, responses de API y Value Objects en DDD."
+    },
+    {
+      question: "¿Cuál es la diferencia entre IEnumerable<T> e IQueryable<T>?",
+      options: [
+        "IQueryable<T> solo funciona en memoria; IEnumerable<T> puede ir a la base de datos",
+        "IEnumerable<T> ejecuta en memoria (LINQ to Objects); IQueryable<T> traduce el query a SQL (LINQ to Entities)",
+        "Son intercambiables, el compilador elige automáticamente el más eficiente",
+        "IQueryable<T> solo está disponible en .NET 6+"
+      ],
+      correctIndex: 1,
+      explanation: "IQueryable<T> mantiene el expression tree y lo traduce a SQL cuando se materializa (.ToList(), .FirstOrDefault()). Si conviertes a IEnumerable<T> antes, el resto del filtrado ocurre en memoria con todos los datos ya traídos."
+    },
+    {
+      question: "¿Qué problema puede causar async void y cómo evitarlo?",
+      options: [
+        "Bloquea el thread principal — usar async Task siempre",
+        "Las excepciones no se pueden capturar con try/catch y pueden crashear la aplicación sin posibilidad de recovery",
+        "No puede usar await internamente, debe usar .Result",
+        "Solo funciona en .NET Framework, no en .NET Core"
+      ],
+      correctIndex: 1,
+      explanation: "async void: las excepciones no viajan por el await chain normal y pueden crashear el proceso. Excepciones legítimas: event handlers (donde la firma es void). Para todo lo demás, usar async Task."
+    },
+    {
+      question: "¿Qué hace yield return en un método iterator?",
+      options: [
+        "Retorna el valor y termina el método inmediatamente",
+        "Produce un valor y suspende la ejecución hasta el siguiente MoveNext() — lazy evaluation",
+        "Acumula valores en una lista interna que se retorna al final",
+        "Es equivalente a return en un método async"
+      ],
+      correctIndex: 1,
+      explanation: "yield return produce un valor de la secuencia y pausa la ejecución del método. El siguiente valor solo se calcula cuando el consumer lo pide. Esto habilita lazy evaluation y secuencias potencialmente infinitas sin cargar todo en memoria."
+    }
+  ]}
+/>

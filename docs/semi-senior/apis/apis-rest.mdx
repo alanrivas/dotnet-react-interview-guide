@@ -529,3 +529,57 @@ public record ProductoResponse(
 > - **Over-fetching**: la API retorna más datos de los que necesitas (toda la entidad cuando solo querías 2 campos)
 > - **Under-fetching**: necesitas múltiples requests para obtener lo que querías
 > **REST**: Solución es tener múltiples endpoints: `/productos/1/basico` vs `/productos/1/completo`. **GraphQL** resuelve esto: el cliente especifica exactamente qué campos necesita.
+
+
+import QuizSection from '@site/src/components/QuizSection';
+
+<QuizSection
+  storageKey="semi-apis-rest"
+  title="🧠 Mini-Quiz — APIs REST"
+  questions={[
+    {
+      question: "¿Cuál es la diferencia entre PUT y PATCH?",
+      options: [
+        "PUT es más seguro que PATCH porque valida el body completo",
+        "PUT reemplaza el recurso completo; PATCH aplica cambios parciales",
+        "PATCH es para archivos binarios; PUT para JSON",
+        "Son equivalentes, la diferencia es solo semántica de documentación"
+      ],
+      correctIndex: 1,
+      explanation: "PUT envía el recurso completo y reemplaza todo. PATCH envía solo los campos que cambian. Si tienes un usuario con 20 campos y solo quieres cambiar el email, PATCH es más eficiente."
+    },
+    {
+      question: "¿Qué código HTTP deberías retornar al crear un recurso exitosamente?",
+      options: [
+        "200 OK",
+        "204 No Content",
+        "201 Created con Location header apuntando al nuevo recurso",
+        "202 Accepted"
+      ],
+      correctIndex: 2,
+      explanation: "201 Created indica que el recurso fue creado. El header Location debe apuntar a la URL del nuevo recurso (ej: /api/productos/123). El body suele incluir el recurso creado con su ID."
+    },
+    {
+      question: "¿Qué es idempotencia y qué verbos HTTP son idempotentes?",
+      options: [
+        "Que la operación no tiene efectos secundarios. Solo GET es idempotente",
+        "Que ejecutar la misma operación múltiples veces produce el mismo resultado. GET, PUT, DELETE son idempotentes",
+        "Que la operación es reversible. POST y DELETE son idempotentes",
+        "Que la respuesta siempre tiene el mismo formato JSON"
+      ],
+      correctIndex: 1,
+      explanation: "Idempotente = mismo resultado sin importar cuántas veces lo ejecutes. GET (leer), PUT (reemplazar), DELETE (eliminar si existe) son idempotentes. POST NO es idempotente: crear dos veces crea dos recursos."
+    },
+    {
+      question: "¿Cómo versionar una API REST sin romper clientes existentes?",
+      options: [
+        "Siempre crear un nuevo endpoint con nombre diferente",
+        "URL versioning (/v2/), header versioning, o query param (?version=2) — URL versioning es el más visible y recomendado",
+        "Usar GraphQL en lugar de REST",
+        "Deprecar la API anterior y forzar migración con HTTP 301"
+      ],
+      correctIndex: 1,
+      explanation: "Las estrategias más comunes: /api/v2/productos (URL versioning, más explícito), Accept: application/vnd.api.v2+json (header), o ?api-version=2.0 (query param). En .NET puedes usar Microsoft.AspNetCore.Mvc.Versioning para manejar todas."
+    }
+  ]}
+/>

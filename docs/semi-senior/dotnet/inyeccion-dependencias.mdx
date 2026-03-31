@@ -473,3 +473,45 @@ public class ProductoServiceTests
 
 **8. ¿DI en background services?**
 > Background services son Singletons. Para acceder a Scoped (como DbContext), crea un scope: `using var scope = _serviceProvider.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AppDbContext>()`. Así cada procesamiento tiene su propio DbContext.
+
+import QuizSection from '@site/src/components/QuizSection';
+
+<QuizSection
+  storageKey="semi-inyeccion-dependencias"
+  title="🧠 Mini-Quiz — Dependency Injection"
+  questions={[
+    {
+      question: "¿Cuál es la diferencia de lifetime entre Transient, Scoped y Singleton?",
+      options: [
+        "Transient: 1 por request; Scoped: 1 por sesión; Singleton: 1 por aplicación",
+        "Transient: 1 por uso; Scoped: 1 por request HTTP; Singleton: 1 por aplicación",
+        "Son iguales en producción, difieren solo en testing",
+        "Transient: 1 por módulo; Scoped: 1 por controller; Singleton: 1 por proceso"
+      ],
+      correctIndex: 1,
+      explanation: "Transient: nueva instancia cada vez que se solicita. Scoped: una instancia por request HTTP (o scope). Singleton: una instancia para toda la vida de la aplicación."
+    },
+    {
+      question: "¿Qué es una Captive Dependency y por qué es un problema?",
+      options: [
+        "Un servicio que no puede ser resuelto porque falta su registro",
+        "Un Singleton que depende de un Scoped: el Scoped vive tanto como el Singleton, violando su ciclo de vida",
+        "Una dependencia circular que causa un stack overflow",
+        "Un servicio que tarda demasiado en inicializarse al inicio de la app"
+      ],
+      correctIndex: 1,
+      explanation: "Si un Singleton captura un Scoped, el Scoped no se libera al final del request — vive mientras el Singleton. En ASP.NET Core esto lanza InvalidOperationException en desarrollo para ayudarte a detectarlo."
+    },
+    {
+      question: "¿Cómo accedes a un servicio Scoped (como DbContext) desde un Background Service (Singleton)?",
+      options: [
+        "Registra el DbContext como Singleton también",
+        "Inyecta IServiceProvider y crea un scope: using var scope = sp.CreateScope()",
+        "Los Background Services no pueden usar DbContext",
+        "Usa IHostedService en lugar de BackgroundService"
+      ],
+      correctIndex: 1,
+      explanation: "Como los BackgroundService son Singleton, debes crear un scope manualmente: using var scope = _serviceProvider.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<AppDbContext>(). Así cada procesamiento tiene su propio DbContext."
+    }
+  ]}
+/>

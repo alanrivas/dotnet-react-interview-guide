@@ -26,15 +26,15 @@ No finjas saber algo que no sabes. Los entrevistadores prefieren "No lo sé, per
 
 | Tema | Descripción | Prioridad |
 |------|-------------|-----------|
-| [C# Fundamentos](junior/csharp-fundamentos) | Tipos, colecciones, excepciones, strings | 🔥 Alta |
-| [POO](junior/poo) | Los 4 pilares, clases, interfaces | 🔥 Alta |
-| [.NET Básico](junior/dotnet-basico) | CLR, GC, LINQ, async/await | 🔥 Alta |
-| [JavaScript & TypeScript](junior/javascript-typescript) | ES6+, promesas, tipos, closures | 🔥 Alta |
-| [React Básico](junior/react-basico) | Componentes, hooks básicos, JSX | 🔥 Alta |
-| [SQL Básico](junior/sql-basico) | CRUD, JOINs, GROUP BY | 🔥 Alta |
-| [HTML & CSS](junior/html-css) | Semántica, Box Model, Flexbox, Grid | 🟡 Media |
-| [HTTP & Web](junior/http-web) | HTTP, REST básico, cookies, seguridad básica | 🟡 Media |
-| [Git](junior/git) | Comandos básicos, branching, flujo de trabajo | 🟡 Media |
+| [C# Fundamentos](./dotnet/csharp-fundamentos.md) | Tipos, colecciones, excepciones, strings | 🔥 Alta |
+| [POO](./dotnet/poo.md) | Los 4 pilares, clases, interfaces | 🔥 Alta |
+| [.NET Básico](./dotnet/dotnet-basico.md) | CLR, GC, LINQ, async/await | 🔥 Alta |
+| [JavaScript & TypeScript](./frontend/javascript-typescript.md) | ES6+, promesas, tipos, closures | 🔥 Alta |
+| [React Básico](./frontend/react-basico.md) | Componentes, hooks básicos, JSX | 🔥 Alta |
+| [SQL Básico](./bases-datos/sql-basico.md) | CRUD, JOINs, GROUP BY | 🔥 Alta |
+| [HTML & CSS](./frontend/html-css.md) | Semántica, Box Model, Flexbox, Grid | 🟡 Media |
+| [HTTP & Web](./fundamentos-web/http-web.md) | HTTP, REST básico, cookies, seguridad básica | 🟡 Media |
+| [Git](./fundamentos-web/git.md) | Comandos básicos, branching, flujo de trabajo | 🟡 Media |
 
 ## Horas de estudio recomendadas
 

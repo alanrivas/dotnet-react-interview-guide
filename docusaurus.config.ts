@@ -83,7 +83,7 @@ const config: Config = {
         {
           title: 'Niveles',
           items: [
-            { label: '🟢 Junior', to: '/docs/junior/csharp-fundamentos' },
+            { label: '🟢 Junior', to: '/docs/junior/dotnet/csharp-fundamentos' },
             { label: '🟡 Semi-Senior', to: '/docs/semi-senior/dotnet/csharp-avanzado' },
             { label: '🔴 Senior', to: '/docs/senior/arquitectura' },
           ],
@@ -91,9 +91,9 @@ const config: Config = {
         {
           title: 'Tecnologías',
           items: [
-            { label: '.NET / C#', to: '/docs/junior/csharp-fundamentos' },
-            { label: 'React', to: '/docs/junior/react-basico' },
-            { label: 'SQL', to: '/docs/junior/sql-basico' },
+            { label: '.NET / C#', to: '/docs/junior/dotnet/csharp-fundamentos' },
+            { label: 'React', to: '/docs/junior/frontend/react-basico' },
+            { label: 'SQL', to: '/docs/junior/bases-datos/sql-basico' },
           ],
         },
       ],

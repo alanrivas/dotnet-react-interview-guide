@@ -9,7 +9,7 @@ sidebar_position: 20
 Accesibilidad (a11y — "a" + 11 letras + "y") es hacer que las aplicaciones web sean usables por personas con discapacidades visuales, motoras, auditivas o cognitivas. Se pregunta cada vez más en entrevistas de frontend porque las empresas enfrentan requisitos legales (WCAG, ADA, Ley 26.522 en Argentina) y porque es un indicador de calidad técnica.
 
 :::info Relación con HTML semántico
-[HTML & CSS](../../junior/html-css) cubre el HTML semántico básico. Este documento profundiza en ARIA, manejo de foco, patrones React y testing de accesibilidad.
+[HTML & CSS](../../junior/frontend/html-css) cubre el HTML semántico básico. Este documento profundiza en ARIA, manejo de foco, patrones React y testing de accesibilidad.
 :::
 
 ---

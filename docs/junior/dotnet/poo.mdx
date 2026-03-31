@@ -4,6 +4,8 @@ title: Programación Orientada a Objetos
 sidebar_position: 2
 ---
 
+import Quiz from '@site/src/components/Quiz';
+
 # Programación Orientada a Objetos (POO) 🟢
 
 Los 4 pilares de POO son los temas **más preguntados** en entrevistas Junior y Semi-Senior.
@@ -233,3 +235,58 @@ string precio = Utilidades.FormatearMoneda(1234.5m); // $1,234.50
 
 **4. ¿Qué pasa si no llamo a `base()` en el constructor hijo?**
 > C# llama automáticamente al constructor sin parámetros del padre. Si el padre no tiene constructor sin parámetros, es un **error de compilación** si no se llama a `base(...)` explícitamente.
+
+---
+
+## ✅ Preguntas rápidas
+
+<Quiz
+  question="¿Cuál es la diferencia clave entre `virtual` y `abstract` en C#?"
+  options={[
+    "`virtual` solo puede usarse en interfaces; `abstract` solo en clases",
+    "`virtual` tiene implementación por defecto y puede sobreescribirse; `abstract` no tiene implementación y DEBE sobreescribirse en la subclase",
+    "`virtual` es para métodos estáticos; `abstract` para métodos de instancia",
+    "Son sinónimos: ambos permiten que la subclase sobreescriba el método"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. `virtual` se usa en clases (no interfaces). Las interfaces en C# 8+ admiten implementaciones por defecto, pero con semántica diferente.",
+    "Correcto. `virtual` define un método con implementación que las subclases PUEDEN sobreescribir con `override`. `abstract` define un contrato sin implementación que las subclases DEBEN implementar obligatoriamente. Una clase con al menos un método `abstract` debe declararse `abstract`.",
+    "Incorrecto. Tanto `virtual` como `abstract` aplican a métodos de instancia (no estáticos).",
+    "Incorrecto. No son sinónimos. `virtual` es opcional de sobreescribir; `abstract` es obligatorio y no tiene cuerpo."
+  ]}
+/>
+
+<Quiz
+  question="¿Cuándo deberías elegir una clase abstracta sobre una interfaz en C#?"
+  options={[
+    "Cuando necesitas que múltiples clases no relacionadas implementen el mismo contrato",
+    "Cuando las clases derivadas comparten código e implementación base y tienen una relación 'es un tipo de'",
+    "Cuando necesitas que la clase pueda instanciarse directamente para uso general",
+    "Únicamente cuando necesitas constantes o campos estáticos compartidos"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Para que clases no relacionadas implementen un contrato, la interfaz es la opción correcta — no requiere relación jerárquica.",
+    "Correcto. Usa clase abstracta cuando las clases derivadas comparten comportamiento común (puedes poner código reutilizable en la base) y tienen una relación de herencia clara. Usa interfaz cuando defines solo un contrato/capacidad que cualquier clase puede implementar, sin importar su jerarquía.",
+    "Incorrecto. Una clase abstracta no puede instanciarse directamente — esa es precisamente su característica definitoria.",
+    "Incorrecto. Aunque las clases abstractas pueden tener campos estáticos, no es el criterio principal para elegirlas sobre interfaces."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué ocurre si una subclase no llama a `base(...)` y el padre no tiene constructor sin parámetros?"
+  options={[
+    "El código compila y usa valores null/default para los parámetros del padre",
+    "Error de compilación: el compilador no puede resolver qué constructor del padre invocar",
+    "Se lanza NullReferenceException en tiempo de ejecución al crear la instancia",
+    "C# llama automáticamente al primer constructor disponible del padre"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. C# no asume valores por defecto para constructores del padre cuando no existe uno sin parámetros.",
+    "Correcto. Si el padre no tiene constructor sin parámetros, la subclase DEBE llamar explícitamente a `base(argumentos)`. Si no lo hace, es un error de compilación porque el compilador no sabe qué constructor del padre invocar ni con qué valores.",
+    "Incorrecto. Este error ocurre en compile-time, no en runtime. El compilador lo detecta antes de ejecutar el programa.",
+    "Incorrecto. C# solo llama automáticamente al constructor sin parámetros si existe. Si no existe y no se llama a `base(...)`, es un error de compilación."
+  ]}
+/>

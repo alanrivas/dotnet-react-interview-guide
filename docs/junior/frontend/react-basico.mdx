@@ -4,6 +4,8 @@ title: React - Fundamentos
 sidebar_position: 5
 ---
 
+import Quiz from '@site/src/components/Quiz';
+
 # React — Fundamentos 🟢
 
 ## ¿Qué es React?
@@ -458,3 +460,58 @@ setEstado(estado);
 // BIEN
 setEstado({ ...estado, lista: [...estado.lista, nuevoItem] });
 ```
+
+---
+
+## ✅ Preguntas rápidas
+
+<Quiz
+  question="Un `useEffect` con array de dependencias vacío `[]` se ejecuta:"
+  options={[
+    "En cada re-render del componente",
+    "Solo cuando las props del componente cambian",
+    "Solo una vez, después del primer render (equivalente a componentDidMount)",
+    "Nunca; un array vacío desactiva el efecto"
+  ]}
+  correctIndex={2}
+  explanations={[
+    "Incorrecto. Eso corresponde a `useEffect(() => { ... })` sin array de dependencias en absoluto — sin array, se ejecuta en cada render.",
+    "Incorrecto. Para ejecutarse cuando cambian las props, deberías incluir esas props en el array: `[prop1, prop2]`.",
+    "Correcto. Un array vacío `[]` significa 'sin dependencias que observar', por lo tanto el efecto se ejecuta solo una vez después del primer render. Es el equivalente funcional de `componentDidMount` en componentes de clase.",
+    "Incorrecto. Un array vacío no desactiva el efecto, simplemente lo ejecuta una única vez al montar."
+  ]}
+/>
+
+<Quiz
+  question="Tienes una lista de productos y usas el índice como `key`. Insertas un nuevo producto al inicio del array. ¿Qué problema puede ocurrir?"
+  options={[
+    "React lanza un error de runtime porque el índice 0 ya existía",
+    "React puede mezclar el estado interno de los componentes, causando bugs difíciles de detectar",
+    "La lista no se renderiza porque hay keys duplicadas entre renders",
+    "No hay problema; React detecta automáticamente que los datos cambiaron"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. React no lanza errores por reusar índices como keys. El problema es silencioso y más peligroso por eso.",
+    "Correcto. Si usas índices como keys y la lista cambia de orden (o se inserta al inicio), React reutiliza los componentes de los índices 0, 1, 2... pero les pasa los nuevos datos. Si esos componentes tienen estado interno (un input con texto, un checkbox marcado, una animación), ese estado queda desincronizado con los datos — un bug silencioso y confuso.",
+    "Incorrecto. Keys duplicadas ocurrirían si dos elementos hermanos tuvieran el mismo key en el mismo render; insertar al inicio solo desalinea el estado interno, no genera duplicados.",
+    "Incorrecto. React usa la key para identificar qué componente es qué entidad. Si la key cambia de significado (índice 0 antes era el producto A, ahora es el producto B), React no lo detecta como un cambio de entidad y reutiliza el componente incorrecto."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué debe retornar la función de cleanup en `useEffect`?"
+  options={[
+    "El nuevo valor del estado que debe establecerse al desmontar",
+    "Una función que se ejecuta antes del siguiente efecto o cuando el componente se desmonta",
+    "Un booleano indicando si el efecto se completó exitosamente",
+    "Los datos obtenidos durante el efecto, para que React los cachee automáticamente"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. El cleanup no tiene acceso directo al setter de estado y no es su propósito.",
+    "Correcto. El cleanup es una función que React ejecuta en dos momentos: (1) antes de volver a ejecutar el efecto si las dependencias cambian, y (2) cuando el componente se desmonta. Se usa para cancelar subscriptions, limpiar timers, abortar fetches, etc. Ejemplo: `return () => clearTimeout(timer)`.",
+    "Incorrecto. React no interpreta el retorno del cleanup como un resultado de éxito/fallo.",
+    "Incorrecto. React no tiene un sistema de cacheo automático basado en el retorno del cleanup. Para cacheo de datos existen librerías como React Query o SWR."
+  ]}
+/>

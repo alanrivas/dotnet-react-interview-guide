@@ -4,6 +4,8 @@ title: Testing — Fundamentos
 sidebar_position: 11
 ---
 
+import Quiz from '@site/src/components/Quiz';
+
 # Testing — Fundamentos
 
 El testing es una de las habilidades más valoradas en el mundo profesional. Un desarrollador que sabe cómo probar su código genera confianza en el equipo y en el producto. En entrevistas técnicas, saber explicar qué testear, cómo y por qué es tan importante como escribir el test en sí.
@@ -458,6 +460,147 @@ mockRepo.Verify(r => r.Guardar(It.IsAny<Usuario>()), Times.Exactly(3));
 
 ---
 
+## Mocks con métodos async
+
+En proyectos reales, la mayoría de los servicios tienen métodos `async`. Moq los maneja con `ReturnsAsync` y `ThrowsAsync`.
+
+```csharp
+// Interfaz con métodos async
+public interface IRepositorioUsuarios
+{
+    Task<Usuario?> ObtenerPorIdAsync(int id);
+    Task GuardarAsync(Usuario usuario);
+}
+
+public class ServicioUsuarios
+{
+    private readonly IRepositorioUsuarios _repositorio;
+    public ServicioUsuarios(IRepositorioUsuarios repositorio) => _repositorio = repositorio;
+
+    public async Task<string> ObtenerNombreAsync(int id)
+    {
+        var usuario = await _repositorio.ObtenerPorIdAsync(id);
+        return usuario?.Nombre ?? "No encontrado";
+    }
+}
+```
+
+```csharp
+public class ServicioUsuariosAsyncTests
+{
+    [Fact]
+    public async Task ObtenerNombreAsync_UsuarioExiste_RetornaNombre()
+    {
+        // ARRANGE
+        var mockRepo = new Mock<IRepositorioUsuarios>();
+
+        // ReturnsAsync en vez de Returns para métodos que retornan Task<T>
+        mockRepo.Setup(r => r.ObtenerPorIdAsync(1))
+                .ReturnsAsync(new Usuario { Id = 1, Nombre = "Ana García" });
+
+        var servicio = new ServicioUsuarios(mockRepo.Object);
+
+        // ACT — el método de test también debe ser async Task
+        string resultado = await servicio.ObtenerNombreAsync(1);
+
+        // ASSERT
+        Assert.Equal("Ana García", resultado);
+    }
+
+    [Fact]
+    public async Task ObtenerNombreAsync_RepositorioLanzaExcepcion_Propaga()
+    {
+        // ARRANGE
+        var mockRepo = new Mock<IRepositorioUsuarios>();
+
+        // ThrowsAsync para simular un fallo en una operación async
+        mockRepo.Setup(r => r.ObtenerPorIdAsync(It.IsAny<int>()))
+                .ThrowsAsync(new Exception("Error de conexión"));
+
+        var servicio = new ServicioUsuarios(mockRepo.Object);
+
+        // ASSERT — Assert.ThrowsAsync para métodos async
+        await Assert.ThrowsAsync<Exception>(() => servicio.ObtenerNombreAsync(1));
+    }
+
+    [Fact]
+    public async Task GuardarAsync_LlamaAlRepositorio()
+    {
+        var mockRepo = new Mock<IRepositorioUsuarios>();
+
+        // Task sin retorno → Returns(Task.CompletedTask)
+        mockRepo.Setup(r => r.GuardarAsync(It.IsAny<Usuario>()))
+                .Returns(Task.CompletedTask);
+
+        // ... código del servicio que llama a GuardarAsync ...
+
+        mockRepo.Verify(r => r.GuardarAsync(It.IsAny<Usuario>()), Times.Once);
+    }
+}
+```
+
+:::tip Reglas para métodos async en Moq
+- Método devuelve `Task<T>` → usar `.ReturnsAsync(valor)`
+- Método devuelve `Task` (sin retorno) → usar `.Returns(Task.CompletedTask)`
+- Para simular excepciones async → usar `.ThrowsAsync<TException>()`
+- El método de test siempre debe ser `async Task`, **nunca** `async void`
+:::
+
+---
+
+## Setup y teardown en xUnit
+
+Cuando varios tests de una clase necesitan las mismas dependencias inicializadas, se usa el **constructor** (setup) y `IDisposable` (teardown). En xUnit no existe `[SetUp]` como en NUnit — el constructor cumple esa función.
+
+```csharp
+public class ServicioUsuariosTests : IDisposable
+{
+    // Campos compartidos por todos los tests de la clase
+    private readonly Mock<IRepositorioUsuarios> _mockRepo;
+    private readonly ServicioUsuarios _servicio;
+
+    // El constructor se ejecuta ANTES de cada test individual
+    public ServicioUsuariosTests()
+    {
+        _mockRepo = new Mock<IRepositorioUsuarios>();
+        _servicio = new ServicioUsuarios(_mockRepo.Object);
+        // Configuración común a todos los tests
+    }
+
+    // Dispose se ejecuta DESPUÉS de cada test individual
+    public void Dispose()
+    {
+        // Liberar recursos: cerrar conexiones, archivos, etc.
+        // Para mocks puros normalmente no es necesario
+    }
+
+    [Fact]
+    public async Task ObtenerNombre_UsuarioExiste_RetornaNombre()
+    {
+        // _mockRepo y _servicio ya están listos — no necesitas crear nada
+        _mockRepo.Setup(r => r.ObtenerPorIdAsync(1))
+                 .ReturnsAsync(new Usuario { Nombre = "Ana" });
+
+        string resultado = await _servicio.ObtenerNombreAsync(1);
+
+        Assert.Equal("Ana", resultado);
+    }
+
+    [Fact]
+    public void OtroTest()
+    {
+        // El constructor se ejecutó de nuevo: _mockRepo es un Mock limpio
+        // Los setups de tests anteriores NO contaminan este test
+    }
+}
+```
+
+:::note Aislamiento por test
+En xUnit, el **constructor se invoca una vez por test**. Esto garantiza que cada test empiece con un estado limpio. No compartas estado mutable entre tests — es una fuente común de bugs difíciles de reproducir.
+:::
+
+---
+
 ## Testing de React con Testing Library
 
 ### Instalación
@@ -885,3 +1028,58 @@ public void Login_UsuarioBloqueado_LanzaAccountLockedException() { }
 | Determinismo | Los tests no deben depender de la hora, DB real, ni estado externo |
 
 > **Consejo para entrevistas**: Si te piden escribir un test en vivo, empieza por el nombre descriptivo y la estructura AAA. Demuestra que entiendes qué estás probando y por qué, antes de escribir el código del test.
+
+---
+
+## ✅ Preguntas rápidas
+
+<Quiz
+  question="¿Cuál es la diferencia entre `[Fact]` y `[Theory]` con `[InlineData]` en xUnit?"
+  options={[
+    "`[Fact]` es para unit tests; `[Theory]` es exclusivo para integration tests",
+    "`[Fact]` ejecuta el test una sola vez con datos fijos; `[Theory]` ejecuta el mismo test varias veces con diferentes conjuntos de datos",
+    "`[Theory]` genera una clase de test separada por cada `[InlineData]`",
+    "Son equivalentes; la diferencia es solo de estilo y legibilidad"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. La distinción `[Fact]`/`[Theory]` no tiene relación con unit vs integration tests. Ambos se usan para cualquier tipo de test.",
+    "Correcto. `[Fact]` define un test con un solo caso de prueba. `[Theory]` con `[InlineData]` permite ejecutar el mismo test con múltiples conjuntos de parámetros — xUnit genera un test separado por cada `[InlineData]`. Esto evita duplicar tests para cubrir distintos escenarios del mismo comportamiento.",
+    "Incorrecto. Los tests con `[Theory]` se mantienen en la misma clase; no se genera código en clases separadas.",
+    "Incorrecto. No son equivalentes funcionalmente. `[Fact]` no acepta parámetros; `[Theory]` requiere al menos una fuente de datos como `[InlineData]`."
+  ]}
+/>
+
+<Quiz
+  question="¿Qué hace `mockRepo.Verify(r => r.Guardar(It.IsAny<Usuario>()), Times.Once)` en Moq?"
+  options={[
+    "Configura el mock para que el método Guardar retorne true exactamente una vez",
+    "Verifica que el método Guardar fue invocado exactamente una vez durante el test; si no, el test falla",
+    "Garantiza que Guardar solo pueda ser llamado una vez en el código de producción",
+    "Registra las llamadas a Guardar para exportarlas a un log de auditoría"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. `Verify` no configura retornos. Para eso se usa `Setup(...).Returns(...)`. Son dos operaciones distintas.",
+    "Correcto. `Verify` es una assertion sobre el comportamiento del mock. Comprueba que el método fue llamado el número de veces indicado (aquí, exactamente una). Si el método no fue llamado o fue llamado más de una vez, el test falla con un mensaje descriptivo.",
+    "Incorrecto. Moq opera solo en el contexto de tests; no tiene ningún efecto sobre el código en producción.",
+    "Incorrecto. Moq no tiene integración con sistemas de logging externos. `Verify` es una assertion pura de testing."
+  ]}
+/>
+
+<Quiz
+  question="Un test que usa `DateTime.Now` directamente en el servicio bajo prueba pasa los lunes pero falla los domingos. ¿Cuál es la causa y la solución correcta?"
+  options={[
+    "Ajustar el Assert para aceptar más casos de hora/fecha",
+    "El test es no determinista por depender del tiempo real. Solución: inyectar una abstracción `IReloj` y mockearla en el test",
+    "Configurar el CI para no ejecutar tests los fines de semana",
+    "Usar `Thread.Sleep` para esperar hasta lunes antes del Assert"
+  ]}
+  correctIndex={1}
+  explanations={[
+    "Incorrecto. Cambiar el Assert enmascara el problema real: el código de producción tiene una dependencia no inyectable en el tiempo del sistema.",
+    "Correcto. Los tests deben ser deterministas: producir siempre el mismo resultado independientemente de cuándo se ejecuten. La solución es crear una interfaz `IReloj` con propiedad `Ahora`, inyectarla en el servicio, y en el test usar un mock que retorne una fecha controlada. En producción se usa la implementación real con `DateTime.Now`.",
+    "Incorrecto. Es un workaround que oculta el bug. El problema seguiría existiendo en producción.",
+    "Incorrecto. `Thread.Sleep` no cambia la fecha del sistema y no soluciona el problema de determinismo."
+  ]}
+/>

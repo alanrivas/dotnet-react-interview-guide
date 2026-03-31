@@ -129,64 +129,184 @@ using var criticalTransaction = await context.Database
 
 ---
 
-## Deadlocks y cómo evitarlos
+## Deadlocks — Detección y Prevención
+
+### ¿Qué es un deadlock?
+
+Un deadlock ocurre cuando dos (o más) transacciones se esperan mutuamente, formando un ciclo. La base de datos detecta el ciclo y mata a la "víctima" (la transacción con menor costo de rollback), que recibe el error 1205 en SQL Server.
+
+```
+Transacción A                     Transacción B
+─────────────────────────         ─────────────────────────
+LOCK Row(usuario_id=1)            LOCK Row(usuario_id=2)
+... hace trabajo ...              ... hace trabajo ...
+Espera LOCK Row(usuario_id=2) ←→  Espera LOCK Row(usuario_id=1)
+         ↑                                    ↑
+         └──────────── DEADLOCK ──────────────┘
+```
 
 ```csharp
-// ❌ DEADLOCK: Transacción A espera por recurso de B, B espera por A
+// ❌ DEADLOCK: Transacción A accede 1→2, Transacción B accede 2→1
 // Transacción A
 using var tx1 = await db.Database.BeginTransactionAsync();
-var usuario1 = await db.Usuarios.FirstAsync(u => u.Id == 1);
-usuario1.Saldo -= 50;
-await Task.Delay(2000);  // Simular trabajo
-var usuario2 = await db.Usuarios.FirstAsync(u => u.Id == 2);  // ← DEADLOCK aquí
+var usuario1 = await db.Usuarios.FirstAsync(u => u.Id == 1); // LOCK fila 1
+await Task.Delay(100); // simula trabajo
+var usuario2 = await db.Usuarios.FirstAsync(u => u.Id == 2); // espera LOCK fila 2 ← DEADLOCK
 
-// Transacción B (corre en paralelo)
+// Transacción B (paralela)
 using var tx2 = await db.Database.BeginTransactionAsync();
-var usuario2b = await db.Usuarios.FirstAsync(u => u.Id == 2);
-usuario2b.Saldo += 50;
-await Task.Delay(2000);
-var usuario1b = await db.Usuarios.FirstAsync(u => u.Id == 1);  // ← DEADLOCK aquí
+var u2 = await db.Usuarios.FirstAsync(u => u.Id == 2); // LOCK fila 2
+await Task.Delay(100);
+var u1 = await db.Usuarios.FirstAsync(u => u.Id == 1); // espera LOCK fila 1 ← DEADLOCK
+```
 
-// ✅ SOLUCIÓN 1: Siempre acceder a recursos en el mismo orden
-using var tx1 = await db.Database.BeginTransactionAsync();
-var usuario1 = await db.Usuarios.Where(u => u.Id == 1 || u.Id == 2)
-    .OrderBy(u => u.Id)
-    .ToListAsync();  // Ambas transacciones acceden en orden: 1, 2
+---
 
-// ✅ SOLUCIÓN 2: Retry con exponential backoff
-public async Task<T> RetryOnDeadlock<T>(
-    Func<Task<T>> operacion, 
-    int maxReintentos = 3)
+### Prevención: acceso ordenado a recursos
+
+La solución más efectiva: **siempre acceder a los recursos en el mismo orden**.
+
+```csharp
+// ✅ SOLUCIÓN 1: Ordenar los IDs antes de acceder
+public async Task TransferirAsync(int idOrigen, int idDestino, decimal monto)
 {
-    for (int intento = 0; intento < maxReintentos; intento++)
-    {
-        try
-        {
-            return await operacion();
-        }
-        catch (DbUpdateException ex) when (
-            ex.InnerException?.Message.Contains("DEADLOCK") == true)
-        {
-            if (intento == maxReintentos - 1) throw;
+    // Ordenar para garantizar acceso consistente
+    var ids = new[] { idOrigen, idDestino }.OrderBy(id => id).ToArray();
 
-            var delay = (int)Math.Pow(2, intento) * 100;  // 100ms, 200ms, 400ms
-            await Task.Delay(delay);
-            _logger.LogWarning($"Deadlock detectado. Reintentando en {delay}ms...");
-        }
+    using var tx = await db.Database.BeginTransactionAsync();
+
+    // Carga ambas filas en orden (el ORDER BY garantiza el lock en mismo orden)
+    var usuarios = await db.Usuarios
+        .Where(u => ids.Contains(u.Id))
+        .OrderBy(u => u.Id)  // ← CLAVE: mismo orden en todas las transacciones
+        .ToListAsync();
+
+    var origen  = usuarios.First(u => u.Id == idOrigen);
+    var destino = usuarios.First(u => u.Id == idDestino);
+
+    if (origen.Saldo < monto)
+        throw new InvalidOperationException("Saldo insuficiente");
+
+    origen.Saldo  -= monto;
+    destino.Saldo += monto;
+
+    await db.SaveChangesAsync();
+    await tx.CommitAsync();
+}
+```
+
+### Prevención: reducir la duración de las transacciones
+
+```csharp
+// ❌ Transacción larga — maximiza la ventana de deadlock
+using var tx = await db.Database.BeginTransactionAsync();
+var datos = await db.Pedidos.ToListAsync();
+await ProcesarPedidosExternos(datos); // ← llamada externa lenta dentro de tx
+await db.SaveChangesAsync();
+await tx.CommitAsync();
+
+// ✅ Mínimo trabajo dentro de la transacción
+var datos = await db.Pedidos.AsNoTracking().ToListAsync(); // lectura fuera de tx
+var resultado = await ProcesarPedidosExternos(datos); // procesamiento fuera de tx
+
+// Solo la escritura va dentro de la tx
+using var tx = await db.Database.BeginTransactionAsync();
+await GuardarResultados(resultado);
+await tx.CommitAsync();
+```
+
+### Prevención: UPDLOCK hint para read-then-update
+
+Cuando sabes que vas a modificar lo que lees, usa `UPDLOCK` para prevenir conflictos:
+
+```csharp
+// ✅ UPDLOCK: toma lock de escritura en la lectura
+// Evita el patrón "read-modify-write" que genera deadlocks
+var producto = await db.Productos
+    .FromSqlRaw("SELECT * FROM Productos WITH (UPDLOCK) WHERE Id = {0}", id)
+    .FirstAsync();
+
+producto.Stock -= cantidad;
+await db.SaveChangesAsync();
+```
+
+---
+
+### Detección: identificar deadlocks en SQL Server
+
+```sql
+-- Ver sesiones bloqueadas actualmente
+SELECT
+    blocking.session_id AS bloqueador,
+    blocked.session_id  AS bloqueado,
+    blocked_sql.text    AS query_bloqueada,
+    blocked.wait_time   AS tiempo_espera_ms,
+    blocked.wait_type
+FROM sys.dm_exec_requests blocked
+JOIN sys.dm_exec_requests blocking
+    ON blocked.blocking_session_id = blocking.session_id
+CROSS APPLY sys.dm_exec_sql_text(blocked.sql_handle) blocked_sql;
+
+-- Habilitar Trace Flag para loguear deadlocks en el error log
+DBCC TRACEON(1222, -1); -- detalle completo del deadlock graph
+
+-- En PostgreSQL: ver locks activos
+SELECT pid, query, state, wait_event_type, wait_event
+FROM pg_stat_activity
+WHERE wait_event_type = 'Lock';
+```
+
+### Detección: retry automático en .NET
+
+```csharp
+// ✅ Polly: política de retry específica para deadlocks
+using Polly;
+using Polly.Retry;
+
+public class TransaccionService
+{
+    private readonly AsyncRetryPolicy _deadlockRetry;
+
+    public TransaccionService()
+    {
+        _deadlockRetry = Policy
+            .Handle<DbUpdateException>(ex =>
+                ex.InnerException?.Message.Contains("deadlock", StringComparison.OrdinalIgnoreCase) == true ||
+                ex.InnerException?.Message.Contains("1205") == true) // SQL Server error code
+            .WaitAndRetryAsync(
+                retryCount: 3,
+                sleepDurationProvider: attempt => TimeSpan.FromMilliseconds(Math.Pow(2, attempt) * 100),
+                onRetry: (ex, delay, attempt, _) =>
+                    _logger.LogWarning("Deadlock detectado (intento {Attempt}). Reintentando en {Delay}ms", attempt, delay.TotalMilliseconds)
+            );
     }
 
-    throw new InvalidOperationException("Max retries reached");
+    public async Task EjecutarConRetry(Func<Task> operacion)
+    {
+        await _deadlockRetry.ExecuteAsync(operacion);
+    }
 }
 
 // Uso
-var resultado = await RetryOnDeadlock(async () =>
+await _transaccionService.EjecutarConRetry(async () =>
 {
     using var tx = await db.Database.BeginTransactionAsync();
-    // Transacción riesgosa de deadlock
+    await TransferirAsync(origenId, destinoId, monto);
     await tx.CommitAsync();
-    return true;
 });
 ```
+
+---
+
+### Resumen: estrategias de prevención
+
+| Estrategia | Cómo | Cuándo |
+|---|---|---|
+| Acceso ordenado | `OrderBy(id)` antes de lockear | Siempre que accedas a múltiples filas |
+| Transacciones cortas | Mínimo trabajo dentro de `tx` | Siempre |
+| UPDLOCK hint | `WITH (UPDLOCK)` en el SELECT | Read-then-update de filas individuales |
+| Optimistic locking | `RowVersion`/`[Timestamp]` + retry | Alta concurrencia, conflictos poco frecuentes |
+| Retry automático | Polly con retry en deadlock | Como último recurso, no como primera opción |
 
 ---
 

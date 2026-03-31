@@ -1,0 +1,342 @@
+---
+id: react-19
+title: React 19 — Concurrent Features
+sidebar_position: 6
+---
+
+import QuizSection from '@site/src/components/QuizSection';
+
+# React 19 — Concurrent Features 🚀
+
+React 19 consolida las herramientas de concurrencia introducidas en React 18 y agrega nuevas primitivas para manejar estado asíncrono, transiciones y datos del servidor de forma declarativa.
+
+---
+
+## useTransition — actualizaciones no urgentes
+
+`useTransition` marca actualizaciones de estado como **no urgentes**, permitiendo que React las interrumpa para priorizar interacciones del usuario.
+
+```tsx
+import { useState, useTransition } from 'react';
+
+function SearchPage() {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<string[]>([]);
+  const [isPending, startTransition] = useTransition();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value); // urgente — actualiza el input inmediatamente
+
+    startTransition(() => {
+      // no urgente — React puede interrumpir esto si hay interacción del usuario
+      setResults(buscarResultados(value));
+    });
+  };
+
+  return (
+    <div>
+      <input value={query} onChange={handleChange} placeholder="Buscar..." />
+      {isPending ? (
+        <p>Buscando...</p>
+      ) : (
+        <ul>{results.map(r => <li key={r}>{r}</li>)}</ul>
+      )}
+    </div>
+  );
+}
+```
+
+:::tip Cuándo usar useTransition
+- Filtrado o búsqueda en listas grandes
+- Navegación entre tabs con contenido pesado
+- Cualquier actualización que no necesita ser inmediata (puede mostrar stale UI mientras procesa)
+:::
+
+---
+
+## useDeferredValue — deferring valores
+
+`useDeferredValue` es similar a `useTransition` pero opera sobre **valores** en lugar de actualizaciones de estado. Útil cuando no controlas el código que actualiza el estado (ej: un componente hijo).
+
+```tsx
+import { useState, useDeferredValue, memo } from 'react';
+
+// Componente pesado — se beneficia de memoización
+const ListaResultados = memo(({ query }: { query: string }) => {
+  // simulación de cálculo pesado
+  const items = Array.from({ length: 10_000 }, (_, i) => `Item ${i}`).filter(
+    item => item.includes(query)
+  );
+  return <ul>{items.slice(0, 50).map(item => <li key={item}>{item}</li>)}</ul>;
+});
+
+function App() {
+  const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query); // sigue al query con delay
+  const isStale = query !== deferredQuery;
+
+  return (
+    <div>
+      <input value={query} onChange={e => setQuery(e.target.value)} />
+      {isStale && <span>Actualizando...</span>}
+      <ListaResultados query={deferredQuery} />
+    </div>
+  );
+}
+```
+
+### useTransition vs useDeferredValue
+
+| | useTransition | useDeferredValue |
+|---|---|---|
+| Opera sobre | Actualizaciones de estado | Valores |
+| Cuándo usarlo | Controlas el setState | Solo controlas el valor recibido |
+| Estado de carga | `isPending` | Comparar value vs deferredValue |
+
+---
+
+## Suspense — data fetching declarativo
+
+`Suspense` muestra un fallback mientras los datos están cargando, integrándose con librerías de data fetching (React Query, SWR, Relay) o con React Server Components.
+
+```tsx
+import { Suspense } from 'react';
+
+// Con React Query (la query debe estar configurada con suspense: true)
+function PerfilUsuario({ userId }: { userId: number }) {
+  const { data } = useSuspenseQuery({
+    queryKey: ['usuario', userId],
+    queryFn: () => fetchUsuario(userId),
+  });
+  return <div>{data.nombre}</div>;
+}
+
+function App() {
+  return (
+    <Suspense fallback={<div>Cargando perfil...</div>}>
+      <PerfilUsuario userId={42} />
+    </Suspense>
+  );
+}
+```
+
+### Suspense anidado con granularidad
+
+```tsx
+function Dashboard() {
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      {/* Cada sección carga independientemente */}
+      <Suspense fallback={<Skeleton />}>
+        <MetricasHeader />
+      </Suspense>
+      <Suspense fallback={<Skeleton />}>
+        <GraficoPrincipal />
+      </Suspense>
+      <Suspense fallback={<Skeleton />}>
+        <TablaActividad />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+:::info Progressive loading
+Con Suspense anidado, cada sección carga y se muestra tan pronto como esté lista, sin esperar a que todas las secciones terminen. Esto mejora el Time to First Meaningful Paint.
+:::
+
+---
+
+## use() — leyendo promesas y contexto
+
+React 19 introduce el hook `use()` que puede leer el valor de una Promesa o un Contexto **condicionalmente** (algo que hooks normales no pueden hacer).
+
+```tsx
+import { use, Suspense } from 'react';
+
+// use() con promesas — se integra con Suspense
+function Perfil({ perfilPromise }: { perfilPromise: Promise<Usuario> }) {
+  const perfil = use(perfilPromise); // suspende hasta que la promesa resuelve
+  return <div>Hola, {perfil.nombre}</div>;
+}
+
+function App() {
+  const perfilPromise = fetchPerfil(42); // NO dentro del componente — se crea fuera
+
+  return (
+    <Suspense fallback={<p>Cargando...</p>}>
+      <Perfil perfilPromise={perfilPromise} />
+    </Suspense>
+  );
+}
+```
+
+```tsx
+// use() con Context — se puede llamar condicionalmente
+function Tema({ mostrar }: { mostrar: boolean }) {
+  if (!mostrar) return null;
+  const theme = use(TemaContext); // ✅ válido dentro de if
+  return <div style={{ color: theme.color }}>Contenido</div>;
+}
+```
+
+:::caution use() vs useContext
+`useContext(Ctx)` no puede usarse condicionalmente. `use(Ctx)` sí. Pero para casos simples sigue usando `useContext` — `use()` es para cuando necesitas la flexibilidad condicional o leer promesas.
+:::
+
+---
+
+## Server Actions (React 19 + Next.js)
+
+React 19 formaliza las **Server Actions**: funciones asíncronas que se ejecutan en el servidor, invocadas directamente desde componentes del cliente.
+
+```tsx
+// app/actions.ts
+'use server';
+
+export async function crearProducto(formData: FormData) {
+  const nombre = formData.get('nombre') as string;
+  await db.productos.create({ data: { nombre } });
+  revalidatePath('/productos');
+}
+```
+
+```tsx
+// app/nuevo-producto/page.tsx — Server Component
+import { crearProducto } from '../actions';
+
+export default function NuevoProductoPage() {
+  return (
+    <form action={crearProducto}>
+      <input name="nombre" placeholder="Nombre del producto" />
+      <button type="submit">Crear</button>
+    </form>
+  );
+}
+```
+
+```tsx
+// Desde Client Component con useActionState (React 19)
+'use client';
+import { useActionState } from 'react';
+import { crearProducto } from '../actions';
+
+function FormularioProducto() {
+  const [state, formAction, isPending] = useActionState(crearProducto, null);
+
+  return (
+    <form action={formAction}>
+      <input name="nombre" />
+      {isPending && <span>Guardando...</span>}
+      {state?.error && <span>Error: {state.error}</span>}
+      <button disabled={isPending}>Crear</button>
+    </form>
+  );
+}
+```
+
+---
+
+## useOptimistic — actualizaciones optimistas
+
+`useOptimistic` permite mostrar el resultado esperado inmediatamente mientras la operación asíncrona ocurre en el fondo.
+
+```tsx
+import { useOptimistic, useTransition } from 'react';
+
+function ListaTareas({ tareas }: { tareas: Tarea[] }) {
+  const [optimisticTareas, addOptimisticTarea] = useOptimistic(
+    tareas,
+    (state, nuevaTarea: Tarea) => [...state, nuevaTarea]
+  );
+  const [isPending, startTransition] = useTransition();
+
+  const handleAdd = (nombre: string) => {
+    const tempTarea = { id: Date.now(), nombre, completada: false };
+
+    startTransition(async () => {
+      addOptimisticTarea(tempTarea); // muestra inmediatamente (optimista)
+      await crearTareaEnServidor(nombre); // operación real
+      // si falla, React revierte al estado original automáticamente
+    });
+  };
+
+  return (
+    <ul>
+      {optimisticTareas.map(t => (
+        <li key={t.id} style={{ opacity: t.id === Date.now() ? 0.6 : 1 }}>
+          {t.nombre}
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
+---
+
+## Resumen: cuándo usar cada primitiva
+
+| Primitiva | Úsala cuando... |
+|---|---|
+| `useTransition` | Tienes una actualización costosa que puede interrumpirse |
+| `useDeferredValue` | No controlas el código que actualiza el estado (ej: prop de librería) |
+| `Suspense` | Componentes que dependen de data fetching asíncrono |
+| `use()` | Necesitas leer una promesa o contexto condicionalmente |
+| `useOptimistic` | Quieres feedback inmediato antes de confirmar con el servidor |
+| `useActionState` | Manejas Server Actions con estado de error/pending |
+
+---
+
+## Preguntas frecuentes de entrevista 🎯
+
+**1. ¿Qué problema resuelve useTransition que useState normal no puede?**
+> Con `useState`, todas las actualizaciones tienen la misma prioridad. Si una actualización es costosa, bloquea el input del usuario. `useTransition` permite marcar una actualización como "no urgente" — React puede interrumpirla para atender interacciones del usuario y reanudarla después.
+
+**2. ¿Cuándo elegirías useDeferredValue sobre useTransition?**
+> Cuando no controlas el código que hace el `setState` — por ejemplo, un componente de una librería externa. `useDeferredValue` envuelve el valor, no el dispatch. Si controlas el código que actualiza el estado, prefiere `useTransition`.
+
+**3. ¿Cómo funciona Suspense con data fetching?**
+> El componente "lanza" (throw) una promesa durante el render. React la captura, muestra el `fallback`, espera a que la promesa resuelva, y vuelve a renderizar el componente. Las librerías como React Query implementan esto internamente cuando usas `useSuspenseQuery`.
+
+<QuizSection
+  storageKey="semi-react-19"
+  title="🧠 Mini-Quiz — React 19 Concurrent Features"
+  questions={[
+    {
+      question: "¿Cuál es la diferencia principal entre useTransition y useDeferredValue?",
+      options: [
+        "useTransition es para React 18; useDeferredValue es para React 19",
+        "useTransition marca actualizaciones de estado como no urgentes; useDeferredValue opera sobre valores cuando no controlas el setState",
+        "Son equivalentes, solo difieren en el nombre por compatibilidad",
+        "useTransition solo funciona con formularios; useDeferredValue con listas"
+      ],
+      correctIndex: 1,
+      explanation: "useTransition: wrappeas el setState directamente. useDeferredValue: wrappeas el valor resultado. Úsa useTransition cuando controlas el update, useDeferredValue cuando recibes un valor de otra fuente."
+    },
+    {
+      question: "¿Qué hace use() que useContext() no puede hacer?",
+      options: [
+        "use() funciona con React Native; useContext solo en web",
+        "use() puede llamarse condicionalmente (dentro de if/else) y puede leer Promesas además de Context",
+        "use() es más performante porque memoiza el valor del contexto",
+        "use() permite múltiples contextos en una sola llamada"
+      ],
+      correctIndex: 1,
+      explanation: "Los hooks normales no pueden llamarse condicionalmente. use() rompe esa regla: puede usarse dentro de if/else. Además puede 'suspender' leyendo una Promesa, integrándose con Suspense."
+    },
+    {
+      question: "¿Qué ocurre si la operación real falla cuando usas useOptimistic?",
+      options: [
+        "La UI se queda con el estado optimista permanentemente",
+        "React lanza una excepción que debe capturarse con Error Boundary",
+        "React revierte automáticamente al estado original (el que pasaste como primer argumento)",
+        "El desarrollador debe llamar manualmente a una función de rollback"
+      ],
+      correctIndex: 2,
+      explanation: "useOptimistic mantiene el estado optimista mientras la transición está pendiente. Si la operación falla o la transición termina, React revierte al estado base original. No necesitas manejar el rollback manualmente."
+    }
+  ]}
+/>

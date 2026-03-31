@@ -1,0 +1,399 @@
+---
+id: playwright-e2e
+title: Playwright — E2E Testing
+sidebar_position: 24
+---
+
+import QuizSection from '@site/src/components/QuizSection';
+
+# Playwright — E2E Testing 🎭
+
+Playwright es el framework de E2E testing más popular para aplicaciones web modernas. Soporta Chromium, Firefox y WebKit, tiene auto-wait integrado y permite testear tanto el frontend React como integraciones completas con el backend .NET.
+
+---
+
+## Setup
+
+```bash
+# En el proyecto frontend (React/Next.js)
+npm init playwright@latest
+
+# O manual
+npm install -D @playwright/test
+npx playwright install # descarga los browsers
+```
+
+```ts
+// playwright.config.ts
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  timeout: 30_000,
+  retries: process.env.CI ? 2 : 0,
+  use: {
+    baseURL: 'http://localhost:3000',
+    trace: 'on-first-retry', // guarda trace en caso de fallo
+    screenshot: 'only-on-failure',
+  },
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'mobile', use: { ...devices['iPhone 14'] } },
+  ],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+  },
+});
+```
+
+---
+
+## Tu primer test E2E
+
+```ts
+// e2e/login.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Autenticación', () => {
+  test('usuario puede iniciar sesión con credenciales válidas', async ({ page }) => {
+    await page.goto('/login');
+
+    await page.getByLabel('Email').fill('usuario@test.com');
+    await page.getByLabel('Contraseña').fill('password123');
+    await page.getByRole('button', { name: 'Iniciar sesión' }).click();
+
+    // Playwright espera automáticamente hasta que la navegación complete
+    await expect(page).toHaveURL('/dashboard');
+    await expect(page.getByText('Bienvenido')).toBeVisible();
+  });
+
+  test('muestra error con credenciales inválidas', async ({ page }) => {
+    await page.goto('/login');
+
+    await page.getByLabel('Email').fill('malo@test.com');
+    await page.getByLabel('Contraseña').fill('incorrecta');
+    await page.getByRole('button', { name: 'Iniciar sesión' }).click();
+
+    await expect(page.getByRole('alert')).toContainText('Credenciales incorrectas');
+    await expect(page).toHaveURL('/login'); // no navegó
+  });
+});
+```
+
+---
+
+## Locators — cómo seleccionar elementos
+
+Playwright prioriza selectores accesibles y resilientes a cambios de UI:
+
+```ts
+// ✅ Selectores recomendados (resilientes)
+page.getByRole('button', { name: 'Guardar' })       // por rol ARIA
+page.getByLabel('Email')                              // por label del input
+page.getByPlaceholder('Buscar productos...')          // por placeholder
+page.getByText('Producto guardado')                   // por texto visible
+page.getByTestId('submit-btn')                        // data-testid
+
+// ⚠️ Selectores aceptables
+page.locator('.btn-primary')                          // CSS selector
+page.locator('input[name="email"]')                   // atributo
+
+// ❌ Evitar
+page.locator('#app > div > form > button:nth-child(3)') // frágil, rompe fácil
+```
+
+---
+
+## Page Object Model (POM)
+
+Para tests complejos, extraer la interacción con páginas a clases:
+
+```ts
+// e2e/pages/LoginPage.ts
+import { Page, Locator } from '@playwright/test';
+
+export class LoginPage {
+  private readonly emailInput: Locator;
+  private readonly passwordInput: Locator;
+  private readonly submitBtn: Locator;
+  private readonly errorAlert: Locator;
+
+  constructor(private page: Page) {
+    this.emailInput = page.getByLabel('Email');
+    this.passwordInput = page.getByLabel('Contraseña');
+    this.submitBtn = page.getByRole('button', { name: 'Iniciar sesión' });
+    this.errorAlert = page.getByRole('alert');
+  }
+
+  async goto() {
+    await this.page.goto('/login');
+  }
+
+  async login(email: string, password: string) {
+    await this.emailInput.fill(email);
+    await this.passwordInput.fill(password);
+    await this.submitBtn.click();
+  }
+
+  async getErrorMessage(): Promise<string | null> {
+    return this.errorAlert.textContent();
+  }
+}
+```
+
+```ts
+// e2e/login.spec.ts — usando POM
+import { test, expect } from '@playwright/test';
+import { LoginPage } from './pages/LoginPage';
+
+test('login exitoso', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+  await loginPage.login('user@test.com', 'pass123');
+  await expect(page).toHaveURL('/dashboard');
+});
+```
+
+---
+
+## API Mocking con Playwright
+
+```ts
+// Mockear un endpoint específico
+test('muestra error cuando la API falla', async ({ page }) => {
+  await page.route('**/api/productos', route => {
+    route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      body: JSON.stringify({ message: 'Internal Server Error' }),
+    });
+  });
+
+  await page.goto('/productos');
+  await expect(page.getByText('Error al cargar productos')).toBeVisible();
+});
+
+// Interceptar y modificar la respuesta real
+test('agrega un campo extra a la respuesta', async ({ page }) => {
+  await page.route('**/api/usuario/perfil', async route => {
+    const response = await route.fetch(); // hace la llamada real
+    const json = await response.json();
+    await route.fulfill({ json: { ...json, esAdmin: true } });
+  });
+
+  await page.goto('/perfil');
+});
+```
+
+---
+
+## Autenticación — evitar login en cada test
+
+```ts
+// e2e/auth.setup.ts — ejecutar una sola vez
+import { test as setup } from '@playwright/test';
+
+setup('autenticar usuario', async ({ page }) => {
+  await page.goto('/login');
+  await page.getByLabel('Email').fill('user@test.com');
+  await page.getByLabel('Contraseña').fill('pass123');
+  await page.getByRole('button', { name: 'Iniciar sesión' }).click();
+  await page.waitForURL('/dashboard');
+
+  // Guarda cookies y localStorage
+  await page.context().storageState({ path: 'e2e/.auth/user.json' });
+});
+```
+
+```ts
+// playwright.config.ts — usar el estado guardado
+export default defineConfig({
+  projects: [
+    {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+    },
+    {
+      name: 'authenticated',
+      use: {
+        storageState: 'e2e/.auth/user.json', // sesión ya activa
+      },
+      dependencies: ['setup'],
+    },
+  ],
+});
+```
+
+---
+
+## Testing con .NET Backend — integración completa
+
+```ts
+// e2e/productos.spec.ts — test E2E contra API real
+import { test, expect } from '@playwright/test';
+
+test.describe('Gestión de Productos', () => {
+  // Limpiar la BD antes de cada test (requiere endpoint de test en el backend)
+  test.beforeEach(async ({ request }) => {
+    await request.post('/api/test/reset-db');
+  });
+
+  test('crear y ver producto nuevo', async ({ page, request }) => {
+    // Crear producto via API directamente (más rápido que UI)
+    const response = await request.post('/api/productos', {
+      data: { nombre: 'Laptop Gaming', precio: 1500 },
+    });
+    expect(response.ok()).toBeTruthy();
+
+    // Verificar que aparece en la UI
+    await page.goto('/productos');
+    await expect(page.getByText('Laptop Gaming')).toBeVisible();
+    await expect(page.getByText('$1,500')).toBeVisible();
+  });
+});
+```
+
+---
+
+## Assertions más útiles
+
+```ts
+// Visibilidad
+await expect(element).toBeVisible();
+await expect(element).toBeHidden();
+
+// Texto
+await expect(element).toHaveText('Texto exacto');
+await expect(element).toContainText('parcial');
+
+// Atributos
+await expect(input).toHaveValue('valor actual');
+await expect(btn).toBeDisabled();
+await expect(checkbox).toBeChecked();
+
+// URL
+await expect(page).toHaveURL('/ruta-esperada');
+await expect(page).toHaveURL(/regex/);
+
+// Snapshot visual (regression testing)
+await expect(page).toHaveScreenshot('pagina-inicial.png');
+```
+
+---
+
+## Debugging
+
+```bash
+# Modo UI — inspector visual interactivo
+npx playwright test --ui
+
+# Modo headed — ver el browser mientras corre
+npx playwright test --headed
+
+# Solo un test específico
+npx playwright test login.spec.ts --headed
+
+# Pause en un punto específico del test
+await page.pause(); // abre el inspector de Playwright
+
+# Trace viewer — analizar tests fallidos
+npx playwright show-trace trace.zip
+```
+
+---
+
+## Integración con CI (GitHub Actions)
+
+```yaml
+# .github/workflows/e2e.yml
+name: E2E Tests
+
+on: [push, pull_request]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Start backend
+        run: dotnet run --project ./Api &
+        env:
+          ASPNETCORE_ENVIRONMENT: Testing
+
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          CI: true
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+```
+
+---
+
+## Preguntas frecuentes de entrevista 🎯
+
+**1. ¿Por qué Playwright en lugar de Cypress o Selenium?**
+> Playwright soporta múltiples browsers (incluido WebKit/Safari), tiene auto-wait nativo (no necesitas `cy.wait(1000)`), puede ejecutar múltiples tests en paralelo de forma confiable, soporta múltiples tabs/ventanas, y tiene mejor soporte para SPAs modernas. Cypress tiene mejor DX para debugging pero limitaciones en cross-browser.
+
+**2. ¿Cuántos tests E2E debería tener?**
+> Seguir la pirámide de testing: 5-10% de E2E, 15-20% de integración, 70-80% de unit. Los E2E son lentos (segundos por test vs milisegundos para unit). Prioriza los flujos críticos de negocio: login, checkout, registro, operaciones que no se pueden fallar.
+
+**3. ¿Cómo evitas tests flaky en Playwright?**
+> Auto-wait de Playwright elimina la mayoría de flakiness por timing. Para el resto: usar selectores accesibles (no CSS frágil), evitar hard-coded `waitForTimeout`, usar `waitForResponse` para esperar APIs específicas, y configurar `retries: 2` en CI.
+
+<QuizSection
+  storageKey="semi-playwright-e2e"
+  title="🧠 Mini-Quiz — Playwright E2E"
+  questions={[
+    {
+      question: "¿Cuál es el selector más recomendado en Playwright para un botón 'Guardar'?",
+      options: [
+        "page.locator('#btn-save')",
+        "page.locator('.btn-primary:nth-child(2)')",
+        "page.getByRole('button', { name: 'Guardar' })",
+        "page.locator('button[type=submit]')"
+      ],
+      correctIndex: 2,
+      explanation: "getByRole() usa atributos ARIA y es el selector más resiliente. No se rompe si cambias el CSS, el ID o la estructura del HTML. Además testea implícitamente la accesibilidad del componente."
+    },
+    {
+      question: "¿Qué problema resuelve storageState en Playwright?",
+      options: [
+        "Persistir datos entre tests en la misma suite",
+        "Evitar hacer login en cada test: guarda cookies/localStorage de una sesión autenticada y la reutiliza",
+        "Sincronizar el estado de la aplicación entre múltiples browsers",
+        "Almacenar screenshots para comparación visual"
+      ],
+      correctIndex: 1,
+      explanation: "storageState guarda el estado de la sesión (cookies, localStorage, sessionStorage) en un archivo JSON. Tests subsiguientes lo cargan y empiezan ya autenticados, sin hacer el flujo de login otra vez. Ahorra tiempo significativo en suites grandes."
+    },
+    {
+      question: "¿Cuándo usarías page.route() en Playwright?",
+      options: [
+        "Para navegar a una ruta específica de la aplicación",
+        "Para interceptar y mockear llamadas de red — útil para testear estados de error o datos controlados",
+        "Para definir el orden de ejecución de los tests",
+        "Para crear rutas de navegación en el Page Object Model"
+      ],
+      correctIndex: 1,
+      explanation: "page.route() intercepta requests HTTP. Puedes mockear respuestas de error (status 500), controlar los datos retornados, o modificar la respuesta real antes de que llegue al componente. Esto permite testear estados difíciles de reproducir en producción."
+    }
+  ]}
+/>

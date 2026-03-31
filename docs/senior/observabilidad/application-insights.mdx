@@ -1,0 +1,364 @@
+---
+id: application-insights
+title: Application Insights con .NET
+sidebar_position: 5
+---
+
+import QuizSection from '@site/src/components/QuizSection';
+
+# Application Insights con .NET 📊
+
+Application Insights es el servicio de APM (Application Performance Monitoring) de Azure. Proporciona telemetría automática, distributed tracing, alertas y diagnóstico de problemas de performance para aplicaciones .NET.
+
+---
+
+## Setup en ASP.NET Core
+
+```bash
+dotnet add package Microsoft.ApplicationInsights.AspNetCore
+```
+
+```csharp
+// Program.cs
+builder.Services.AddApplicationInsightsTelemetry(options =>
+{
+    options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+    // Alternativa: usar InstrumentationKey (deprecated, usar ConnectionString)
+});
+
+// Opcional: deshabilitar telemetría en desarrollo
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.Configure<TelemetryConfiguration>(config =>
+        config.DisableTelemetry = true);
+}
+```
+
+```json
+// appsettings.json
+{
+  "ApplicationInsights": {
+    "ConnectionString": "InstrumentationKey=xxx;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/;..."
+  }
+}
+```
+
+:::tip Connection String vs InstrumentationKey
+La `ConnectionString` incluye el endpoint de ingesta correcto para tu región. El `InstrumentationKey` antiguo siempre usa el endpoint global. Usa siempre `ConnectionString` en proyectos nuevos.
+:::
+
+---
+
+## Tipos de telemetría
+
+Application Insights recolecta automáticamente:
+
+| Tipo | Qué captura | Clase .NET |
+|---|---|---|
+| **Request** | Cada HTTP request entrante | `RequestTelemetry` |
+| **Dependency** | Llamadas salientes: SQL, HTTP, Redis | `DependencyTelemetry` |
+| **Exception** | Excepciones no manejadas y capturadas | `ExceptionTelemetry` |
+| **Trace** | Logs de ILogger | `TraceTelemetry` |
+| **Event** | Eventos de negocio personalizados | `EventTelemetry` |
+| **Metric** | Métricas numéricas | `MetricTelemetry` |
+| **PageView** | Vistas de página (SDK de JS) | `PageViewTelemetry` |
+
+---
+
+## Telemetría personalizada con TelemetryClient
+
+```csharp
+public class PedidoService
+{
+    private readonly TelemetryClient _telemetry;
+    private readonly AppDbContext _db;
+
+    public PedidoService(TelemetryClient telemetry, AppDbContext db)
+    {
+        _telemetry = telemetry;
+        _db = db;
+    }
+
+    public async Task<Pedido> CrearPedidoAsync(CrearPedidoDto dto)
+    {
+        var sw = Stopwatch.StartNew();
+        try
+        {
+            var pedido = new Pedido { /* ... */ };
+            _db.Pedidos.Add(pedido);
+            await _db.SaveChangesAsync();
+
+            // ✅ Evento de negocio personalizado
+            _telemetry.TrackEvent("PedidoCreado", new Dictionary<string, string>
+            {
+                { "PedidoId", pedido.Id.ToString() },
+                { "UsuarioId", dto.UsuarioId.ToString() },
+                { "Canal", dto.Canal }
+            }, new Dictionary<string, double>
+            {
+                { "MontoTotal", (double)pedido.Total },
+                { "CantidadItems", pedido.Items.Count }
+            });
+
+            // ✅ Métrica personalizada
+            _telemetry.TrackMetric("Pedido.MontoTotal", (double)pedido.Total);
+
+            return pedido;
+        }
+        catch (Exception ex)
+        {
+            // ✅ Excepción con contexto adicional
+            _telemetry.TrackException(ex, new Dictionary<string, string>
+            {
+                { "UsuarioId", dto.UsuarioId.ToString() },
+                { "Operacion", "CrearPedido" }
+            });
+            throw;
+        }
+        finally
+        {
+            sw.Stop();
+            // ✅ Métrica de duración
+            _telemetry.TrackMetric("Pedido.TiempoCreacion.ms", sw.ElapsedMilliseconds);
+        }
+    }
+}
+```
+
+---
+
+## Custom Properties con TelemetryInitializer
+
+Para agregar propiedades a **toda** la telemetría (ej: versión de la app, tenant ID):
+
+```csharp
+// TenantTelemetryInitializer.cs
+public class TenantTelemetryInitializer : ITelemetryInitializer
+{
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public TenantTelemetryInitializer(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    public void Initialize(ITelemetry telemetry)
+    {
+        var context = _httpContextAccessor.HttpContext;
+        if (context is null) return;
+
+        // Agregar TenantId a toda la telemetría del request
+        var tenantId = context.User.FindFirst("tenant_id")?.Value ?? "unknown";
+
+        if (telemetry is ISupportProperties props)
+        {
+            props.Properties["TenantId"] = tenantId;
+            props.Properties["AppVersion"] = "2.1.0";
+            props.Properties["Environment"] = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "unknown";
+        }
+    }
+}
+```
+
+```csharp
+// Program.cs — registrar el initializer
+builder.Services.AddSingleton<ITelemetryInitializer, TenantTelemetryInitializer>();
+builder.Services.AddHttpContextAccessor();
+```
+
+---
+
+## Sampling — reducir costos sin perder visibilidad
+
+Application Insights puede ser caro con mucho tráfico. El sampling reduce la telemetría enviada:
+
+```csharp
+// Adaptive Sampling (recomendado) — ajusta automáticamente según el volumen
+builder.Services.AddApplicationInsightsTelemetry(options =>
+{
+    options.ConnectionString = config["ApplicationInsights:ConnectionString"];
+    options.EnableAdaptiveSampling = true; // default: true
+});
+
+// Fixed Rate Sampling — % fijo de telemetría enviada
+builder.Services.ConfigureTelemetryModule<AdaptiveSamplingTelemetryModule>(
+    (module, options) =>
+    {
+        module.IsInitialized = false; // deshabilita adaptive
+    });
+
+builder.Services.AddSingleton<ITelemetryProcessor, SamplingTelemetryProcessor>(sp =>
+    new SamplingTelemetryProcessor(next: sp.GetRequiredService<ITelemetryProcessorChain>().First)
+    {
+        SamplingPercentage = 25.0 // envía 25% de la telemetría
+    });
+```
+
+:::caution Sampling y exceptions
+Las excepciones y los requests fallidos NO se sampleen por defecto. Siempre los verás al 100%. El sampling aplica principalmente a requests exitosos de alto volumen.
+:::
+
+---
+
+## Queries en Log Analytics (KQL)
+
+```kusto
+-- Requests lentos (>500ms) en las últimas 24h
+requests
+| where timestamp > ago(24h)
+| where duration > 500
+| project timestamp, name, duration, resultCode, url
+| order by duration desc
+| take 50
+
+-- Tasa de errores por endpoint
+requests
+| where timestamp > ago(24h)
+| summarize
+    total = count(),
+    errores = countif(success == false),
+    p95_ms = percentile(duration, 95)
+    by name
+| extend tasa_error = round(100.0 * errores / total, 2)
+| order by tasa_error desc
+
+-- Excepciones más frecuentes
+exceptions
+| where timestamp > ago(7d)
+| summarize count() by type, outerMessage
+| order by count_ desc
+| take 20
+
+-- Dependencias lentas (SQL, HTTP externo)
+dependencies
+| where timestamp > ago(1h)
+| where duration > 1000 -- más de 1 segundo
+| project timestamp, type, target, name, duration, success
+| order by duration desc
+
+-- Funnel: usuarios que completaron checkout
+customEvents
+| where name in ("CarritoIniciado", "CheckoutIniciado", "PedidoCreado")
+| summarize count() by name
+```
+
+---
+
+## Alertas y Smart Detection
+
+```csharp
+// Program.cs — habilitar detección de anomalías automática
+// Smart Detection está habilitada por defecto en Application Insights
+// Detecta automáticamente: degradación de response time, tasa de errores inusual,
+// memory leaks, CPU spikes
+
+// Alertas personalizadas via Azure Monitor (configurar en portal o Bicep/ARM)
+// Ejemplo de alert rule via CLI:
+// az monitor metrics alert create \
+//   --name "Alta tasa de errores" \
+//   --resource-group miRG \
+//   --scopes /subscriptions/.../providers/microsoft.insights/components/miApp \
+//   --condition "count requests/failed > 10 where resultCode includes 500" \
+//   --window-size 5m \
+//   --evaluation-frequency 1m \
+//   --action /subscriptions/.../actionGroups/DevOps
+```
+
+---
+
+## Live Metrics — monitoring en tiempo real
+
+Live Metrics muestra telemetría con menos de 1 segundo de latencia:
+
+```csharp
+// Habilitar Live Metrics (requiere paquete adicional)
+// dotnet add package Microsoft.ApplicationInsights.PerfCounterCollector
+
+builder.Services.AddApplicationInsightsTelemetry();
+// Live Metrics se activa automáticamente cuando abres el portal
+// No requiere configuración extra en código
+```
+
+Útil para: monitorear un deployment en curso, debugging de producción en tiempo real, verificar que la telemetría fluye correctamente.
+
+---
+
+## Application Map — visualizar dependencias
+
+Application Map muestra automáticamente el grafo de dependencias de tu aplicación: qué servicios llaman a cuáles, latencias promedio y tasas de error por nodo.
+
+Para que funcione bien con microservicios:
+
+```csharp
+// Asegúrate de que cada componente tenga un nombre de rol único
+builder.Services.AddApplicationInsightsTelemetry();
+builder.Services.Configure<TelemetryConfiguration>(config =>
+{
+    config.TelemetryInitializers.Add(new CloudRoleNameInitializer("OrderService"));
+});
+
+// CloudRoleNameInitializer.cs
+public class CloudRoleNameInitializer : ITelemetryInitializer
+{
+    private readonly string _roleName;
+    public CloudRoleNameInitializer(string roleName) => _roleName = roleName;
+
+    public void Initialize(ITelemetry telemetry)
+    {
+        telemetry.Context.Cloud.RoleName = _roleName;
+    }
+}
+```
+
+---
+
+## Preguntas frecuentes de entrevista 🎯
+
+**1. ¿Cómo diferencias Application Insights de un sistema de logging como Serilog?**
+> Serilog/Seq: logging estructurado, ideal para debugging y audit trail. Application Insights: APM completo — distributed tracing, request tracking, dependency monitoring, anomaly detection, Live Metrics, Application Map. Se complementan: ILogger (Serilog) → Application Insights vía `AddApplicationInsightsTelemetry`. Toda la telemetría de ILogger va a App Insights automáticamente.
+
+**2. ¿Cómo detectarías un memory leak usando Application Insights?**
+> Smart Detection puede alertarte automáticamente. Manualmente: en el portal, `Performance → Memory usage` muestra el heap size en el tiempo. Un crecimiento gradual sin liberación es el patrón típico. Complementar con Profiler de App Insights que puede capturar stack traces en producción para identificar el código que retiene memoria.
+
+**3. ¿Qué es el correlation ID y cómo fluye entre microservicios?**
+> App Insights genera un `operation_Id` para cada request. Cuando ese servicio llama a otro, propaga el ID en el header `traceparent` (W3C Trace Context). El servicio destino lo captura y toda la telemetría queda vinculada bajo el mismo `operation_Id`. En el portal puedes ver el "end-to-end transaction" con toda la cadena de llamadas.
+
+<QuizSection
+  storageKey="senior-application-insights"
+  title="🧠 Mini-Quiz — Application Insights"
+  questions={[
+    {
+      question: "¿Cuál es la diferencia entre TrackEvent y TrackMetric en Application Insights?",
+      options: [
+        "Son equivalentes, solo difieren en la visualización del portal",
+        "TrackEvent registra ocurrencias discretas con propiedades (ej: 'PedidoCreado'); TrackMetric registra valores numéricos continuos (ej: tiempo de respuesta)",
+        "TrackMetric es más costoso en términos de ingesta de datos",
+        "TrackEvent solo funciona en aplicaciones web; TrackMetric en todas"
+      ],
+      correctIndex: 1,
+      explanation: "TrackEvent: 'algo ocurrió' con propiedades string/double de contexto. TrackMetric: 'este número tiene este valor ahora'. Ambos se consultan con KQL pero sirven propósitos distintos — eventos para análisis de comportamiento, métricas para alertas de threshold."
+    },
+    {
+      question: "¿Para qué sirve un TelemetryInitializer?",
+      options: [
+        "Para inicializar la conexión con Application Insights al inicio de la app",
+        "Para agregar propiedades personalizadas a toda la telemetría automáticamente (ej: TenantId, AppVersion)",
+        "Para filtrar telemetría no deseada antes de enviarla",
+        "Para configurar el sampling rate de manera dinámica"
+      ],
+      correctIndex: 1,
+      explanation: "ITelemetryInitializer.Initialize() se llama en cada telemetría antes de enviarla. Úsalo para enriquecer automáticamente toda la telemetría con propiedades globales como TenantId, UserId, versión del app, etc. — sin tener que pasarlas manualmente en cada TrackEvent."
+    },
+    {
+      question: "¿Qué es el Adaptive Sampling y por qué importa?",
+      options: [
+        "Un algoritmo que prioriza los requests más lentos para análisis",
+        "Ajusta automáticamente el porcentaje de telemetría enviada para mantenerse bajo el umbral de datos gratuito/de costo",
+        "Una función que agrupa telemetría similar para reducir el almacenamiento",
+        "El mecanismo de detección automática de anomalías de Smart Detection"
+      ],
+      correctIndex: 1,
+      explanation: "Application Insights cobra por volumen de datos ingestados. Con alto tráfico (miles de requests/segundo), el costo puede dispararse. Adaptive Sampling reduce automáticamente el % de telemetría enviada cuando el volumen es alto, manteniendo la representatividad estadística."
+    }
+  ]}
+/>

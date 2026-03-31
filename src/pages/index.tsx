@@ -6,6 +6,7 @@ import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import styles from './index.module.css';
 import { stats, niveles, recursos } from '../data/homepage';
+import ProgressDashboard from '../components/ProgressDashboard';
 
 // ─── Components ────────────────────────────────────────────
 
@@ -182,6 +183,11 @@ export default function Home(): ReactNode {
       <HomepageHeader />
       <StatsBar />
       <main>
+        <section className={styles.section}>
+          <div className="container">
+            <ProgressDashboard />
+          </div>
+        </section>
         <NivelesSection />
         <RecursosSection />
         <PathSection />

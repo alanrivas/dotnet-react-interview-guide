@@ -1,0 +1,371 @@
+---
+id: cors-avanzado
+title: CORS Avanzado en ASP.NET Core
+sidebar_position: 5
+---
+
+import QuizSection from '@site/src/components/QuizSection';
+
+# CORS Avanzado en ASP.NET Core 🌐
+
+CORS (Cross-Origin Resource Sharing) es el mecanismo del navegador que controla qué orígenes externos pueden hacer requests a tu API. Entender CORS a profundidad es clave para evitar errores de producción y configuraciones inseguras.
+
+---
+
+## ¿Por qué existe CORS?
+
+El navegador implementa la **Same-Origin Policy**: por defecto, JavaScript solo puede hacer requests al mismo origen (protocolo + dominio + puerto). CORS es el mecanismo para relajar esto de forma controlada.
+
+```
+Frontend: https://mi-app.com:443
+    ↓ fetch('/api/datos')
+API: https://mi-api.com:443  ← ORIGEN DIFERENTE → CORS bloqueado por defecto
+
+El BROWSER bloquea la respuesta, no el servidor.
+El servidor ya procesó el request — el browser simplemente no deja leer la respuesta.
+```
+
+:::tip Error común
+CORS **no es seguridad del servidor**. Es seguridad del browser. Un cliente como curl, Postman o un servidor backend NO está restringido por CORS. CORS protege a los usuarios de ataques CSRF desde navegadores.
+:::
+
+---
+
+## Configuración básica
+
+```csharp
+// Program.cs — setup completo
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    // Política para producción — restrictiva
+    options.AddPolicy("ProdPolicy", policy =>
+        policy
+            .WithOrigins(
+                "https://mi-app.com",
+                "https://www.mi-app.com"
+            )
+            .WithMethods("GET", "POST", "PUT", "DELETE", "PATCH")
+            .WithHeaders("Content-Type", "Authorization", "X-Requested-With")
+            .AllowCredentials()  // permite cookies y Authorization header
+            .SetPreflightMaxAge(TimeSpan.FromMinutes(10))
+    );
+
+    // Política para desarrollo — permisiva
+    options.AddPolicy("DevPolicy", policy =>
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+    );
+});
+
+var app = builder.Build();
+
+// ⚠️ ORDEN IMPORTA: CORS debe ir ANTES de Authorization
+app.UseRouting();
+app.UseCors(app.Environment.IsDevelopment() ? "DevPolicy" : "ProdPolicy");
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+```
+
+---
+
+## Preflight requests (OPTIONS)
+
+Para requests "no simples" (con Authorization header, Content-Type: application/json, métodos no estándar), el browser envía primero un **preflight request** OPTIONS:
+
+```
+Browser                          Servidor
+   |                                |
+   |  OPTIONS /api/datos            |
+   |  Origin: https://mi-app.com    |
+   |  Access-Control-Request-Method: POST  |
+   |  Access-Control-Request-Headers: Authorization, Content-Type  |
+   |                                |
+   |  ← 204 No Content             |
+   |  Access-Control-Allow-Origin: https://mi-app.com  |
+   |  Access-Control-Allow-Methods: GET, POST, PUT  |
+   |  Access-Control-Allow-Headers: Authorization, Content-Type  |
+   |  Access-Control-Max-Age: 600  |
+   |                                |
+   |  POST /api/datos (request real)|
+   |                                |
+```
+
+```csharp
+// SetPreflightMaxAge reduce la cantidad de preflights
+// (el browser cachea el resultado por X segundos)
+options.AddPolicy("OptimizedPolicy", policy =>
+    policy
+        .WithOrigins("https://mi-app.com")
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .SetPreflightMaxAge(TimeSpan.FromHours(1)) // cachea 1 hora
+);
+```
+
+---
+
+## Políticas por endpoint
+
+```csharp
+// Política default para toda la app
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins("https://mi-app.com").AllowAnyMethod().AllowAnyHeader()
+    );
+
+    options.AddPolicy("PublicApi", policy =>
+        policy.AllowAnyOrigin().WithMethods("GET") // endpoints públicos de lectura
+    );
+
+    options.AddPolicy("AdminApi", policy =>
+        policy.WithOrigins("https://admin.mi-app.com").AllowAnyMethod().AllowAnyHeader().AllowCredentials()
+    );
+});
+
+app.UseCors(); // aplica DefaultPolicy
+
+// Sobrescribir por controlador o endpoint
+[ApiController]
+[Route("api/[controller]")]
+[EnableCors("AdminApi")] // ← aplica AdminApi a todo el controlador
+public class AdminController : ControllerBase { }
+
+// Desactivar CORS en un endpoint específico
+[HttpGet("public-data")]
+[DisableCors] // ← no CORS headers
+public IActionResult GetPublicData() => Ok(data);
+
+// Endpoint público con su propia política
+app.MapGet("/api/status", () => "OK")
+   .RequireCors("PublicApi");
+```
+
+---
+
+## AllowCredentials y sus implicaciones
+
+```csharp
+// ⚠️ AllowCredentials con AllowAnyOrigin es INVÁLIDO
+// ASP.NET Core lanzará excepción en runtime
+
+// ❌ Inválido
+options.AddPolicy("Broken", policy =>
+    policy.AllowAnyOrigin().AllowCredentials() // FALLA: InvalidOperationException
+);
+
+// ✅ Correcto: necesitas orígenes específicos para credentials
+options.AddPolicy("WithCredentials", policy =>
+    policy
+        .WithOrigins("https://mi-app.com")
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials() // permite cookies, Authorization header, TLS client certs
+);
+```
+
+`AllowCredentials` es necesario cuando:
+- Tu frontend envía cookies de sesión
+- Usas `Authorization: Bearer` con `credentials: 'include'` en fetch
+- Usas autenticación HTTP básica
+
+---
+
+## Orígenes dinámicos (multitenancy)
+
+Cuando los orígenes válidos son dinámicos (lista de tenants), usa `SetIsOriginAllowed`:
+
+```csharp
+// Program.cs
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("MultiTenant", policy =>
+        policy
+            .SetIsOriginAllowed(origin => EsOrigenPermitido(origin))
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+    );
+});
+
+// Desde configuración o base de datos
+bool EsOrigenPermitido(string origin)
+{
+    var permitidos = new HashSet<string>
+    {
+        "https://cliente1.mi-saas.com",
+        "https://cliente2.mi-saas.com",
+        "https://cliente3.mi-saas.com",
+    };
+    return permitidos.Contains(origin);
+}
+```
+
+```csharp
+// Versión con DI (para leer de base de datos)
+public class DynamicCorsPolicy : ICorsPolicyProvider
+{
+    private readonly ITenantRepository _tenants;
+
+    public DynamicCorsPolicy(ITenantRepository tenants) => _tenants = tenants;
+
+    public async Task<CorsPolicy?> GetPolicyAsync(HttpContext context, string? policyName)
+    {
+        var allowedOrigins = await _tenants.GetAllowedOriginsAsync();
+
+        return new CorsPolicyBuilder()
+            .WithOrigins(allowedOrigins.ToArray())
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .Build();
+    }
+}
+
+// Registrar
+builder.Services.AddSingleton<ICorsPolicyProvider, DynamicCorsPolicy>();
+```
+
+---
+
+## CORS en minimal APIs
+
+```csharp
+var app = builder.Build();
+app.UseCors();
+
+// Política inline en el endpoint
+app.MapGet("/api/publico", () => "datos")
+   .RequireCors(policy => policy.AllowAnyOrigin().WithMethods("GET"));
+
+// Referencia a política con nombre
+app.MapPost("/api/datos", async (Dto dto, DbContext db) =>
+{
+    // ...
+}).RequireCors("ProdPolicy");
+
+// Grupo de endpoints con misma política
+var api = app.MapGroup("/api").RequireCors("ProdPolicy");
+api.MapGet("/productos", GetProductos);
+api.MapPost("/productos", CreateProducto);
+```
+
+---
+
+## Testing de CORS
+
+```csharp
+// Integration test verificando headers CORS
+public class CorsTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly HttpClient _client;
+
+    public CorsTests(WebApplicationFactory<Program> factory)
+    {
+        _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task Origen_Permitido_Retorna_Headers_CORS()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/datos");
+        request.Headers.Add("Origin", "https://mi-app.com");
+
+        var response = await _client.SendAsync(request);
+
+        response.Headers.TryGetValues("Access-Control-Allow-Origin", out var values);
+        Assert.Contains("https://mi-app.com", values);
+    }
+
+    [Fact]
+    public async Task Origen_No_Permitido_No_Retorna_Headers_CORS()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/datos");
+        request.Headers.Add("Origin", "https://sitio-malicioso.com");
+
+        var response = await _client.SendAsync(request);
+
+        Assert.False(response.Headers.Contains("Access-Control-Allow-Origin"));
+    }
+
+    [Fact]
+    public async Task Preflight_Retorna_204()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Options, "/api/datos");
+        request.Headers.Add("Origin", "https://mi-app.com");
+        request.Headers.Add("Access-Control-Request-Method", "POST");
+        request.Headers.Add("Access-Control-Request-Headers", "Content-Type, Authorization");
+
+        var response = await _client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+}
+```
+
+---
+
+## Errores comunes y soluciones
+
+| Error | Causa | Solución |
+|---|---|---|
+| `AllowCredentials` + `AllowAnyOrigin` | Combinación inválida | Usar `WithOrigins("url")` específica |
+| CORS falla en producción pero no en dev | Política diferente por environment | Verificar política activa en producción |
+| OPTIONS retorna 404 | CORS middleware después de Routing | Mover `app.UseCors()` antes de `app.UseRouting()` |
+| `Authorization` header bloqueado | Header no permitido explícitamente | Agregar a `WithHeaders` o usar `AllowAnyHeader()` |
+| Wildcard `*` con credenciales | El browser lo rechaza | Usar origen específico con `AllowCredentials()` |
+
+---
+
+## Preguntas frecuentes de entrevista 🎯
+
+**1. ¿CORS es seguridad del servidor o del browser?**
+> Del browser. El servidor recibe y procesa el request independientemente de CORS. El browser es quien bloquea la respuesta si los headers no coinciden. Por eso CORS no protege contra ataques de servidor a servidor (curl, Postman, etc.) — solo de código JavaScript en un navegador.
+
+**2. ¿Por qué `AllowAnyOrigin()` y `AllowCredentials()` no pueden usarse juntos?**
+> El estándar CORS prohíbe explícitamente que un servidor responda `Access-Control-Allow-Origin: *` cuando el cliente envía `credentials: 'include'`. El browser rechazaría la respuesta de todos modos. ASP.NET Core lanza excepción al intentarlo para prevenir configuraciones rotas.
+
+**3. ¿Qué es un preflight request y cuándo ocurre?**
+> El browser envía una solicitud OPTIONS previa para verificar que el servidor permite el método y headers del request real. Ocurre cuando: el método no es GET/POST/HEAD, hay headers no estándar (como Authorization), o Content-Type no es uno de los tres tipos simples. `SetPreflightMaxAge` hace que el browser cachee el resultado para evitar preflights repetidos.
+
+<QuizSection
+  storageKey="semi-cors-avanzado"
+  title="🧠 Mini-Quiz — CORS Avanzado"
+  questions={[
+    {
+      question: "¿Qué entidad implementa la restricción de CORS?",
+      options: [
+        "El servidor — rechaza requests de orígenes no permitidos",
+        "El firewall de red — bloquea el paquete antes de llegar al servidor",
+        "El browser — procesa los headers de respuesta y bloquea al JavaScript leer la respuesta",
+        "El CDN — intercepta requests cross-origin antes de llegar al origen"
+      ],
+      correctIndex: 2,
+      explanation: "CORS es enforcement del browser. El servidor SIEMPRE recibe y procesa el request. Es el browser quien, al ver que los headers CORS de la respuesta no permiten el origen, bloquea que el JavaScript lea la respuesta. Por eso curl/Postman no tienen restricciones CORS."
+    },
+    {
+      question: "¿Por qué es importante el orden de UseCors() en el pipeline de ASP.NET Core?",
+      options: [
+        "No importa el orden, Middleware se ejecuta en paralelo",
+        "CORS debe ir después de UseAuthentication para tener acceso al usuario",
+        "CORS debe ir antes de UseAuthorization para que el preflight OPTIONS no sea rechazado por falta de token",
+        "CORS debe ser el último middleware para procesar primero la lógica de negocio"
+      ],
+      correctIndex: 2,
+      explanation: "Los preflight requests (OPTIONS) no llevan token de Authorization. Si UseAuthorization va antes de UseCors, el preflight es rechazado con 401 antes de que CORS agregue sus headers. El resultado: el browser ve un 401 sin headers CORS y reporta error de CORS, no de auth."
+    },
+    {
+      question: "¿Cuándo usarías SetIsOriginAllowed() en lugar de WithOrigins()?",
+      options: [
+        "Cuando tienes más de 10 orígenes permitidos",
+        "Cuando los orígenes son dinámicos y no se conocen en tiempo de compilación (ej: lista de tenants en BD)",
+        "Siempre que necesites AllowCredentials()",
+        "Cuando quieres permitir cualquier subdominio de un dominio base"
+      ],
+      correctIndex: 1,
+      explanation: "WithOrigins() acepta una lista estática. SetIsOriginAllowed() acepta una función predicate que se evalúa en runtime. Perfecto para SaaS multitenancy donde cada cliente tiene su propio subdominio y la lista viene de la base de datos."
+    }
+  ]}
+/>

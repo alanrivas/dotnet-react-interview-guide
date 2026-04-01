@@ -1,0 +1,80 @@
+/* Floating container — fixed bottom-LEFT */
+.container {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-start;
+}
+
+/* Shared button base */
+.pageBtn,
+.categoryBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 9999px;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pageBtn:hover,
+.categoryBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.24);
+}
+
+/* Single-page button: neutral tone */
+.pageBtn {
+  background: var(--ifm-background-surface-color);
+  color: var(--ifm-font-color-base);
+  border: 1.5px solid var(--ifm-color-emphasis-300);
+}
+
+[data-theme='dark'] .pageBtn {
+  border-color: var(--ifm-color-emphasis-400);
+}
+
+/* Category button: accent tone */
+.categoryBtn {
+  background: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.categoryBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loading {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* Hide the text label on very small screens, keep emoji */
+@media (max-width: 380px) {
+  .label {
+    display: none;
+  }
+  .pageBtn,
+  .categoryBtn {
+    padding: 0.5rem 0.6rem;
+  }
+}

@@ -163,14 +163,13 @@ async function printPages(
   win.addEventListener('load', () => setTimeout(() => win.print(), 400));
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Component — rendered from DocItem/Layout, always inside DocsSidebarProvider ──
 export default function ExportPDF(): React.ReactElement | null {
   const location = useLocation();
   const sidebar = useDocsSidebar();
   const [loading, setLoading] = useState(false);
 
-  const isDocPage = location.pathname.startsWith('/docs/');
-  if (!isDocPage || !sidebar) return null;
+  if (!sidebar) return null;
 
   const category = findParentCategory(sidebar.items as AnyItem[], location.pathname);
 
